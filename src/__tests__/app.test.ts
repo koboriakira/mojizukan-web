@@ -31,4 +31,36 @@ describe("clientApp", () => {
   it("history.pushState を使っていない（戻るボタン無効化）", () => {
     expect(clientApp).not.toContain("pushState");
   });
+
+  it("ホーム画面がタイトルとボタンを含む", () => {
+    expect(clientApp).toContain("もじずかん");
+    expect(clientApp).toContain("はじめる");
+    expect(clientApp).toContain("ずかん");
+  });
+
+  it("キャンバス画面が trace-canvas を含む", () => {
+    expect(clientApp).toContain("trace-canvas");
+    expect(clientApp).toContain("なぞれたよ");
+  });
+
+  it("Reveal 画面がプリセットデータ参照を含む", () => {
+    expect(clientApp).toContain("PRESETS[word]");
+    expect(clientApp).toContain("ずかんに のったよ");
+  });
+
+  it("グローバル関数が定義されている", () => {
+    const funcs = ["__goHome", "__goWrite", "__goZukan", "__confirmChar", "__clearCanvas", "__undo"];
+    for (const f of funcs) {
+      expect(clientApp).toContain(`window.${f}`);
+    }
+  });
+
+  it("PRESETS データが埋め込まれている", () => {
+    expect(clientApp).toContain("var PRESETS");
+    expect(clientApp).toContain("var WORDPOOL");
+  });
+
+  it("Canvas の重複リスナー防止フラグが存在する", () => {
+    expect(clientApp).toContain("_canvasWired");
+  });
 });

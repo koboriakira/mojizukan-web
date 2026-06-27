@@ -63,4 +63,23 @@ describe("clientApp", () => {
   it("Canvas の重複リスナー防止フラグが存在する", () => {
     expect(clientApp).toContain("_canvasWired");
   });
+
+  it("図鑑画面が CATEGORIES グリッドを含む", () => {
+    expect(clientApp).toContain("CATEGORIES");
+    expect(clientApp).toContain("grid-template-columns");
+  });
+
+  it("図鑑画面が戻るボタンを含む", () => {
+    expect(clientApp).toContain("window.__goHome()");
+    expect(clientApp).toContain("けん</span>");
+  });
+
+  it("詳細画面が PRESETS データ参照を含む", () => {
+    expect(clientApp).toContain("s.detailWord");
+    expect(clientApp).toContain("preset.emoji");
+  });
+
+  it("__openDetail グローバル関数が定義されている", () => {
+    expect(clientApp).toContain("window.__openDetail");
+  });
 });

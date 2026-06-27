@@ -119,11 +119,77 @@ export const clientApp = `
   }
 
   function renderZukan(s) {
-    return '<div style="padding:32px;"><h1 style="font-family:var(--fhead);">図鑑</h1><p>[zukan placeholder]</p><button onclick="window.__goHome()" style="margin-top:16px;">← もどる</button></div>';
+    var count = s.collected.length;
+
+    var header = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+      '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:26px;">ずかん <span style="color:var(--accent);">' + count + 'けん</span></div>' +
+      '<div style="width:56px;"></div>' +
+    '</div>';
+
+    var sections = '';
+    for (var ci = 0; ci < CATEGORIES.length; ci++) {
+      var cat = CATEGORIES[ci];
+      var catWords = [];
+      for (var w in PRESETS) {
+        if (PRESETS[w].cat === cat.name) catWords.push(w);
+      }
+      if (catWords.length === 0) continue;
+
+      var gotCount = 0;
+      for (var j = 0; j < catWords.length; j++) {
+        if (s.collected.indexOf(catWords[j]) !== -1) gotCount++;
+      }
+
+      if (gotCount === 0) continue;
+
+      sections += '<div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">' +
+        '<span style="font-size:22px;">' + cat.icon + '</span>' +
+        '<span style="font-family:var(--fhead);font-weight:900;font-size:20px;">' + cat.name + '</span>' +
+        '<span style="font-size:14px;color:var(--sub);font-weight:700;">' + gotCount + '/' + catWords.length + '</span>' +
+      '</div>';
+
+      sections += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:26px;">';
+      for (var k = 0; k < catWords.length; k++) {
+        var cw = catWords[k];
+        var preset = PRESETS[cw];
+        if (s.collected.indexOf(cw) !== -1) {
+          sections += '<button onclick="window.__openDetail(\'' + cw + '\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
+            '<span style="font-size:40px;line-height:1;">' + preset.emoji + '</span>' +
+            '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + cw + '</span>' +
+          '</button>';
+        } else {
+          sections += '<div style="background:var(--locked);border-radius:20px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:#c4b6a0;font-size:32px;font-weight:900;">?</div>';
+        }
+      }
+      sections += '</div>';
+    }
+
+    if (count === 0) {
+      sections += '<div style="text-align:center;padding:48px 0;color:var(--sub);font-size:18px;font-weight:700;">' +
+        '<div style="font-size:48px;margin-bottom:16px;">📖</div>' +
+        'まだ なにも あつめてないよ<br>「はじめる」で もじを かこう！' +
+      '</div>';
+    }
+
+    return '<div style="flex:1;padding:18px 0;">' + header + sections + '</div>';
   }
 
   function renderDetail(s) {
-    return '<div style="padding:32px;"><h1 style="font-family:var(--fhead);">詳細</h1><p>[detail placeholder]</p><button onclick="window.__goZukan()" style="margin-top:16px;">← ずかんへ</button></div>';
+    var word = s.detailWord || '';
+    var preset = PRESETS[word] || { emoji: '📖', cat: '', catIcon: '', desc: '' };
+
+    return '<div style="flex:1;display:flex;flex-direction:column;padding-top:18px;">' +
+      '<div style="display:flex;align-items:center;margin-bottom:8px;">' +
+        '<button onclick="window.__goZukan()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
+      '</div>' +
+      '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">' +
+        '<div style="width:220px;height:220px;border-radius:36px;background:var(--card);border:4px solid var(--cbd);display:flex;align-items:center;justify-content:center;font-size:130px;">' + preset.emoji + '</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;margin-top:20px;">' + word + '</div>' +
+        (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
+        '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:360px;font-weight:500;">' + preset.desc + '</div>' +
+      '</div>' +
+    '</div>';
   }
 
   function renderSheet(s) {
@@ -197,6 +263,10 @@ export const clientApp = `
 
   window.__goZukan = function () {
     setState({ screen: 'zukan', sheet: null });
+  };
+
+  window.__openDetail = function (word) {
+    setState({ screen: 'detail', detailWord: word });
   };
 
   window.__confirmChar = function () {

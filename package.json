@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "bash bin/dev.sh",
     "deploy": "wrangler deploy",
     "test": "vitest run",
     "test:watch": "vitest",

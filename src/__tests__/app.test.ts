@@ -82,4 +82,35 @@ describe("clientApp", () => {
   it("__openDetail グローバル関数が定義されている", () => {
     expect(clientApp).toContain("window.__openDetail");
   });
+
+  it("localStorage ヘルパー関数が定義されている", () => {
+    expect(clientApp).toContain("storageAvailable");
+    expect(clientApp).toContain("saveState");
+    expect(clientApp).toContain("loadState");
+  });
+
+  it("mojizukan_entries キーが定義されている", () => {
+    expect(clientApp).toContain("mojizukan_entries");
+  });
+
+  it("mojizukan_discovered キーが定義されている", () => {
+    expect(clientApp).toContain("mojizukan_discovered");
+  });
+
+  it("setState で saveState が呼ばれる", () => {
+    expect(clientApp).toContain("saveState()");
+    const setStateIdx = clientApp.indexOf("function setState");
+    const saveStateIdx = clientApp.indexOf("saveState()", setStateIdx);
+    expect(saveStateIdx).toBeGreaterThan(setStateIdx);
+  });
+
+  it("loadState で初期 state が設定される", () => {
+    expect(clientApp).toContain("var saved = loadState()");
+    expect(clientApp).toContain("saved.collected ||");
+    expect(clientApp).toContain("saved.discovered ||");
+  });
+
+  it("ゲストモードでは D1 POST をスキップする", () => {
+    expect(clientApp).toContain("if (state.authed)");
+  });
 });

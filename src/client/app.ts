@@ -4,14 +4,47 @@ export const clientApp = `
 (function () {
   ${clientPresets}
 
+  function storageAvailable() {
+    try {
+      var t = '__test__';
+      localStorage.setItem(t, t);
+      localStorage.removeItem(t);
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+
+  var _hasStorage = storageAvailable();
+
+  function saveState() {
+    if (!_hasStorage) return;
+    try {
+      localStorage.setItem('mojizukan_entries', JSON.stringify(state.collected));
+      localStorage.setItem('mojizukan_discovered', JSON.stringify(state.discovered));
+    } catch(e) {}
+  }
+
+  function loadState() {
+    if (!_hasStorage) return {};
+    try {
+      var entries = JSON.parse(localStorage.getItem('mojizukan_entries') || '[]');
+      var discovered = JSON.parse(localStorage.getItem('mojizukan_discovered') || '[]');
+      return { collected: entries, discovered: discovered };
+    } catch(e) {
+      return {};
+    }
+  }
+
+  var saved = loadState();
   var state = {
     screen: 'home',
     word: '',
     charIndex: 0,
     confirmed: [],
     detailWord: null,
-    collected: [],
-    discovered: [],
+    collected: saved.collected || [],
+    discovered: saved.discovered || [],
     authed: false,
     tickets: 0,
     lastHakken: false,
@@ -23,6 +56,7 @@ export const clientApp = `
   function setState(partial) {
     Object.assign(state, partial);
     render(state);
+    saveState();
   }
 
   function render(s) {
@@ -278,11 +312,13 @@ export const clientApp = `
       var col = state.collected.indexOf(word) === -1
         ? state.collected.concat([word])
         : state.collected;
-      fetch('/api/entries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: word })
-      });
+      if (state.authed) {
+        fetch('/api/entries', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ word: word })
+        });
+      }
       _canvasWired = null;
       setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', collected: col, lastHakken: false });
     } else {

@@ -1,0 +1,42 @@
+name: Feature
+description: 機能追加・変更
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: why
+    attributes:
+      label: 背景と動機（Why）
+      description: なぜこの変更が必要か。トリガー、制約、ビジネス要求。
+      placeholder: ADR の「根拠」セクションに昇格する下書き
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 受入条件（What の種）
+      description: 各条件が it("...") にそのまま変換可能な粒度で書く
+      placeholder: |
+        - [ ] 条件1
+        - [ ] 条件2
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 検討した代替案と却下理由（Why not）
+      description: 他に検討したアプローチがあれば
+      placeholder: |
+        - 案A → 却下理由
+        - 案B → 却下理由
+    validations:
+      required: false
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: スコープ外
+      description: 今回やらないこと（もうひとつの Why not）
+      placeholder: |
+        - やらないこと1
+        - やらないこと2
+    validations:
+      required: false

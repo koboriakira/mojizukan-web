@@ -113,4 +113,33 @@ describe("clientApp", () => {
   it("ゲストモードでは D1 POST をスキップする", () => {
     expect(clientApp).toContain("if (state.authed)");
   });
+
+  it("ヒントシート (sheet === 'hint') の表示ロジックが含まれる", () => {
+    expect(clientApp).toContain("s.sheet === 'hint'");
+    expect(clientApp).toContain("hintWord");
+    expect(clientApp).toContain("わかった！");
+  });
+
+  it("__showHint グローバル関数が定義されている", () => {
+    expect(clientApp).toContain("window.__showHint");
+  });
+
+  it("サインアップシート (sheet === 'signup') に登録ボタンが含まれる", () => {
+    expect(clientApp).toContain("s.sheet === 'signup'");
+    expect(clientApp).toContain("__doSignup()");
+    expect(clientApp).toContain("メールで はじめる");
+  });
+
+  it("__doSignup グローバル関数が定義されている", () => {
+    expect(clientApp).toContain("window.__doSignup");
+  });
+
+  it("_lastPromptCount パターンが含まれる", () => {
+    expect(clientApp).toContain("_lastPromptCount");
+  });
+
+  it("ゲストバナーが含まれる", () => {
+    expect(clientApp).toContain("いまは ゲスト");
+    expect(clientApp).toContain("window.__showSignup()");
+  });
 });

@@ -48,8 +48,11 @@ export const clientApp = `
     authed: false,
     tickets: 0,
     lastHakken: false,
-    sheet: null
+    sheet: null,
+    hintWord: null
   };
+
+  var _lastPromptCount = 0;
 
   var _canvasWired = null;
 
@@ -159,7 +162,14 @@ export const clientApp = `
       '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:26px;">ずかん <span style="color:var(--accent);">' + count + 'けん</span></div>' +
       '<div style="width:56px;"></div>' +
-    '</div>';
+    '</div>' +
+    (!s.authed ? '<button onclick="window.__showSignup()" style="width:100%;text-align:left;background:#fff;border:2px dashed var(--accent);border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:18px;box-shadow:none;">' +
+      '<span style="font-size:26px;">🔑</span>' +
+      '<span>' +
+        '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent);display:block;">いまは ゲスト ・ とうろくで とっておこう</span>' +
+        '<span style="font-size:12.5px;color:var(--sub);">とうろくすると チケットも もらえるよ</span>' +
+      '</span>' +
+    '</button>' : '');
 
     var sections = '';
     for (var ci = 0; ci < CATEGORIES.length; ci++) {
@@ -193,7 +203,7 @@ export const clientApp = `
             '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + cw + '</span>' +
           '</button>';
         } else {
-          sections += '<div style="background:var(--locked);border-radius:20px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:#c4b6a0;font-size:32px;font-weight:900;">?</div>';
+          sections += '<button onclick="window.__showHint(\'' + cw + '\')" style="background:var(--locked);border-radius:20px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:#c4b6a0;font-size:32px;font-weight:900;border:none;cursor:pointer;">?</button>';
         }
       }
       sections += '</div>';
@@ -227,12 +237,51 @@ export const clientApp = `
   }
 
   function renderSheet(s) {
-    var content = s.sheet === 'signup'
-      ? '<p>[signup sheet placeholder]</p>'
-      : s.sheet === 'tickets'
-      ? '<p>[tickets sheet placeholder]</p>'
-      : '';
-    return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div><div class="sheet">' + content + '</div>';
+    if (s.sheet === 'hint') {
+      var hw = s.hintWord || '';
+      var hpreset = PRESETS[hw] || { emoji: '📖', desc: '' };
+      var hdesc = hpreset.desc || '';
+      var hintText = hdesc.indexOf('。') !== -1 ? hdesc.slice(0, hdesc.indexOf('。') + 1) : hdesc;
+      var charBoxes = '';
+      for (var i = 0; i < hw.length; i++) {
+        if (i === 0) {
+          charBoxes += '<div style="width:48px;height:48px;border-radius:12px;background:var(--accent2);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--fhead);font-weight:900;font-size:24px;">' + hw[i] + '</div>';
+        } else {
+          charBoxes += '<div style="width:48px;height:48px;border-radius:12px;background:var(--locked);color:#c4b6a0;display:flex;align-items:center;justify-content:center;font-family:var(--fhead);font-weight:900;font-size:24px;">?</div>';
+        }
+      }
+      return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
+        '<div class="sheet">' +
+          '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
+          '<div style="text-align:center;font-size:80px;">' + hpreset.emoji + '</div>' +
+          '<div style="display:flex;justify-content:center;gap:8px;margin:16px 0;">' + charBoxes + '</div>' +
+          '<div style="font-size:16px;color:#7a7060;text-align:center;margin:12px 0 20px;">' + hintText + '</div>' +
+          '<button onclick="window.__closeSheet()" style="width:100%;min-height:64px;border-radius:18px;background:var(--accent2);font-size:20px;box-shadow:0 6px 0 var(--accent2d);">わかった！</button>' +
+        '</div>';
+    }
+    if (s.sheet === 'signup') {
+      var collectedCount = s.collected ? s.collected.length : 0;
+      return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
+        '<div class="sheet" onclick="event.stopPropagation()">' +
+          '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
+          '<div style="text-align:center;font-size:46px;">🔑📚</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:24px;margin-top:8px;">じぶんの 図鑑を とっておこう</div>' +
+          '<div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">いま集めた <b style="color:var(--accent);">' + collectedCount + 'けん</b> をそのまま引き継ぎ。<br>登録すると <b style="color:var(--accent);">はっけんチケット 5まい</b> プレゼント🎁</div>' +
+          '<div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;">' +
+            '<button onclick="window.__doSignup()" style="min-height:64px;border-radius:18px;background:var(--ink);color:#fff;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.3);">✉️ メールで はじめる</button>' +
+            '<div style="display:flex;gap:12px;">' +
+              '<button onclick="window.__doSignup()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;border:2px solid #e6ddcf;font-size:16px;box-shadow:none;color:var(--ink);"> Apple</button>' +
+              '<button onclick="window.__doSignup()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;border:2px solid #e6ddcf;font-size:16px;box-shadow:none;color:var(--ink);">G Google</button>' +
+            '</div>' +
+            '<button onclick="window.__closeSheet()" style="min-height:48px;background:transparent;color:var(--sub);font-weight:700;font-size:15px;box-shadow:none;">あとで</button>' +
+          '</div>' +
+          '<div style="text-align:center;font-size:11.5px;color:#b6ab9a;margin-top:10px;line-height:1.5;">🔒 登録は保護者のためのものです。お子さまの個人情報は集めません。</div>' +
+        '</div>';
+    }
+    if (s.sheet === 'tickets') {
+      return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div><div class="sheet"><p>[tickets sheet placeholder]</p></div>';
+    }
+    return '';
   }
 
   function nextWord() {
@@ -296,7 +345,28 @@ export const clientApp = `
   };
 
   window.__goZukan = function () {
-    setState({ screen: 'zukan', sheet: null });
+    var c = state.collected.length;
+    var sheet = null;
+    if (!state.authed) {
+      var due = (c === 3 || c === 5 || c === 10 || c > 10);
+      if (due && _lastPromptCount !== c) {
+        sheet = 'signup';
+        _lastPromptCount = c;
+      }
+    }
+    setState({ screen: 'zukan', sheet: sheet });
+  };
+
+  window.__showSignup = function () {
+    setState({ sheet: 'signup' });
+  };
+
+  window.__showHint = function (word) {
+    setState({ sheet: 'hint', hintWord: word });
+  };
+
+  window.__doSignup = function () {
+    setState({ authed: true, tickets: 5, sheet: null });
   };
 
   window.__openDetail = function (word) {

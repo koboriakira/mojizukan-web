@@ -1,0 +1,15 @@
+name = "mojizukan-web"
+main = "src/index.ts"
+compatibility_date = "2026-06-27"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mojizukan-db"
+database_id = "local"
+
+# [vars]
+# OPENAI_API_KEY = "" # wrangler secret で設定する
+
+# [[r2_buckets]]
+# binding = "IMAGES"
+# bucket_name = "mojizukan-images"

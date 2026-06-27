@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS entries (
   is_discovered INTEGER NOT NULL DEFAULT 1,
   image_url TEXT,
   description TEXT,
+  emoji TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

@@ -98,4 +98,25 @@ button.tap {
   0%   { opacity: 0; }
   100% { opacity: 1; }
 }
+
+@media (min-width: 600px) {
+  #app {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 900px) {
+  #app {
+    max-width: 840px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  html, body {
+    min-height: auto;
+  }
+  #app {
+    min-height: auto;
+  }
+}
 `;

@@ -46,4 +46,14 @@ describe("globalStyles", () => {
     expect(globalStyles).toContain("@keyframes sheetUp");
     expect(globalStyles).toContain("@keyframes fade");
   });
+
+  it("タブレット用メディアクエリが含まれる", () => {
+    expect(globalStyles).toContain("@media (min-width: 600px)");
+    expect(globalStyles).toContain("max-width: 720px");
+  });
+
+  it("landscape 対応のメディアクエリが含まれる", () => {
+    expect(globalStyles).toContain("@media (orientation: landscape)");
+    expect(globalStyles).toContain("min-height: auto");
+  });
 });

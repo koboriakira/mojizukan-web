@@ -56,6 +56,26 @@ export const clientApp = `
 
   var _canvasWired = null;
 
+  var _audioEnabled = false;
+  var _audioCache = {};
+
+  function playSound(name) {
+    if (!_audioEnabled) return;
+    try {
+      if (!_audioCache[name]) {
+        _audioCache[name] = new Audio('/sounds/' + name + '.mp3');
+        _audioCache[name].volume = 0.3;
+      }
+      var a = _audioCache[name];
+      a.currentTime = 0;
+      a.play().catch(function(){});
+    } catch(e) {}
+  }
+
+  document.addEventListener('pointerdown', function() {
+    _audioEnabled = true;
+  }, { once: true });
+
   function setState(partial) {
     Object.assign(state, partial);
     render(state);
@@ -332,19 +352,25 @@ export const clientApp = `
   }
 
   window.__setState = setState;
-  window.__closeSheet = function () { setState({ sheet: null }); };
+  window.__closeSheet = function () {
+    playSound('cancel');
+    setState({ sheet: null });
+  };
 
   window.__goHome = function () {
+    playSound('cancel');
     _canvasWired = null;
     setState({ screen: 'home', sheet: null });
   };
 
   window.__goWrite = function () {
+    playSound('tap');
     _canvasWired = null;
     setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [] });
   };
 
   window.__goZukan = function () {
+    playSound('tap');
     var c = state.collected.length;
     var sheet = null;
     if (!state.authed) {
@@ -362,6 +388,7 @@ export const clientApp = `
   };
 
   window.__showHint = function (word) {
+    playSound('tap');
     setState({ sheet: 'hint', hintWord: word });
   };
 
@@ -379,6 +406,7 @@ export const clientApp = `
     var nc = state.confirmed.concat([word[idx]]);
 
     if (idx + 1 >= word.length) {
+      playSound('success');
       var col = state.collected.indexOf(word) === -1
         ? state.collected.concat([word])
         : state.collected;
@@ -392,6 +420,7 @@ export const clientApp = `
       _canvasWired = null;
       setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', collected: col, lastHakken: false });
     } else {
+      playSound('confirm');
       _canvasWired = null;
       setState({ confirmed: nc, charIndex: idx + 1 });
     }

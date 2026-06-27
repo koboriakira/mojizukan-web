@@ -142,4 +142,25 @@ describe("clientApp", () => {
     expect(clientApp).toContain("いまは ゲスト");
     expect(clientApp).toContain("window.__showSignup()");
   });
+
+  it("playSound 関数が定義されている", () => {
+    expect(clientApp).toContain("function playSound");
+  });
+
+  it("_audioEnabled フラグが定義されている", () => {
+    expect(clientApp).toContain("_audioEnabled");
+  });
+
+  it("autoplay policy 対応の pointerdown リスナーが含まれる", () => {
+    expect(clientApp).toContain("pointerdown");
+    expect(clientApp).toContain("_audioEnabled = true");
+    expect(clientApp).toContain("{ once: true }");
+  });
+
+  it("効果音の呼び出しが含まれる", () => {
+    expect(clientApp).toContain("playSound('tap')");
+    expect(clientApp).toContain("playSound('confirm')");
+    expect(clientApp).toContain("playSound('success')");
+    expect(clientApp).toContain("playSound('cancel')");
+  });
 });

@@ -52,7 +52,10 @@ export const clientApp = `
     tickets: 0,
     lastHakken: false,
     sheet: null,
-    hintWord: null
+    hintWord: null,
+    sfx: true,
+    bgm: false,
+    theme: 'A'
   };
 
   var _lastPromptCount = 0;
@@ -92,6 +95,7 @@ export const clientApp = `
   function render(s) {
     var app = document.getElementById('app');
     if (!app) return;
+    app.dataset.theme = s.theme || 'A';
     app.innerHTML = renderScreen(s);
     if (s.sheet) {
       app.innerHTML += renderSheet(s);
@@ -109,6 +113,7 @@ export const clientApp = `
       case 'zukan':  return renderZukan(s);
       case 'detail':     return renderDetail(s);
       case 'storyPick':  return '<p>おはなしを つくる（準備中）</p>';
+      case 'parent':     return renderParent(s);
       default:           return '<p>不明な画面: ' + s.screen + '</p>';
     }
   }
@@ -266,6 +271,73 @@ export const clientApp = `
         '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;margin-top:20px;">' + word + '</div>' +
         (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
         '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:360px;font-weight:500;">' + preset.desc + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderParent(s) {
+    var catProgress = '';
+    for (var ci = 0; ci < CATEGORIES.length; ci++) {
+      var cat = CATEGORIES[ci];
+      var catWords = [];
+      for (var w in PRESETS) {
+        if (PRESETS[w].cat === cat.name) catWords.push(w);
+      }
+      if (catWords.length === 0) continue;
+      var gotCount = 0;
+      for (var j = 0; j < catWords.length; j++) {
+        if (s.collected.indexOf(catWords[j]) !== -1) gotCount++;
+      }
+      catProgress += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cbd);">' +
+        '<span style="font-size:15px;">' + cat.icon + ' ' + cat.name + '</span>' +
+        '<span style="font-weight:700;color:var(--accent2);font-size:15px;">' + gotCount + '/' + catWords.length + '</span>' +
+      '</div>';
+    }
+
+    var currentTheme = s.theme || 'A';
+    var themes = ['A', 'B', 'C'];
+    var themeButtons = '';
+    for (var ti = 0; ti < themes.length; ti++) {
+      var t = themes[ti];
+      var active = currentTheme === t;
+      themeButtons += '<button onclick="window.__setTheme(\\'' + t + '\\')" style="flex:1;min-height:52px;border-radius:14px;font-size:16px;font-weight:700;' +
+        (active ? 'background:var(--accent);color:#fff;box-shadow:0 4px 0 var(--accentd);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
+        'Theme ' + t + '</button>';
+    }
+
+    return '<div style="flex:1;padding:18px;overflow-y:auto;">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">' +
+        '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;">おうちの ひと メニュー</div>' +
+        '<div style="width:56px;"></div>' +
+      '</div>' +
+      '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-between;">' +
+        '<div style="font-weight:700;font-size:17px;">チケット</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:26px;color:var(--accent);">🎟️ ' + (s.tickets || 0) + '</div>' +
+      '</div>' +
+      '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:12px;">📖 がくしゅう きろく</div>' +
+        '<div style="font-size:16px;color:var(--sub);font-weight:700;margin-bottom:12px;">とりあつかい: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + s.collected.length + '</span> こ</div>' +
+        catProgress +
+      '</div>' +
+      '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ せってい</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
+          '<span style="font-size:16px;font-weight:700;">🔊 こうかおん</span>' +
+          '<button onclick="window.__toggleSfx()" style="min-width:72px;min-height:40px;border-radius:20px;font-size:15px;font-weight:700;' +
+            (s.sfx !== false ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
+            (s.sfx !== false ? 'ON' : 'OFF') + '</button>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
+          '<span style="font-size:16px;font-weight:700;">🎵 BGM</span>' +
+          '<button onclick="window.__toggleBgm()" style="min-width:72px;min-height:40px;border-radius:20px;font-size:15px;font-weight:700;' +
+            (s.bgm ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
+            (s.bgm ? 'ON' : 'OFF') + '</button>' +
+        '</div>' +
+        '<div style="padding:12px 0 0;">' +
+          '<div style="font-size:16px;font-weight:700;margin-bottom:10px;">🎨 はいしょくテーマ</div>' +
+          '<div style="display:flex;gap:10px;">' + themeButtons + '</div>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }
@@ -445,8 +517,8 @@ export const clientApp = `
       _pgStart = null;
       cancelAnimationFrame(_pgRaf);
       playSound('success');
-      setState({ sheet: null });
       console.log('[parent-gate] passed');
+      setState({ screen: 'parent', sheet: null });
     }, 1200);
   };
 
@@ -470,6 +542,20 @@ export const clientApp = `
 
   window.__openDetail = function (word) {
     setState({ screen: 'detail', detailWord: word });
+  };
+
+  window.__setTheme = function (t) {
+    var app = document.getElementById('app');
+    if (app) app.dataset.theme = t;
+    setState({ theme: t });
+  };
+
+  window.__toggleSfx = function () {
+    setState({ sfx: state.sfx === false ? true : false });
+  };
+
+  window.__toggleBgm = function () {
+    setState({ bgm: !state.bgm });
   };
 
   window.__confirmChar = function () {

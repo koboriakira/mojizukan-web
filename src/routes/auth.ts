@@ -3,6 +3,7 @@ import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import type { AppEnv } from "../types";
 import { hashPassword, verifyPassword } from "../lib/password";
 import { createSession, deleteSession, SESSION_MAX_AGE_SEC } from "../lib/session";
+import { getTicketBalance } from "../lib/tickets";
 
 const auth = new Hono<AppEnv>();
 
@@ -47,7 +48,7 @@ auth.post("/signup", async (c) => {
 
   const token = await createSession(c.env.DB, id);
   setSessionCookie(c, token);
-  return c.json({ id, email: email.toLowerCase() }, 201);
+  return c.json({ id, email: email.toLowerCase(), tickets: 0 }, 201);
 });
 
 auth.post("/login", async (c) => {
@@ -75,7 +76,8 @@ auth.post("/login", async (c) => {
 
   const token = await createSession(c.env.DB, user.id);
   setSessionCookie(c, token);
-  return c.json({ id: user.id, email: email.toLowerCase() });
+  const tickets = await getTicketBalance(c.env.DB, user.id);
+  return c.json({ id: user.id, email: email.toLowerCase(), tickets });
 });
 
 auth.post("/logout", async (c) => {
@@ -107,7 +109,8 @@ auth.get("/me", async (c) => {
   if (!user) {
     return c.json({ authed: false });
   }
-  return c.json({ authed: true, id: user.id, email: user.email });
+  const tickets = await getTicketBalance(c.env.DB, user.id);
+  return c.json({ authed: true, id: user.id, email: user.email, tickets });
 });
 
 // --- Google OAuth ---

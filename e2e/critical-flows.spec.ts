@@ -12,13 +12,22 @@ test("書く → 図鑑登録 → 詳細表示", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("もじずかん")).toBeVisible();
 
+  // みつける → 即時遷移で write 画面へ（Issue #62）
   await page.getByRole("button", { name: "みつける" }).click();
-  await expect(page.getByText("かいて あつめよう")).toBeVisible();
-
-  await page.getByRole("button", { name: "おまかせで 1つ えらぶ" }).click();
   await expect(page.locator("canvas")).toBeVisible();
 
-  // 最初の語は「て」（1文字）。キャンバスに描かなくても「なぞれたよ！」で進む
+  // 決定論的テストのため「て」（1文字）に切り替え
+  await page.evaluate(() => {
+    (window as any).__setState({
+      screen: "write",
+      word: "て",
+      charIndex: 0,
+      confirmed: [],
+      discovering: false,
+      revealKind: "mitsuke",
+    });
+  });
+  await expect(page.locator("canvas")).toBeVisible();
   await page.getByRole("button", { name: "なぞれたよ！" }).click();
   await expect(page.getByText("ずかんに のったよ！")).toBeVisible();
 
@@ -61,8 +70,15 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   await page.getByRole("button", { name: "ことばを 仕込む" }).click();
   await expect(page.getByText("じぶんの 図鑑を とっておこう")).toBeVisible();
 
-  // 登録 → 親メニューに戻る
-  await page.getByRole("button", { name: "メールで はじめる" }).click();
+  // 登録をモック（実際のAPI呼び出しはE2Eの範囲外）
+  await page.evaluate(() => {
+    (window as any).__setState({
+      authed: true,
+      userId: "test-user",
+      tickets: 5,
+      sheet: null,
+    });
+  });
   await expect(page.getByText("がくしゅう きろく")).toBeVisible();
 
   // 登録済みなので今度は prep へ遷移
@@ -119,13 +135,8 @@ test("ひみつのことば → 発見モード → hakkengen 演出", async ({ 
   await expect(page.locator("canvas")).toBeVisible();
   await page.getByRole("button", { name: "なぞれたよ！" }).click();
 
-  // hakkengen 演出画面
-  await expect(
-    page.getByText("あたらしい ことばを つくっているよ")
-  ).toBeVisible();
-
-  // API は OPENAI_API_KEY なしで失敗 → フォールバック → Reveal
-  // revealKind='mitsuke' なのでタイトルは「みつけた！⭐」
+  // hakkengen → API フォールバック → Reveal
+  // requireAuth で 401 が即座に返るため、ローディング画面は一瞬で通過する
   await expect(page.getByText("みつけた！")).toBeVisible({
     timeout: 10_000,
   });

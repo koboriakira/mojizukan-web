@@ -58,10 +58,31 @@ describe("clientApp", () => {
     expect(clientApp).toContain("みつけた！");
   });
 
-  it("みつける画面のレンダリングロジックが含まれる", () => {
+  it("復習モード (revealKind='review') のタイトルとバナーがある", () => {
+    expect(clientApp).toContain("また かけたね");
+    expect(clientApp).toContain("この ことばは もう ずかんに いるよ");
+    expect(clientApp).toContain("ひみつの ことば");
+  });
+
+  it("goMitsukeru が pool=0 & collected あり で復習モードに遷移する", () => {
+    expect(clientApp).toContain("'review'");
+    expect(clientApp).toContain("reviewPick");
+  });
+
+  it("みつける画面が完了通知として表示される", () => {
     expect(clientApp).toContain("renderMitsukeru");
-    expect(clientApp).toContain("おまかせで 1つ えらぶ");
-    expect(clientApp).toContain("かいて あつめよう");
+    expect(clientApp).toContain("ぜんぶ みつけたよ");
+    expect(clientApp).toContain("おうちの ひとに みせる");
+  });
+
+  it("mitsukePool 関数が定義されている", () => {
+    expect(clientApp).toContain("function mitsukePool");
+  });
+
+  it("goMitsukeru が即時遷移ロジックを持つ", () => {
+    expect(clientApp).toContain("mitsukePool(state)");
+    expect(clientApp).toContain("__openSecret(pick)");
+    expect(clientApp).toContain("__goWriteWord(pick");
   });
 
   it("たんけん画面の switch case が含まれる", () => {
@@ -218,14 +239,19 @@ describe("clientApp", () => {
     expect(clientApp).toContain("window.__showHint");
   });
 
-  it("サインアップシート (sheet === 'signup') に登録ボタンが含まれる", () => {
+  it("サインアップシート (sheet === 'signup') に認証フォームが含まれる", () => {
     expect(clientApp).toContain("s.sheet === 'signup'");
-    expect(clientApp).toContain("__doSignup()");
     expect(clientApp).toContain("メールで はじめる");
+    expect(clientApp).toContain("Google で ログイン");
+    expect(clientApp).toContain("auth-email");
+    expect(clientApp).toContain("auth-pass");
   });
 
-  it("__doSignup グローバル関数が定義されている", () => {
-    expect(clientApp).toContain("window.__doSignup");
+  it("認証関連グローバル関数が定義されている", () => {
+    expect(clientApp).toContain("window.__submitAuth");
+    expect(clientApp).toContain("window.__googleLogin");
+    expect(clientApp).toContain("window.__setAuthMode");
+    expect(clientApp).toContain("window.__logout");
   });
 
   it("_lastPromptCount パターンが含まれる", () => {
@@ -278,5 +304,42 @@ describe("clientApp", () => {
   it("長押し 1.2 秒のタイマーが設定されている", () => {
     expect(clientApp).toContain("1200");
     expect(clientApp).toContain("requestAnimationFrame");
+  });
+
+  it("絵本ビュー画面のレンダリングロジックが含まれる", () => {
+    expect(clientApp).toContain("function renderStory");
+    expect(clientApp).toContain("storyPages");
+    expect(clientApp).toContain("storyPage");
+  });
+
+  it("絵本のローディング表示が含まれる", () => {
+    expect(clientApp).toContain("AIが おはなしを かいているよ");
+    expect(clientApp).toContain("dotpulse");
+  });
+
+  it("絵本ページのトークン描画ロジックが含まれる", () => {
+    expect(clientApp).toContain("tok.t === 'word'");
+    expect(clientApp).toContain("tok.w");
+    expect(clientApp).toContain("tok.s");
+  });
+
+  it("手書き差し替えロジックが含まれる", () => {
+    expect(clientApp).toContain("s.handwriting && s.handwriting[tok.w]");
+  });
+
+  it("ページめくり操作関数が定義されている", () => {
+    expect(clientApp).toContain("window.__storyPrev");
+    expect(clientApp).toContain("window.__storyNext");
+    expect(clientApp).toContain("window.__storyRestart");
+  });
+
+  it("goStory が API を呼び出す", () => {
+    expect(clientApp).toContain("fetch('/api/story'");
+    expect(clientApp).toContain("storyLoading: true");
+  });
+
+  it("最終ページに もういちど と できた ボタンがある", () => {
+    expect(clientApp).toContain("もういちど");
+    expect(clientApp).toContain("できた！");
   });
 });

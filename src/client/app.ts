@@ -59,7 +59,10 @@ export const clientApp = `
     discovered: saved.discovered || [],
     handwriting: saved.handwriting || {},
     authed: false,
+    userId: null,
     tickets: 0,
+    authMode: 'choose',
+    authError: '',
     lastHakken: false,
     sheet: null,
     hintWord: null,
@@ -67,6 +70,10 @@ export const clientApp = `
     bgm: false,
     theme: 'A',
     storySel: [],
+    storyPages: null,
+    storyPage: 0,
+    storyLoading: false,
+    storyFade: '',
     mode: 'omakase',
     seeded: saved.seeded || [],
     discovering: false,
@@ -142,7 +149,7 @@ export const clientApp = `
       case 'tankenlimit': return renderTankenlimit(s);
       case 'prep':        return renderPrep(s);
       case 'hakkengen': return renderHakkenGen(s);
-      case 'story':     return '<p>おはなしを よみこみちゅう…</p>';
+      case 'story':     return renderStory(s);
       default:          return '<p>不明な画面: ' + s.screen + '</p>';
     }
   }
@@ -192,58 +199,12 @@ export const clientApp = `
   }
 
   function renderMitsukeru(s) {
-    var secretSection = '';
-    if (s.seeded && s.seeded.length > 0) {
-      secretSection += '<div style="margin-bottom:24px;">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:#9c4d70;margin-bottom:12px;">⭐ ひみつの ことば</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;">';
-      for (var si = 0; si < s.seeded.length; si++) {
-        var sw = s.seeded[si];
-        secretSection += '<button onclick="window.__openSecret(\\'' + sw + '\\')" style="background:#fff;border:2px dashed #e3b8cd;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;cursor:pointer;">' +
-          '<span style="font-size:38px;font-weight:900;color:#c2698f;line-height:1;">?</span>' +
-          '<span style="font-size:11px;color:#c2698f;font-weight:700;">かいて みよう</span>' +
-        '</button>';
-      }
-      secretSection += '</div></div>';
-    }
-
-    var uncollected = [];
-    for (var w in PRESETS) {
-      if (s.collected.indexOf(w) === -1) uncollected.push(w);
-    }
-
-    var cardsSection = '';
-    if (uncollected.length > 0) {
-      cardsSection += '<div style="margin-bottom:24px;">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--ink);margin-bottom:12px;">✏️ かいて あつめよう</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;">';
-      for (var ui = 0; ui < uncollected.length; ui++) {
-        var uw = uncollected[ui];
-        var upreset = PRESETS[uw];
-        cardsSection += '<button onclick="window.__goWriteWord(\\'' + uw + '\\',false,\\'normal\\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
-          '<span style="font-size:40px;line-height:1;">' + upreset.emoji + '</span>' +
-          '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + uw + '</span>' +
-        '</button>';
-      }
-      cardsSection += '</div></div>';
-    } else {
-      cardsSection += '<div style="text-align:center;padding:32px 0;color:var(--sub);font-size:18px;font-weight:700;">' +
-        '<div style="font-size:48px;margin-bottom:12px;">🎉</div>' +
-        'ぜんぶ あつめたよ！' +
-      '</div>';
-    }
-
-    return '<div style="flex:1;padding:18px;">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">' +
-        '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:24px;color:var(--accent2);">🔍 みつける</div>' +
-        '<div style="width:56px;"></div>' +
-      '</div>' +
-      secretSection +
-      cardsSection +
-      '<div style="margin-top:8px;">' +
-        '<button onclick="window.__goWrite()" style="width:100%;min-height:72px;border-radius:22px;background:var(--accent);font-size:22px;font-weight:900;box-shadow:0 6px 0 var(--accentd);">🎲 おまかせで 1つ えらぶ</button>' +
-      '</div>' +
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
+      '<div style="font-size:80px;line-height:1;margin-bottom:16px;animation:bob 2s ease-in-out infinite;">🌟</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:28px;color:var(--accent2);margin-bottom:12px;">いまの ことばは<br>ぜんぶ みつけたよ！</div>' +
+      '<div style="font-size:16px;color:var(--sub);font-weight:600;line-height:1.8;margin-bottom:36px;">あたらしい ことばは<br>おうちの ひとに そうだんしてね</div>' +
+      '<button onclick="window.__showParentGate()" style="min-height:72px;width:100%;max-width:340px;border-radius:22px;background:var(--accent2);font-size:22px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">🏠 おうちの ひとに みせる</button>' +
+      '<button onclick="window.__goHome()" style="min-height:52px;width:100%;max-width:340px;background:transparent;color:var(--sub);font-weight:700;font-size:16px;box-shadow:none;margin-top:12px;">← もどる</button>' +
     '</div>';
   }
 
@@ -377,7 +338,9 @@ export const clientApp = `
       { emoji: '📖', cat: '', catIcon: '', desc: '' });
     var kind = s.revealKind || 'normal';
     var title;
-    if (s.lastHakken) {
+    if (kind === 'review') {
+      title = 'また かけたね！😊';
+    } else if (s.lastHakken) {
       title = kind === 'tanken' ? 'あたらしい ことば はっけん！⭐' : 'みつけた！⭐';
     } else {
       title = 'ずかんに のったよ！🎉';
@@ -385,12 +348,23 @@ export const clientApp = `
     var nextAction = kind === 'tanken'
       ? '<button onclick="window.__goTanken()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🧭 たんけんに もどる</button>'
       : '<button onclick="window.__goMitsukeru()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🔍 つぎも みつける</button>';
+
+    var reviewBanner = '';
+    if (kind === 'review') {
+      reviewBanner = '<div style="background:linear-gradient(135deg,#fef9ef,#fdf3e0);border:2px solid var(--accent2);border-radius:18px;padding:16px;margin-top:20px;max-width:340px;text-align:left;">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent2);margin-bottom:8px;">この ことばは もう ずかんに いるよ！</div>' +
+        '<div style="font-size:14px;color:#5a5145;line-height:1.7;margin-bottom:10px;">なんども かけて すごい！<br>あたらしい ことばも かいて みたいね。</div>' +
+        '<div style="font-size:12px;color:var(--sub);line-height:1.6;border-top:1px solid rgba(0,0,0,.08);padding-top:8px;">おうちの方へ：あたらしい ことばを おぼえる チャンスです。「ひみつの ことば」を 図鑑に 追加して あげましょう。</div>' +
+      '</div>';
+    }
+
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
       '<div style="font-size:130px;line-height:1;margin:14px 0 4px;">' + preset.emoji + '</div>' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
       (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
       '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;">' + preset.desc + '</div>' +
+      reviewBanner +
       '<div style="display:flex;gap:14px;margin-top:36px;width:100%;max-width:400px;">' +
         nextAction +
         '<button onclick="window.__goZukan()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent2);font-size:21px;box-shadow:0 6px 0 var(--accent2d);">📚 ずかんを みる</button>' +
@@ -607,6 +581,11 @@ export const clientApp = `
           '<div style="font-size:16px;font-weight:700;margin-bottom:10px;">🎨 はいしょくテーマ</div>' +
           '<div style="display:flex;gap:10px;">' + themeButtons + '</div>' +
         '</div>' +
+        (s.authed ?
+          '<div style="padding:16px 0 0;border-top:1px solid var(--cbd);margin-top:16px;">' +
+            '<button onclick="window.__logout()" style="width:100%;min-height:44px;border-radius:14px;background:transparent;border:1px solid #c44;color:#c44;font-size:14px;font-weight:700;box-shadow:none;">ログアウト</button>' +
+          '</div>'
+        : '') +
       '</div>' +
     '</div>';
   }
@@ -663,6 +642,88 @@ export const clientApp = `
           '📖 おはなしを つくる（' + selCount + '/5）' +
         '</button>' +
       '</div>' +
+    '</div>';
+  }
+
+  function renderStory(s) {
+    if (s.storyLoading || !s.storyPages) {
+      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
+        '<div style="font-size:64px;animation:bob 2s ease-in-out infinite;">✏️</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--ink);margin:16px 0 12px;">AIが おはなしを かいているよ</div>' +
+        '<div style="display:flex;gap:8px;justify-content:center;">' +
+          '<div style="width:10px;height:10px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out infinite;"></div>' +
+          '<div style="width:10px;height:10px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .2s infinite;"></div>' +
+          '<div style="width:10px;height:10px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .4s infinite;"></div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    var pages = s.storyPages;
+    var idx = s.storyPage || 0;
+    var page = pages[idx] || { hero: [], tokens: [] };
+    var tints = ['var(--story-tint-0)', 'var(--story-tint-1)', 'var(--story-tint-2)'];
+    var tint = tints[idx % tints.length];
+    var fadeStyle = s.storyFade ? 'animation:fade .28s ease;' : '';
+
+    var heroEmojis = '';
+    for (var hi = 0; hi < page.hero.length; hi++) {
+      var hp = PRESETS[page.hero[hi]];
+      heroEmojis += '<span style="font-size:72px;line-height:1;">' + (hp ? hp.emoji : '📖') + '</span>';
+    }
+
+    var body = '';
+    for (var ti = 0; ti < page.tokens.length; ti++) {
+      var tok = page.tokens[ti];
+      if (tok.t === 'word' && tok.w) {
+        var hw = s.handwriting && s.handwriting[tok.w];
+        if (hw) {
+          body += '<img src="' + hw + '" style="height:34px;vertical-align:middle;display:inline-block;margin:0 2px;" />';
+        } else {
+          body += '<span style="color:var(--accent3);font-weight:900;">' + tok.w + '</span>';
+        }
+      } else {
+        body += '<span>' + (tok.s || '') + '</span>';
+      }
+    }
+
+    var isFirst = idx === 0;
+    var isLast = idx === pages.length - 1;
+    var prevOpacity = isFirst ? '0.3' : '1';
+    var nextOpacity = isLast ? '0.3' : '1';
+
+    var dots = '';
+    for (var di = 0; di < pages.length; di++) {
+      var dotBg = di === idx ? 'var(--accent3)' : '#d8cfc0';
+      dots += '<div style="width:10px;height:10px;border-radius:50%;background:' + dotBg + ';"></div>';
+    }
+
+    var bottomButtons = isLast
+      ? '<div style="display:flex;gap:14px;width:100%;max-width:400px;margin-top:16px;">' +
+          '<button onclick="window.__storyRestart()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent3);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent3d);color:#fff;">🔄 もういちど</button>' +
+          '<button onclick="window.__goHome()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent2);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">できた！</button>' +
+        '</div>'
+      : '';
+
+    return '<div style="flex:1;display:flex;flex-direction:column;padding:18px;">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">' +
+        '<button onclick="window.__goHome()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">←</button>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--accent3);">📖 おはなし</div>' +
+        '<div style="width:48px;"></div>' +
+      '</div>' +
+      '<div onclick="window.__storyNext()" style="flex:1;display:flex;flex-direction:column;background:#fffdf7;border-radius:28px;box-shadow:0 4px 16px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;' + fadeStyle + '" id="story-card">' +
+        '<div style="flex:1;display:flex;align-items:center;justify-content:center;background:' + tint + ';padding:24px;gap:8px;">' +
+          heroEmojis +
+        '</div>' +
+        '<div style="padding:20px 22px;font-size:24px;line-height:2;font-weight:500;color:#5a5145;">' +
+          body +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-top:14px;">' +
+        '<button onclick="window.__storyPrev()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;opacity:' + prevOpacity + ';">‹</button>' +
+        '<div style="display:flex;gap:6px;">' + dots + '</div>' +
+        '<button onclick="window.__storyNext()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;opacity:' + nextOpacity + ';">›</button>' +
+      '</div>' +
+      bottomButtons +
     '</div>';
   }
 
@@ -769,20 +830,42 @@ export const clientApp = `
     }
     if (s.sheet === 'signup') {
       var collectedCount = s.collected ? s.collected.length : 0;
+      var authMode = s.authMode || 'choose';
+      var authError = s.authError || '';
+      var errorHtml = authError ? '<div style="color:#c44;font-size:13px;text-align:center;margin-bottom:8px;">' + authError + '</div>' : '';
+      var formHtml = '';
+      if (authMode === 'choose') {
+        formHtml =
+          '<div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;">' +
+            '<button onclick="window.__setAuthMode(\\'email-signup\\')" style="min-height:64px;border-radius:18px;background:var(--ink);color:#fff;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.3);">✉️ メールで はじめる</button>' +
+            '<button onclick="window.__googleLogin()" style="min-height:60px;border-radius:18px;background:#fff;border:2px solid #e6ddcf;font-size:16px;box-shadow:none;color:var(--ink);">G Google で ログイン</button>' +
+            '<button onclick="window.__setAuthMode(\\'email-login\\')" style="min-height:48px;background:transparent;color:var(--sub);font-weight:700;font-size:15px;box-shadow:none;">メールで ログイン</button>' +
+            '<button onclick="window.__closeSheet()" style="min-height:48px;background:transparent;color:var(--sub);font-weight:700;font-size:15px;box-shadow:none;">あとで</button>' +
+          '</div>';
+      } else {
+        var isLogin = authMode === 'email-login';
+        var title = isLogin ? 'ログイン' : 'アカウント作成';
+        var submitLabel = isLogin ? 'ログイン' : 'とうろく';
+        var switchLabel = isLogin ? 'アカウントを つくる →' : 'ログインは こちら →';
+        var switchMode = isLogin ? 'email-signup' : 'email-login';
+        formHtml =
+          '<div style="display:flex;flex-direction:column;gap:12px;margin-top:18px;">' +
+            '<div style="font-weight:700;font-size:16px;text-align:center;">' + title + '</div>' +
+            errorHtml +
+            '<input id="auth-email" type="email" placeholder="メールアドレス" style="height:48px;border-radius:14px;border:2px solid #e6ddcf;padding:0 16px;font-size:16px;outline:none;" />' +
+            '<input id="auth-pass" type="password" placeholder="パスワード（6もじ いじょう）" style="height:48px;border-radius:14px;border:2px solid #e6ddcf;padding:0 16px;font-size:16px;outline:none;" />' +
+            '<button onclick="window.__submitAuth(\\'' + authMode + '\\')" style="min-height:56px;border-radius:18px;background:var(--ink);color:#fff;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.3);">' + submitLabel + '</button>' +
+            '<button onclick="window.__setAuthMode(\\'' + switchMode + '\\')" style="min-height:40px;background:transparent;color:var(--accent);font-weight:700;font-size:14px;box-shadow:none;">' + switchLabel + '</button>' +
+            '<button onclick="window.__setAuthMode(\\'choose\\')" style="min-height:40px;background:transparent;color:var(--sub);font-weight:700;font-size:14px;box-shadow:none;">← もどる</button>' +
+          '</div>';
+      }
       return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
         '<div class="sheet" onclick="event.stopPropagation()">' +
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
           '<div style="text-align:center;font-size:46px;">🔑📚</div>' +
           '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:24px;margin-top:8px;">じぶんの 図鑑を とっておこう</div>' +
           '<div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">いま集めた <b style="color:var(--accent);">' + collectedCount + 'けん</b> をそのまま引き継ぎ。<br>登録すると <b style="color:var(--accent);">はっけんチケット 5まい</b> プレゼント🎁</div>' +
-          '<div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;">' +
-            '<button onclick="window.__doSignup()" style="min-height:64px;border-radius:18px;background:var(--ink);color:#fff;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.3);">✉️ メールで はじめる</button>' +
-            '<div style="display:flex;gap:12px;">' +
-              '<button onclick="window.__doSignup()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;border:2px solid #e6ddcf;font-size:16px;box-shadow:none;color:var(--ink);"> Apple</button>' +
-              '<button onclick="window.__doSignup()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;border:2px solid #e6ddcf;font-size:16px;box-shadow:none;color:var(--ink);">G Google</button>' +
-            '</div>' +
-            '<button onclick="window.__closeSheet()" style="min-height:48px;background:transparent;color:var(--sub);font-weight:700;font-size:15px;box-shadow:none;">あとで</button>' +
-          '</div>' +
+          formHtml +
           '<div style="text-align:center;font-size:11.5px;color:#b6ab9a;margin-top:10px;line-height:1.5;">🔒 登録は保護者のためのものです。お子さまの個人情報は集めません。</div>' +
         '</div>';
     }
@@ -837,6 +920,23 @@ export const clientApp = `
       if (state.collected.indexOf(WORDPOOL[i]) === -1) return WORDPOOL[i];
     }
     return WORDPOOL[0];
+  }
+
+  function mitsukePool(s) {
+    var pool = [];
+    for (var i = 0; i < s.seeded.length; i++) {
+      pool.push(s.seeded[i]);
+    }
+    for (var w in PRESETS) {
+      if (s.collected.indexOf(w) === -1 && pool.indexOf(w) === -1) {
+        pool.push(w);
+      }
+    }
+    for (var j = pool.length - 1; j > 0; j--) {
+      var k = Math.floor(Math.random() * (j + 1));
+      var tmp = pool[j]; pool[j] = pool[k]; pool[k] = tmp;
+    }
+    return pool;
   }
 
   function setupCanvas() {
@@ -901,9 +1001,45 @@ export const clientApp = `
   };
 
   window.__goStory = function () {
-    if ((state.storySel || []).length < 2) return;
+    var words = state.storySel || [];
+    if (words.length < 2) return;
     playSound('tap');
-    setState({ screen: 'story', storyLoading: true });
+    setState({ screen: 'story', storyLoading: true, storyPages: null, storyPage: 0 });
+    fetch('/api/story', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ words: words })
+    }).then(function(r) { return r.json(); })
+      .then(function(data) {
+        setState({ storyPages: data.pages, storyLoading: false });
+      })
+      .catch(function() {
+        setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
+      });
+  };
+
+  window.__storyPrev = function () {
+    var idx = state.storyPage || 0;
+    if (idx > 0) {
+      playSound('tap');
+      setState({ storyPage: idx - 1, storyFade: 'prev' });
+      setTimeout(function() { setState({ storyFade: '' }); }, 300);
+    }
+  };
+
+  window.__storyNext = function () {
+    var idx = state.storyPage || 0;
+    var pages = state.storyPages || [];
+    if (idx < pages.length - 1) {
+      playSound('tap');
+      setState({ storyPage: idx + 1, storyFade: 'next' });
+      setTimeout(function() { setState({ storyFade: '' }); }, 300);
+    }
+  };
+
+  window.__storyRestart = function () {
+    playSound('tap');
+    setState({ storyPage: 0, storyFade: '' });
   };
 
   window.__closeSheet = function () {
@@ -919,7 +1055,20 @@ export const clientApp = `
 
   window.__goMitsukeru = function () {
     playSound('tap');
-    setState({ screen: 'mitsukeru' });
+    var pool = mitsukePool(state);
+    if (pool.length > 0) {
+      var pick = pool[Math.floor(Math.random() * pool.length)];
+      if (state.seeded.indexOf(pick) !== -1) {
+        window.__openSecret(pick);
+      } else {
+        window.__goWriteWord(pick, false, 'mitsuke');
+      }
+    } else if (state.collected.length > 0) {
+      var reviewPick = state.collected[Math.floor(Math.random() * state.collected.length)];
+      window.__goWriteWord(reviewPick, false, 'review');
+    } else {
+      setState({ screen: 'mitsukeru' });
+    }
   };
 
   window.__goTanken = function () {
@@ -999,8 +1148,46 @@ export const clientApp = `
     setState({ sheet: 'hint', hintWord: word });
   };
 
-  window.__doSignup = function () {
-    setState({ authed: true, tickets: 5, sheet: null });
+  window.__setAuthMode = function (mode) {
+    setState({ authMode: mode, authError: '' });
+  };
+
+  window.__submitAuth = function (mode) {
+    var email = document.getElementById('auth-email');
+    var pass = document.getElementById('auth-pass');
+    if (!email || !pass) return;
+    var emailVal = email.value.trim();
+    var passVal = pass.value;
+    if (!emailVal || !passVal) {
+      setState({ authError: 'メールアドレスと パスワードを いれてね' });
+      return;
+    }
+    var endpoint = mode === 'email-login' ? '/api/auth/login' : '/api/auth/signup';
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailVal, password: passVal })
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) {
+          setState({ authError: data.error || 'エラーが おきました' });
+          return;
+        }
+        setState({ authed: true, userId: data.id, tickets: 5, sheet: null, authMode: 'choose', authError: '' });
+      });
+    }).catch(function () {
+      setState({ authError: 'つうしん エラーです' });
+    });
+  };
+
+  window.__googleLogin = function () {
+    window.location.href = '/api/auth/google';
+  };
+
+  window.__logout = function () {
+    fetch('/api/auth/logout', { method: 'POST' }).then(function () {
+      setState({ authed: false, userId: null, tickets: 0 });
+    });
   };
 
   window.__openDetail = function (word) {
@@ -1283,7 +1470,7 @@ export const clientApp = `
     fetch('/api/hakken/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ word: word, userId: 'local' })
+      body: JSON.stringify({ word: word })
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
@@ -1324,6 +1511,14 @@ export const clientApp = `
       tankenMode: false
     });
   };
+
+  fetch('/api/auth/me').then(function (res) {
+    return res.json();
+  }).then(function (data) {
+    if (data.authed) {
+      setState({ authed: true, userId: data.id });
+    }
+  }).catch(function () {});
 
   render(state);
 })();

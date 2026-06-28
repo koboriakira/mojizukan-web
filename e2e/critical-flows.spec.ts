@@ -25,10 +25,11 @@ test("書く → 図鑑登録 → 詳細表示", async ({ page }) => {
       confirmed: [],
       discovering: false,
       revealKind: "mitsuke",
+      drew: true,
     });
   });
   await expect(page.locator("canvas")).toBeVisible();
-  await page.getByRole("button", { name: "なぞれたよ！" }).click();
+  await page.getByRole("button", { name: "できた！" }).click();
   await expect(page.getByText("ずかんに のったよ！")).toBeVisible();
 
   await page.getByRole("button", { name: "ずかんを みる" }).click();
@@ -125,15 +126,17 @@ test("ひみつのことば → 発見モード → hakkengen 演出", async ({ 
   await page.getByRole("button", { name: "ずかん" }).click();
   await expect(page.getByText("ひみつの ことば")).toBeVisible();
 
-  // ? マスをタップ → 発見モードで書く画面
+  // ? マスをタップ → 発見モードで書く画面（語は伏せられる）
   await page.getByRole("button", { name: "?" }).first().click();
   await expect(page.locator("canvas")).toBeVisible();
-  await expect(page.getByText("「かめ」を なぞろう")).toBeVisible();
+  await expect(page.getByText("なぞって みよう！なにが でるかな？")).toBeVisible();
 
-  // 2文字分「なぞれたよ！」
+  // drew ゲートを解除して2文字分確定
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
   await page.getByRole("button", { name: "なぞれたよ！" }).click();
   await expect(page.locator("canvas")).toBeVisible();
-  await page.getByRole("button", { name: "なぞれたよ！" }).click();
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
+  await page.getByRole("button", { name: "できた！" }).click();
 
   // hakkengen → API フォールバック → Reveal
   // requireAuth で 401 が即座に返るため、ローディング画面は一瞬で通過する
@@ -167,10 +170,12 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await expect(page.locator("canvas")).toBeVisible();
   await expect(page.getByText("「うし」を なぞろう")).toBeVisible();
 
-  // 2文字分「なぞれたよ！」
+  // drew ゲートを解除して2文字分確定
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
   await page.getByRole("button", { name: "なぞれたよ！" }).click();
   await expect(page.locator("canvas")).toBeVisible();
-  await page.getByRole("button", { name: "なぞれたよ！" }).click();
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
+  await page.getByRole("button", { name: "できた！" }).click();
 
   // 辞書語なので即 reveal（はっけんではない）
   await expect(page.getByText("ずかんに のったよ！")).toBeVisible();

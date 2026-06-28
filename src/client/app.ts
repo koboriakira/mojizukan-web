@@ -85,7 +85,8 @@ export const clientApp = `
     tankenMode: false,
     dailyHakkenMax: saved.dailyHakkenMax || 3,
     dailyHakkenUsed: saved.dailyHakkenUsed || 0,
-    limitWord: ''
+    limitWord: '',
+    drew: false
   };
 
   var _lastPromptCount = 0;
@@ -302,16 +303,17 @@ export const clientApp = `
       var bg = done ? 'var(--accent2)' : (active ? '#fff' : 'var(--locked)');
       var color = done ? '#fff' : (active ? 'var(--ink)' : 'var(--sub)');
       var border = active ? '3px solid var(--accent)' : '3px solid transparent';
+      var boxChar = done ? s.confirmed[i] : '';
       charBoxes +=
         '<div style="width:64px;height:64px;border-radius:16px;background:' + bg + ';border:' + border + ';display:flex;align-items:center;justify-content:center;font-family:var(--fhead);font-weight:900;font-size:32px;color:' + color + ';">' +
-          (done ? s.confirmed[i] : (active ? currentChar : word[i])) +
+          boxChar +
         '</div>';
     }
 
     return '<div style="flex:1;display:flex;flex-direction:column;padding:18px;">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
         '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--sub);">「' + word + '」を なぞろう</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--sub);">' + (s.revealKind === 'mitsuke' ? 'なぞって みよう！なにが でるかな？' : '「' + word + '」を なぞろう') + '</div>' +
         '<div style="width:56px;"></div>' +
       '</div>' +
       '<div style="display:flex;justify-content:center;gap:12px;margin:6px 0 14px;">' +
@@ -321,12 +323,17 @@ export const clientApp = `
         '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--fhead);font-weight:900;font-size:clamp(120px,42vw,260px);color:#ece2d2;pointer-events:none;user-select:none;line-height:1;">' + currentChar + '</div>' +
         '<canvas id="trace-canvas" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;"></canvas>' +
       '</div>' +
+      '<div style="text-align:center;min-height:20px;font-size:14.5px;font-weight:700;margin:8px 0 0;">' +
+        (s.drew ? '<span style="color:#3f8e63;">いいね！かけたら ボタンを おしてね</span>' : '<span style="color:#b6ab9a;">ゆびで なぞってね ✏️</span>') +
+      '</div>' +
       '<div style="display:flex;justify-content:center;gap:14px;margin:14px auto 0;max-width:380px;width:100%;">' +
         '<button onclick="window.__undo()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;color:var(--sub);font-size:17px;box-shadow:0 4px 0 rgba(0,0,0,.07);">↩ もどす</button>' +
         '<button onclick="window.__clearCanvas()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;color:#d9694f;font-size:17px;box-shadow:0 4px 0 rgba(0,0,0,.07);">🧹 けす</button>' +
       '</div>' +
       '<div style="max-width:380px;width:100%;margin:16px auto 0;">' +
-        '<button onclick="window.__confirmChar()" style="width:100%;min-height:80px;border-radius:22px;background:var(--accent2);font-size:26px;box-shadow:0 6px 0 var(--accent2d);">なぞれたよ！</button>' +
+        (s.drew
+          ? '<button onclick="window.__confirmChar()" style="width:100%;min-height:80px;border-radius:22px;background:var(--accent2);font-size:26px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">' + (s.charIndex + 1 >= word.length ? 'できた！' : 'なぞれたよ！') + '</button>'
+          : '<button style="width:100%;min-height:80px;border-radius:22px;background:#d8cfc0;color:#fff;font-size:26px;font-weight:900;box-shadow:0 5px 0 #bfb6a6;cursor:default;">かいて みよう</button>') +
       '</div>' +
     '</div>';
   }
@@ -963,6 +970,7 @@ export const clientApp = `
     c.addEventListener('pointerdown', function(e) {
       e.preventDefault();
       drawing = true;
+      if (!state.drew) { state.drew = true; render(); }
       try { c.setPointerCapture(e.pointerId); } catch(_) {}
       var p = pos(e);
       ctx.beginPath();
@@ -1079,13 +1087,13 @@ export const clientApp = `
   window.__goWriteWord = function (word, discovering, kind) {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal' });
+    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal', drew: false });
   };
 
   window.__goWrite = function () {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal' });
+    setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal', drew: false });
   };
 
   window.__goZukan = function () {
@@ -1209,6 +1217,7 @@ export const clientApp = `
   };
 
   window.__confirmChar = function () {
+    if (!state.drew) return;
     var word = state.word;
     var idx = state.charIndex;
     var nc = state.confirmed.concat([word[idx]]);
@@ -1245,7 +1254,7 @@ export const clientApp = `
     } else {
       playSound('confirm');
       _canvasWired = null;
-      setState({ confirmed: nc, charIndex: idx + 1, handwriting: hw });
+      setState({ confirmed: nc, charIndex: idx + 1, handwriting: hw, drew: false });
     }
   };
 
@@ -1254,6 +1263,7 @@ export const clientApp = `
     if (!c) return;
     var ctx = c.getContext('2d');
     ctx.clearRect(0, 0, c.width, c.height);
+    if (state.drew) { state.drew = false; render(); }
   };
 
   window.__undo = function () {
@@ -1372,7 +1382,7 @@ export const clientApp = `
   window.__openSecret = function(word) {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke' });
+    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false });
   };
 
   window.__tkAdd = function(ch) {

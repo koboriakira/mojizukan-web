@@ -55,7 +55,8 @@ export const clientApp = `
     hintWord: null,
     sfx: true,
     bgm: false,
-    theme: 'A'
+    theme: 'A',
+    storySel: []
   };
 
   var _lastPromptCount = 0;
@@ -107,14 +108,15 @@ export const clientApp = `
 
   function renderScreen(s) {
     switch (s.screen) {
-      case 'home':   return renderHome(s);
-      case 'write':  return renderWrite(s);
-      case 'reveal': return renderReveal(s);
-      case 'zukan':  return renderZukan(s);
-      case 'detail':     return renderDetail(s);
-      case 'storyPick':  return '<p>おはなしを つくる（準備中）</p>';
-      case 'parent':     return renderParent(s);
-      default:           return '<p>不明な画面: ' + s.screen + '</p>';
+      case 'home':      return renderHome(s);
+      case 'write':     return renderWrite(s);
+      case 'reveal':    return renderReveal(s);
+      case 'zukan':     return renderZukan(s);
+      case 'detail':    return renderDetail(s);
+      case 'storyPick': return renderStoryPick(s);
+      case 'parent':    return renderParent(s);
+      case 'story':     return '<p>おはなしを よみこみちゅう…</p>';
+      default:          return '<p>不明な画面: ' + s.screen + '</p>';
     }
   }
 
@@ -342,6 +344,61 @@ export const clientApp = `
     '</div>';
   }
 
+  function renderStoryPick(s) {
+    var sel = s.storySel || [];
+    var collected = s.collected || [];
+
+    var cells = '';
+    for (var i = 0; i < collected.length; i++) {
+      var w = collected[i];
+      var preset = PRESETS[w] || { emoji: '📖' };
+      var isSelected = sel.indexOf(w) !== -1;
+      var border = isSelected ? '3px solid var(--accent3)' : '3px solid var(--cbd)';
+      var hasHandwriting = s.handwriting && s.handwriting[w] && s.handwriting[w].length > 0;
+
+      var badge = isSelected
+        ? '<div style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:var(--accent3);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;font-weight:900;">✓</div>'
+        : '';
+      var hwLabel = hasHandwriting
+        ? '<div style="font-size:10px;color:var(--accent2);font-weight:700;margin-top:2px;">✍️ てがき</div>'
+        : '';
+
+      cells +=
+        '<button onclick="window.__toggleStorySel(\\'' + w + '\\')" style="position:relative;background:#fff;border:' + border + ';border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:none;padding:0;">' +
+          badge +
+          '<span style="font-size:34px;line-height:1;">' + preset.emoji + '</span>' +
+          '<span style="font-family:var(--fhead);font-weight:900;font-size:14px;color:var(--ink);">' + w + '</span>' +
+          hwLabel +
+        '</button>';
+    }
+
+    var selCount = sel.length;
+    var btnBg = selCount < 2 ? '#d8cfc0' : 'var(--accent3)';
+    var btnShadow = selCount < 2 ? '0 6px 0 #bfb6a6' : '0 6px 0 var(--accent3d)';
+
+    return '<div style="display:flex;flex-direction:column;min-height:100vh;">' +
+      '<div style="padding:18px 18px 0;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+          '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--ink);">おはなしを つくる</div>' +
+          '<div style="width:56px;"></div>' +
+        '</div>' +
+        '<div style="text-align:center;color:var(--sub);font-size:15px;font-weight:700;margin-bottom:4px;">つかう ことばを えらんでね</div>' +
+        '<div style="text-align:center;color:var(--sub);font-size:13px;margin-bottom:18px;">2〜5こ ・ むりょうで なんかいでも</div>' +
+      '</div>' +
+      '<div style="flex:1;padding:0 18px;">' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;">' +
+          cells +
+        '</div>' +
+      '</div>' +
+      '<div style="position:sticky;bottom:0;background:var(--bg);padding:16px 18px 28px;">' +
+        '<button onclick="window.__goStory()" style="width:100%;min-height:80px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">' +
+          '📖 おはなしを つくる（' + selCount + '/5）' +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
   function renderSheet(s) {
     if (s.sheet === 'hint') {
       var hw = s.hintWord || '';
@@ -454,6 +511,30 @@ export const clientApp = `
   }
 
   window.__setState = setState;
+
+  window.__goStoryPick = function () {
+    playSound('tap');
+    var defaultSel = state.collected.slice(0, 3);
+    setState({ screen: 'storyPick', storySel: defaultSel });
+  };
+
+  window.__toggleStorySel = function (word) {
+    playSound('tap');
+    var sel = state.storySel || [];
+    var idx = sel.indexOf(word);
+    if (idx !== -1) {
+      setState({ storySel: sel.filter(function(w) { return w !== word; }) });
+    } else if (sel.length < 5) {
+      setState({ storySel: sel.concat([word]) });
+    }
+  };
+
+  window.__goStory = function () {
+    if ((state.storySel || []).length < 2) return;
+    playSound('tap');
+    setState({ screen: 'story', storyLoading: true });
+  };
+
   window.__closeSheet = function () {
     playSound('cancel');
     setState({ sheet: null });
@@ -469,11 +550,6 @@ export const clientApp = `
     playSound('tap');
     _canvasWired = null;
     setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [] });
-  };
-
-  window.__goStoryPick = function () {
-    playSound('tap');
-    setState({ screen: 'storyPick' });
   };
 
   window.__goZukan = function () {

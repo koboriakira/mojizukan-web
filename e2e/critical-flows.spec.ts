@@ -135,13 +135,8 @@ test("ひみつのことば → 発見モード → hakkengen 演出", async ({ 
   await expect(page.locator("canvas")).toBeVisible();
   await page.getByRole("button", { name: "なぞれたよ！" }).click();
 
-  // hakkengen 演出画面
-  await expect(
-    page.getByText("あたらしい ことばを つくっているよ")
-  ).toBeVisible();
-
-  // API は OPENAI_API_KEY なしで失敗 → フォールバック → Reveal
-  // revealKind='mitsuke' なのでタイトルは「みつけた！⭐」
+  // hakkengen → API フォールバック → Reveal
+  // requireAuth で 401 が即座に返るため、ローディング画面は一瞬で通過する
   await expect(page.getByText("みつけた！")).toBeVisible({
     timeout: 10_000,
   });

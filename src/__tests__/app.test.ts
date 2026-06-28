@@ -97,6 +97,32 @@ describe("clientApp", () => {
     expect(clientApp).toContain("mojizukan_discovered");
   });
 
+  it("mojizukan_handwriting キーが localStorage に保存される", () => {
+    expect(clientApp).toContain("mojizukan_handwriting");
+  });
+
+  it("handwriting state が初期値として定義されている", () => {
+    expect(clientApp).toContain("handwriting:");
+    expect(clientApp).toContain("saved.handwriting ||");
+  });
+
+  it("文字確定時に toDataURL で PNG をキャプチャする", () => {
+    expect(clientApp).toContain("toDataURL('image/png')");
+  });
+
+  it("文字確定時に handwriting[word] に画像を追加する", () => {
+    expect(clientApp).toContain("hw[word] = (hw[word] || []).concat([dataURL])");
+  });
+
+  it("undo 時に handwriting の末尾画像を破棄する", () => {
+    expect(clientApp).toContain("hw[word] = hw[word].slice(0, -1)");
+  });
+
+  it("setupCanvas が DPR に合わせて内部解像度を設定する", () => {
+    expect(clientApp).toContain("devicePixelRatio");
+    expect(clientApp).toContain("ctx.scale(dpr, dpr)");
+  });
+
   it("setState で saveState が呼ばれる", () => {
     expect(clientApp).toContain("saveState()");
     const setStateIdx = clientApp.indexOf("function setState");
@@ -108,6 +134,7 @@ describe("clientApp", () => {
     expect(clientApp).toContain("var saved = loadState()");
     expect(clientApp).toContain("saved.collected ||");
     expect(clientApp).toContain("saved.discovered ||");
+    expect(clientApp).toContain("saved.handwriting ||");
   });
 
   it("ゲストモードでは D1 POST をスキップする", () => {

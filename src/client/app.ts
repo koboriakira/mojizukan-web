@@ -22,6 +22,7 @@ export const clientApp = `
     try {
       localStorage.setItem('mojizukan_entries', JSON.stringify(state.collected));
       localStorage.setItem('mojizukan_discovered', JSON.stringify(state.discovered));
+      localStorage.setItem('mojizukan_handwriting', JSON.stringify(state.handwriting));
     } catch(e) {}
   }
 
@@ -30,7 +31,8 @@ export const clientApp = `
     try {
       var entries = JSON.parse(localStorage.getItem('mojizukan_entries') || '[]');
       var discovered = JSON.parse(localStorage.getItem('mojizukan_discovered') || '[]');
-      return { collected: entries, discovered: discovered };
+      var handwriting = JSON.parse(localStorage.getItem('mojizukan_handwriting') || '{}');
+      return { collected: entries, discovered: discovered, handwriting: handwriting };
     } catch(e) {
       return {};
     }
@@ -45,6 +47,7 @@ export const clientApp = `
     detailWord: null,
     collected: saved.collected || [],
     discovered: saved.discovered || [],
+    handwriting: saved.handwriting || {},
     authed: false,
     tickets: 0,
     lastHakken: false,
@@ -317,9 +320,11 @@ export const clientApp = `
     _canvasWired = c;
     var rect = c.getBoundingClientRect();
     if (rect.width === 0) return;
-    c.width = Math.round(rect.width);
-    c.height = Math.round(rect.height);
+    var dpr = window.devicePixelRatio || 1;
+    c.width = Math.round(rect.width * dpr);
+    c.height = Math.round(rect.height * dpr);
     var ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
     ctx.lineWidth = 20;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -405,6 +410,16 @@ export const clientApp = `
     var idx = state.charIndex;
     var nc = state.confirmed.concat([word[idx]]);
 
+    var dataURL = null;
+    var c = document.getElementById('trace-canvas');
+    if (c) {
+      dataURL = c.toDataURL('image/png');
+    }
+    var hw = Object.assign({}, state.handwriting);
+    if (dataURL) {
+      hw[word] = (hw[word] || []).concat([dataURL]);
+    }
+
     if (idx + 1 >= word.length) {
       playSound('success');
       var col = state.collected.indexOf(word) === -1
@@ -418,11 +433,11 @@ export const clientApp = `
         });
       }
       _canvasWired = null;
-      setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', collected: col, lastHakken: false });
+      setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', collected: col, lastHakken: false, handwriting: hw });
     } else {
       playSound('confirm');
       _canvasWired = null;
-      setState({ confirmed: nc, charIndex: idx + 1 });
+      setState({ confirmed: nc, charIndex: idx + 1, handwriting: hw });
     }
   };
 
@@ -435,6 +450,13 @@ export const clientApp = `
 
   window.__undo = function () {
     window.__clearCanvas();
+    var word = state.word;
+    if (state.handwriting[word] && state.handwriting[word].length > 0) {
+      var hw = Object.assign({}, state.handwriting);
+      hw[word] = hw[word].slice(0, -1);
+      state.handwriting = hw;
+      saveState();
+    }
   };
 
   render(state);

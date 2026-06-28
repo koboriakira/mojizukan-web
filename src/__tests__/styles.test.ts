@@ -13,13 +13,26 @@ describe("globalStyles", () => {
       "--accentd",
       "--accent2",
       "--accent2d",
+      "--accent3",
+      "--accent3d",
       "--locked",
+      "--story-tint-0",
+      "--story-tint-1",
+      "--story-tint-2",
       "--fhead",
       "--rad",
     ];
     for (const v of vars) {
       expect(globalStyles).toContain(v);
     }
+  });
+
+  it("テーマ B のオーバーライドブロックが定義されている", () => {
+    expect(globalStyles).toContain('[data-theme="B"]');
+  });
+
+  it("テーマ C のオーバーライドブロックが定義されている", () => {
+    expect(globalStyles).toContain('[data-theme="C"]');
   });
 
   it("box-sizing: border-box がグローバル適用されている", () => {

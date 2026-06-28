@@ -15,9 +15,40 @@ export const globalStyles = `
   --accentd: #c95835;
   --accent2: #5fb583;
   --accent2d: #3f9b68;
+  --accent3: #c2698f;
+  --accent3d: #9c4d70;
   --locked: #f3ece0;
+  --story-tint-0: #fbe7d8;
+  --story-tint-1: #e3f0e6;
+  --story-tint-2: #e9ebfa;
   --fhead: 'Zen Maru Gothic', sans-serif;
   --rad: 24px;
+}
+
+#app[data-theme="B"] {
+  --bg: #e7dcc4;
+  --card: #fdfaf2;
+  --cbd: #c9b58c;
+  --ink: #4a3d28;
+  --sub: #8a7a58;
+  --accent: #c98a3f;
+  --accentd: #9c6a26;
+  --accent2: #6b8e6f;
+  --accent2d: #4e6b51;
+  --locked: #d8cba8;
+}
+
+#app[data-theme="C"] {
+  --bg: #fff3d4;
+  --card: #ffffff;
+  --cbd: #2a2a3a;
+  --ink: #2a2a3a;
+  --sub: #b59a55;
+  --accent: #ff5d73;
+  --accentd: #2a2a3a;
+  --accent2: #3db9e0;
+  --accent2d: #2a2a3a;
+  --locked: #ffe3c0;
 }
 
 html, body {

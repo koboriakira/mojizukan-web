@@ -68,6 +68,7 @@ export const clientApp = `
     hintWord: null,
     sfx: true,
     bgm: false,
+    speak: true,
     theme: 'A',
     storySel: [],
     storyPages: null,
@@ -124,6 +125,19 @@ export const clientApp = `
     _audioEnabled = true;
   }, { once: true });
 
+  function speakText(text) {
+    if (!state.speak) return;
+    try {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP';
+      u.rate = 0.85;
+      u.pitch = 1.2;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+
   function setState(partial) {
     Object.assign(state, partial);
     render(state);
@@ -151,6 +165,9 @@ export const clientApp = `
     app.innerHTML = renderScreen(s);
     if (s.sheet) {
       app.innerHTML += renderSheet(s);
+    }
+    if (s.screen === 'reveal' || s.screen === 'detail') {
+      speakText(s.word || s.detailWord || '');
     }
     if (s.screen === 'write') {
       setTimeout(setupCanvas, 0);
@@ -335,7 +352,7 @@ export const clientApp = `
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
         '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--sub);">' + (s.revealKind === 'mitsuke' ? 'なぞって みよう！なにが でるかな？' : '「' + word + '」を なぞろう') + '</div>' +
-        '<div style="width:56px;"></div>' +
+        '<button onclick="window.__speakChar()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">🔊</button>' +
       '</div>' +
       '<div style="display:flex;justify-content:center;gap:12px;margin:6px 0 14px;">' +
         charBoxes +
@@ -388,7 +405,10 @@ export const clientApp = `
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
       '<div style="font-size:130px;line-height:1;margin:14px 0 4px;">' + preset.emoji + '</div>' +
-      '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:8px;">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
+        '<button onclick="window.__speakWord()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
+      '</div>' +
       (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
       '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;">' + preset.desc + '</div>' +
       reviewBanner +
@@ -518,7 +538,10 @@ export const clientApp = `
       '</div>' +
       '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">' +
         '<div style="width:220px;height:220px;border-radius:36px;background:var(--card);border:4px solid var(--cbd);display:flex;align-items:center;justify-content:center;font-size:130px;">' + preset.emoji + '</div>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;margin-top:20px;">' + word + '</div>' +
+        '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;">' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;">' + word + '</div>' +
+          '<button onclick="window.__speakWord()" style="width:50px;height:50px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
+        '</div>' +
         (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
         '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:360px;font-weight:500;">' + preset.desc + '</div>' +
       '</div>' +
@@ -592,6 +615,12 @@ export const clientApp = `
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ せってい</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
+          '<div><span style="font-size:16px;font-weight:700;">🗣️ よみあげ</span><div style="font-size:12px;color:var(--sub);margin-top:2px;">まだ じが よめない おこさま むけ</div></div>' +
+          '<button onclick="window.__toggleSpeak()" style="min-width:72px;min-height:40px;border-radius:20px;font-size:15px;font-weight:700;' +
+            (s.speak !== false ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
+            (s.speak !== false ? 'ON' : 'OFF') + '</button>' +
+        '</div>' +
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
           '<span style="font-size:16px;font-weight:700;">🔊 こうかおん</span>' +
           '<button onclick="window.__toggleSfx()" style="min-width:72px;min-height:40px;border-radius:20px;font-size:15px;font-weight:700;' +
@@ -1373,6 +1402,20 @@ export const clientApp = `
     setState({ bgm: !state.bgm });
   };
 
+  window.__toggleSpeak = function () {
+    setState({ speak: !state.speak });
+  };
+
+  window.__speakChar = function () {
+    var word = state.word || '';
+    var ch = word[state.charIndex || 0] || '';
+    speakText(ch);
+  };
+
+  window.__speakWord = function () {
+    speakText(state.word || state.detailWord || '');
+  };
+
   window.__confirmChar = function () {
     if (!state.drew) return;
     var word = state.word;
@@ -1540,6 +1583,7 @@ export const clientApp = `
   window.__tkAdd = function(ch) {
     if (state.tankenChars.length >= 6) return;
     playSound('tap');
+    speakText(ch);
     setState({ tankenChars: state.tankenChars.concat([ch]), tankenMsg: null });
   };
 

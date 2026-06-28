@@ -229,6 +229,17 @@ describe("clientApp", () => {
     expect(clientApp).toContain("_ink.toDataURL");
   });
 
+  it("音声読み上げ（speakText）が実装されている", () => {
+    expect(clientApp).toContain("function speakText");
+    expect(clientApp).toContain("SpeechSynthesisUtterance");
+    expect(clientApp).toContain("lang = 'ja-JP'");
+  });
+
+  it("speak 設定トグルが保護者メニューに含まれる", () => {
+    expect(clientApp).toContain("__toggleSpeak");
+    expect(clientApp).toContain("よみあげ");
+  });
+
   it("setState で saveState が呼ばれる", () => {
     expect(clientApp).toContain("saveState()");
     const setStateIdx = clientApp.indexOf("function setState");

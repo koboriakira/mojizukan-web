@@ -95,6 +95,7 @@ export interface Bindings {
   AI: Ai;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
+  SENTRY_DSN: string;
 }
 
 export interface AppEnv {

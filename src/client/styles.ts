@@ -130,6 +130,16 @@ button.tap {
   100% { opacity: 1; }
 }
 
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes dotpulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
 @media (min-width: 600px) {
   #app {
     max-width: 720px;

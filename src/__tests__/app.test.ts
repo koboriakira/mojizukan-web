@@ -163,4 +163,26 @@ describe("clientApp", () => {
     expect(clientApp).toContain("playSound('success')");
     expect(clientApp).toContain("playSound('cancel')");
   });
+
+  it("保護者ゲートボタンがホーム画面に含まれる", () => {
+    expect(clientApp).toContain("window.__showParentGate()");
+    expect(clientApp).toContain("おうちの ひとは こちら");
+  });
+
+  it("保護者ゲートシートのレンダリングロジックが含まれる", () => {
+    expect(clientApp).toContain("s.sheet === 'parentGate'");
+    expect(clientApp).toContain("ながおし で はいる");
+    expect(clientApp).toContain("pg-bar");
+  });
+
+  it("保護者ゲートの長押しハンドラが定義されている", () => {
+    expect(clientApp).toContain("window.__pgDown");
+    expect(clientApp).toContain("window.__pgUp");
+    expect(clientApp).toContain("window.__showParentGate");
+  });
+
+  it("長押し 1.2 秒のタイマーが設定されている", () => {
+    expect(clientApp).toContain("1200");
+    expect(clientApp).toContain("requestAnimationFrame");
+  });
 });

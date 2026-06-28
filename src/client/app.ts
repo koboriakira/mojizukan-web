@@ -59,6 +59,10 @@ export const clientApp = `
   var _audioEnabled = false;
   var _audioCache = {};
 
+  var _pgTimer = null;
+  var _pgStart = null;
+  var _pgRaf = null;
+
   function playSound(name) {
     if (!_audioEnabled) return;
     try {
@@ -113,7 +117,7 @@ export const clientApp = `
       '<div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:18px;">' +
         '<button onclick="window.__goWrite()" style="min-height:84px;background:var(--accent);box-shadow:0 6px 0 var(--accentd);font-size:28px;font-weight:900;border-radius:22px;">✏️ はじめる</button>' +
         '<button onclick="window.__goZukan()" style="min-height:84px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:28px;font-weight:900;border-radius:22px;">📚 ずかん</button>' +
-        '<button style="min-height:60px;background:transparent;color:var(--sub);font-weight:700;font-size:18px;box-shadow:none;">🔒 おとなの ひとへ</button>' +
+        '<button onclick="window.__showParentGate()" style="min-height:60px;background:transparent;color:var(--sub);font-weight:700;font-size:18px;box-shadow:none;">🏠 おうちの ひとは こちら</button>' +
       '</div>' +
     '</div>';
   }
@@ -301,6 +305,20 @@ export const clientApp = `
     if (s.sheet === 'tickets') {
       return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div><div class="sheet"><p>[tickets sheet placeholder]</p></div>';
     }
+    if (s.sheet === 'parentGate') {
+      return '<div class="sheet-overlay" onclick="window.__closeSheet()" style="background:rgba(20,15,10,.45);"></div>' +
+        '<div class="sheet" onclick="event.stopPropagation()" style="border-radius:28px 28px 0 0;">' +
+          '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
+          '<div style="text-align:center;font-size:40px;margin-bottom:8px;">🏠</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-bottom:8px;">おうちの ひと メニュー</div>' +
+          '<div style="text-align:center;font-size:14px;color:var(--sub);margin-bottom:24px;">ボタンを 1.2秒 長押しで はいれます</div>' +
+          '<button onpointerdown="window.__pgDown(event)" onpointerup="window.__pgUp()" onpointerleave="window.__pgUp()" onpointercancel="window.__pgUp()" style="width:100%;min-height:80px;border-radius:20px;background:var(--ink);color:#fff;font-size:18px;position:relative;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.3);touch-action:none;user-select:none;">' +
+            '<div id="pg-bar" style="position:absolute;top:0;left:0;bottom:0;width:0%;background:var(--accent);opacity:0.35;pointer-events:none;"></div>' +
+            '<span style="position:relative;z-index:1;">ながおし で はいる</span>' +
+          '</button>' +
+          '<button onclick="window.__closeSheet()" style="width:100%;min-height:48px;background:transparent;color:var(--sub);font-size:15px;box-shadow:none;margin-top:10px;">とじる</button>' +
+        '</div>';
+    }
     return '';
   }
 
@@ -385,6 +403,43 @@ export const clientApp = `
 
   window.__showSignup = function () {
     setState({ sheet: 'signup' });
+  };
+
+  window.__showParentGate = function () {
+    playSound('tap');
+    setState({ sheet: 'parentGate' });
+  };
+
+  window.__pgDown = function (e) {
+    e.preventDefault();
+    _pgStart = Date.now();
+    function tick() {
+      if (_pgStart === null) return;
+      var elapsed = Date.now() - _pgStart;
+      var pct = Math.min(100, (elapsed / 1200) * 100);
+      var bar = document.getElementById('pg-bar');
+      if (bar) bar.style.width = pct + '%';
+      if (pct < 100) {
+        _pgRaf = requestAnimationFrame(tick);
+      }
+    }
+    _pgRaf = requestAnimationFrame(tick);
+    _pgTimer = setTimeout(function () {
+      _pgStart = null;
+      cancelAnimationFrame(_pgRaf);
+      playSound('success');
+      setState({ sheet: null });
+      console.log('[parent-gate] passed');
+    }, 1200);
+  };
+
+  window.__pgUp = function () {
+    if (_pgStart === null) return;
+    clearTimeout(_pgTimer);
+    cancelAnimationFrame(_pgRaf);
+    _pgStart = null;
+    var bar = document.getElementById('pg-bar');
+    if (bar) bar.style.width = '0%';
   };
 
   window.__showHint = function (word) {

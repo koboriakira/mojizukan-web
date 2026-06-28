@@ -12,13 +12,22 @@ test("書く → 図鑑登録 → 詳細表示", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("もじずかん")).toBeVisible();
 
+  // みつける → 即時遷移で write 画面へ（Issue #62）
   await page.getByRole("button", { name: "みつける" }).click();
-  await expect(page.getByText("かいて あつめよう")).toBeVisible();
-
-  await page.getByRole("button", { name: "おまかせで 1つ えらぶ" }).click();
   await expect(page.locator("canvas")).toBeVisible();
 
-  // 最初の語は「て」（1文字）。キャンバスに描かなくても「なぞれたよ！」で進む
+  // 決定論的テストのため「て」（1文字）に切り替え
+  await page.evaluate(() => {
+    (window as any).__setState({
+      screen: "write",
+      word: "て",
+      charIndex: 0,
+      confirmed: [],
+      discovering: false,
+      revealKind: "mitsuke",
+    });
+  });
+  await expect(page.locator("canvas")).toBeVisible();
   await page.getByRole("button", { name: "なぞれたよ！" }).click();
   await expect(page.getByText("ずかんに のったよ！")).toBeVisible();
 

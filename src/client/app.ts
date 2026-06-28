@@ -123,6 +123,7 @@ export const clientApp = `
       case 'storyPick': return renderStoryPick(s);
       case 'parent':    return renderParent(s);
       case 'prep':      return renderPrep(s);
+      case 'hakkengen': return renderHakkenGen(s);
       case 'story':     return '<p>おはなしを よみこみちゅう…</p>';
       default:          return '<p>不明な画面: ' + s.screen + '</p>';
     }
@@ -201,9 +202,12 @@ export const clientApp = `
 
   function renderReveal(s) {
     var word = s.word || '';
-    var preset = PRESETS[word] || { emoji: '📖', cat: '', catIcon: '', desc: '' };
+    var preset = PRESETS[word] || (window.__hakkenCache && window.__hakkenCache[word] ?
+      { emoji: window.__hakkenCache[word].emoji, cat: 'はっけん', catIcon: '⭐', desc: window.__hakkenCache[word].desc } :
+      { emoji: '📖', cat: '', catIcon: '', desc: '' });
+    var title = s.lastHakken ? 'はっけん！ ⭐' : 'ずかんに のったよ！🎉';
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
-      '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">ずかんに のったよ！🎉</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
       '<div style="font-size:130px;line-height:1;margin:14px 0 4px;">' + preset.emoji + '</div>' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
       (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
@@ -509,6 +513,21 @@ export const clientApp = `
     '</div>';
   }
 
+  function renderHakkenGen(s) {
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;' +
+      'background:radial-gradient(circle,#fff3d6 0%,#fbeaf1 100%);">' +
+      '<div style="font-size:30px;margin-bottom:16px;">✨⭐✨</div>' +
+      '<div style="font-size:96px;line-height:1;background:#fff;border-radius:44px;width:140px;height:140px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.08);animation:bob 2s ease-in-out infinite;">🔮</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:24px;color:var(--ink);margin-top:24px;">あたらしい ことばを つくっているよ</div>' +
+      '<div style="display:flex;gap:8px;margin-top:16px;">' +
+        '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out infinite;"></div>' +
+        '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .2s infinite;"></div>' +
+        '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .4s infinite;"></div>' +
+      '</div>' +
+      '<div style="font-size:16px;color:var(--sub);margin-top:12px;">AIが えと せつめいを かいているよ…</div>' +
+    '</div>';
+  }
+
   function renderSheet(s) {
     if (s.sheet === 'hint') {
       var hw = s.hintWord || '';
@@ -787,18 +806,23 @@ export const clientApp = `
 
     if (idx + 1 >= word.length) {
       playSound('success');
-      var col = state.collected.indexOf(word) === -1
-        ? state.collected.concat([word])
-        : state.collected;
-      if (state.authed) {
-        fetch('/api/entries', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ word: word })
-        });
-      }
       _canvasWired = null;
-      setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', collected: col, lastHakken: false, handwriting: hw });
+      if (state.discovering) {
+        setState({ confirmed: nc, charIndex: idx + 1, screen: 'hakkengen', handwriting: hw });
+        window.__startHakkenGen();
+      } else {
+        var col = state.collected.indexOf(word) === -1
+          ? state.collected.concat([word])
+          : state.collected;
+        if (state.authed) {
+          fetch('/api/entries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ word: word })
+          });
+        }
+        setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', collected: col, lastHakken: false, handwriting: hw });
+      }
     } else {
       playSound('confirm');
       _canvasWired = null;
@@ -914,6 +938,54 @@ export const clientApp = `
       }
     }
     setState({ seeded: newSeeded, prepSel: [], sheet: null, screen: 'parent' });
+  };
+
+  window.__openSecret = function(word) {
+    playSound('tap');
+    _canvasWired = null;
+    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true });
+  };
+
+  window.__startHakkenGen = function() {
+    var word = state.word;
+    fetch('/api/hakken/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ word: word, userId: 'local' })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      window.__finishHakken(data.emoji || '✨', data.description || '');
+    })
+    .catch(function() {
+      window.__finishHakken('✨', 'あたらしく はっけんした ことばだよ！');
+    });
+  };
+
+  window.__finishHakken = function(emoji, desc) {
+    playSound('success');
+    var word = state.word;
+    var col = state.collected.indexOf(word) === -1
+      ? state.collected.concat([word])
+      : state.collected;
+    var disc = state.discovered.indexOf(word) === -1
+      ? state.discovered.concat([word])
+      : state.discovered;
+    var newSeeded = state.seeded.filter(function(w) { return w !== word; });
+    var tickets = Math.max(0, (state.tickets || 0) - 1);
+
+    if (!window.__hakkenCache) window.__hakkenCache = {};
+    window.__hakkenCache[word] = { emoji: emoji, desc: desc };
+
+    setState({
+      screen: 'reveal',
+      collected: col,
+      discovered: disc,
+      seeded: newSeeded,
+      tickets: tickets,
+      lastHakken: true,
+      discovering: false
+    });
   };
 
   render(state);

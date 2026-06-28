@@ -64,6 +64,35 @@ describe("clientApp", () => {
     expect(clientApp).toContain("かいて あつめよう");
   });
 
+  it("たんけん画面の switch case が含まれる", () => {
+    expect(clientApp).toContain("case 'tanken'");
+    expect(clientApp).toContain("renderTanken");
+  });
+
+  it("50音データが埋め込まれている", () => {
+    expect(clientApp).toContain("var ROWS");
+    expect(clientApp).toContain("var DAKU");
+    expect(clientApp).toContain("var HANDAKU");
+    expect(clientApp).toContain("var SMALL");
+  });
+
+  it("たんけん操作関数が定義されている", () => {
+    const funcs = ["__tkAdd", "__tkBack", "__tkClearAll", "__tkDaku", "__tkHandaku", "__tkSmall", "__tkChouon", "__tkNext"];
+    for (const f of funcs) {
+      expect(clientApp).toContain(`window.${f}`);
+    }
+  });
+
+  it("classifyTanken 関数が定義されている", () => {
+    expect(clientApp).toContain("classifyTanken");
+  });
+
+  it("tankenChars state が定義されている", () => {
+    expect(clientApp).toContain("tankenChars:");
+    expect(clientApp).toContain("tankenMsg:");
+    expect(clientApp).toContain("tankenMode:");
+  });
+
   it("グローバル関数が定義されている", () => {
     const funcs = ["__goHome", "__goWrite", "__goZukan", "__confirmChar", "__clearCanvas", "__undo", "__goMitsukeru", "__goTanken", "__goWriteWord"];
     for (const f of funcs) {

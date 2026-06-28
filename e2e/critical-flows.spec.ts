@@ -132,3 +132,37 @@ test("ひみつのことば → 発見モード → hakkengen 演出", async ({ 
 
   expect(errors).toEqual([]);
 });
+
+test("たんけん → 辞書語を組み立て → なぞり → ずかん登録", async ({ page }) => {
+  const errors = collectErrors(page);
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "たんけんに でる" }).click();
+  await expect(page.getByText("たんけん")).toBeVisible();
+
+  // 「て」を入力（辞書語・1文字なので2文字以上必要 → 一旦「て」+「ー」で伸ばす）
+  // PRESETS に「て」があるので辞書語として扱われる
+  // 代わりに「うし」を組み立てる（PRESETS に存在する辞書語）
+  await page.evaluate(() => {
+    (window as any).__setState({
+      screen: "tanken",
+      tankenChars: ["う", "し"],
+      tankenMsg: null,
+    });
+  });
+
+  // CTA をクリック
+  await page.getByRole("button", { name: /これを かく/ }).click();
+  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.getByText("「うし」を なぞろう")).toBeVisible();
+
+  // 2文字分「なぞれたよ！」
+  await page.getByRole("button", { name: "なぞれたよ！" }).click();
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.getByRole("button", { name: "なぞれたよ！" }).click();
+
+  // 辞書語なので即 reveal（はっけんではない）
+  await expect(page.getByText("ずかんに のったよ！")).toBeVisible();
+
+  expect(errors).toEqual([]);
+});

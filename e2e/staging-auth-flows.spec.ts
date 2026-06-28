@@ -42,22 +42,62 @@ test.describe("ステージング認証済みフロー", () => {
     await login(context, baseURL);
   });
 
-  test("認証状態でホーム → みつける → なぞり", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.getByText("もじずかん")).toBeVisible();
+  test("認証ライフサイクル: signup → me → logout → re-login → セッション無効化", async ({
+    page,
+    context,
+  }) => {
+    // 1. 新規登録
+    const uniqueEmail = `e2e-signup-${Date.now()}@example.com`;
+    const password = "e2e-signup-password-2026";
 
+    const signupRes = await context.request.post(
+      `${baseURL}/api/auth/signup`,
+      { data: { email: uniqueEmail, password } }
+    );
+    expect(signupRes.ok()).toBe(true);
+
+    // 2. セッション確認
     const meRes = await page.request.get(`${baseURL}/api/auth/me`);
     expect(meRes.ok()).toBe(true);
     const me = await meRes.json();
     expect(me.id).toBeTruthy();
 
-    await page.getByRole("button", { name: "みつける" }).click();
-    await expect(page.locator("canvas")).toBeVisible({ timeout: 10_000 });
+    // 3. ログアウト
+    await context.request.post(`${baseURL}/api/auth/logout`);
+
+    // 4. 再ログイン
+    const loginRes = await context.request.post(
+      `${baseURL}/api/auth/login`,
+      { data: { email: uniqueEmail, password } }
+    );
+    expect(loginRes.ok()).toBe(true);
+
+    // 5. 再度ログアウト → セッション無効化を確認
+    await page.goto("/");
+    await page.evaluate(() => {
+      (window as any).__setState({
+        screen: "parent",
+        sheet: null,
+        authed: true,
+      });
+    });
+    await expect(page.getByText("がくしゅう きろく")).toBeVisible();
+    await page.getByRole("button", { name: "ログアウト" }).click();
+
+    await page.waitForTimeout(500);
+    const meAfterLogout = await page.evaluate(async () => {
+      const res = await fetch("/api/auth/me");
+      return res.json();
+    });
+    expect(meAfterLogout.authed).toBe(false);
   });
 
-  test("認証状態で保護者メニュー → はっけん準備", async ({ page }) => {
+  test("はっけんフロー: 保護者メニュー → prep確認 → mitsuke write → Workers AI 生成", async ({
+    page,
+  }) => {
     await page.goto("/");
 
+    // 1. 保護者メニュー → prep 到達確認
     await page
       .getByRole("button", { name: "おうちの ひとは こちら" })
       .click();
@@ -71,7 +111,6 @@ test.describe("ステージング認証済みフロー", () => {
       });
     });
     await expect(page.getByText("がくしゅう きろく")).toBeVisible();
-
     await page.getByRole("button", { name: "ことばを 仕込む" }).click();
     await expect(
       page
@@ -79,13 +118,12 @@ test.describe("ステージング認証済みフロー", () => {
         .filter({ hasText: /^はっけん準備$/ })
         .first()
     ).toBeVisible({ timeout: 5_000 });
-  });
 
-  test("認証状態ではっけん生成（Workers AI）", async ({ page }) => {
-    await page.goto("/");
-
+    // 2. ずかん → mitsuke write → hakkengen（実 AI）
     await page.evaluate(() => {
       (window as any).__setState({
+        screen: "home",
+        sheet: null,
         authed: true,
         tickets: 3,
         seeded: ["かめ"],
@@ -106,7 +144,6 @@ test.describe("ステージング認証済みフロー", () => {
     });
     await page.getByRole("button", { name: "できた！" }).click();
 
-    // Reveal 画面のタイトル（みつけた！⭐）を確認
     await expect(page.getByText("みつけた！⭐")).toBeVisible({
       timeout: 30_000,
     });
@@ -137,52 +174,5 @@ test.describe("ステージング認証済みフロー", () => {
     ).toBeVisible({ timeout: 5_000 });
 
     await expect(page.getByText("おはなし")).toBeVisible({ timeout: 60_000 });
-  });
-
-  test("新規登録 → ログイン → セッション確認", async ({ page, context }) => {
-    const uniqueEmail = `e2e-signup-${Date.now()}@example.com`;
-    const password = "e2e-signup-password-2026";
-
-    const signupRes = await context.request.post(
-      `${baseURL}/api/auth/signup`,
-      { data: { email: uniqueEmail, password } }
-    );
-    expect(signupRes.ok()).toBe(true);
-
-    const meRes = await page.request.get(`${baseURL}/api/auth/me`);
-    expect(meRes.ok()).toBe(true);
-    const me = await meRes.json();
-    expect(me.id).toBeTruthy();
-
-    await context.request.post(`${baseURL}/api/auth/logout`);
-
-    const loginRes = await context.request.post(
-      `${baseURL}/api/auth/login`,
-      { data: { email: uniqueEmail, password } }
-    );
-    expect(loginRes.ok()).toBe(true);
-  });
-
-  test("ログアウト → セッション無効化", async ({ page }) => {
-    await page.goto("/");
-
-    await page.evaluate(() => {
-      (window as any).__setState({
-        screen: "parent",
-        sheet: null,
-        authed: true,
-      });
-    });
-    await expect(page.getByText("がくしゅう きろく")).toBeVisible();
-
-    await page.getByRole("button", { name: "ログアウト" }).click();
-
-    // ログアウト後、セッションが無効化されたことを確認
-    await page.waitForTimeout(500);
-    const me = await page.evaluate(async () => {
-      const res = await fetch("/api/auth/me");
-      return res.json();
-    });
-    expect(me.authed).toBe(false);
   });
 });

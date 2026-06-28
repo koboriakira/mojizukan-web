@@ -68,6 +68,7 @@ export const clientApp = `
     hintWord: null,
     sfx: true,
     bgm: false,
+    speak: true,
     theme: 'A',
     storySel: [],
     storyPages: null,
@@ -85,12 +86,20 @@ export const clientApp = `
     tankenMode: false,
     dailyHakkenMax: saved.dailyHakkenMax || 3,
     dailyHakkenUsed: saved.dailyHakkenUsed || 0,
-    limitWord: ''
+    limitWord: '',
+    drew: false
   };
 
   var _lastPromptCount = 0;
 
   var _canvasWired = null;
+  var _ink = null;
+  var _mask = null;
+  var _parts = [];
+  var _drawing = false;
+  var _raf = 0;
+  var _actx = null;
+  var _lastChime = 0;
 
   var _audioEnabled = false;
   var _audioCache = {};
@@ -116,10 +125,37 @@ export const clientApp = `
     _audioEnabled = true;
   }, { once: true });
 
+  function speakText(text) {
+    if (!state.speak) return;
+    try {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP';
+      u.rate = 0.85;
+      u.pitch = 1.2;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+
   function setState(partial) {
     Object.assign(state, partial);
     render(state);
     saveState();
+  }
+
+  function updateWriteUI() {
+    var word = state.word || '';
+    var btn = document.getElementById('confirm-btn-wrap');
+    var msg = document.getElementById('encourage-msg');
+    if (btn) {
+      btn.innerHTML = state.drew
+        ? '<button onclick="window.__confirmChar()" style="width:100%;min-height:80px;border-radius:22px;background:var(--accent2);font-size:26px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">' + ((state.charIndex || 0) + 1 >= word.length ? 'できた！' : 'なぞれたよ！') + '</button>'
+        : '<button style="width:100%;min-height:80px;border-radius:22px;background:#d8cfc0;color:#fff;font-size:26px;font-weight:900;box-shadow:0 5px 0 #bfb6a6;cursor:default;">かいて みよう</button>';
+    }
+    if (msg) {
+      msg.innerHTML = state.drew ? '<span style="color:#3f8e63;">いいね！かけたら ボタンを おしてね</span>' : '<span style="color:#b6ab9a;">ゆびで なぞってね ✏️</span>';
+    }
   }
 
   function render(s) {
@@ -129,6 +165,9 @@ export const clientApp = `
     app.innerHTML = renderScreen(s);
     if (s.sheet) {
       app.innerHTML += renderSheet(s);
+    }
+    if (s.screen === 'reveal' || s.screen === 'detail') {
+      speakText(s.word || s.detailWord || '');
     }
     if (s.screen === 'write') {
       setTimeout(setupCanvas, 0);
@@ -302,31 +341,36 @@ export const clientApp = `
       var bg = done ? 'var(--accent2)' : (active ? '#fff' : 'var(--locked)');
       var color = done ? '#fff' : (active ? 'var(--ink)' : 'var(--sub)');
       var border = active ? '3px solid var(--accent)' : '3px solid transparent';
+      var boxChar = done ? s.confirmed[i] : '';
       charBoxes +=
         '<div style="width:64px;height:64px;border-radius:16px;background:' + bg + ';border:' + border + ';display:flex;align-items:center;justify-content:center;font-family:var(--fhead);font-weight:900;font-size:32px;color:' + color + ';">' +
-          (done ? s.confirmed[i] : (active ? currentChar : word[i])) +
+          boxChar +
         '</div>';
     }
 
     return '<div style="flex:1;display:flex;flex-direction:column;padding:18px;">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
         '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--sub);">「' + word + '」を なぞろう</div>' +
-        '<div style="width:56px;"></div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--sub);">' + (s.revealKind === 'mitsuke' ? 'なぞって みよう！なにが でるかな？' : '「' + word + '」を なぞろう') + '</div>' +
+        '<button onclick="window.__speakChar()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">🔊</button>' +
       '</div>' +
       '<div style="display:flex;justify-content:center;gap:12px;margin:6px 0 14px;">' +
         charBoxes +
       '</div>' +
       '<div style="position:relative;width:100%;max-width:380px;aspect-ratio:1;margin:0 auto;background:#fff;border-radius:24px;box-shadow:0 4px 16px rgba(0,0,0,.07);overflow:hidden;touch-action:none;">' +
-        '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--fhead);font-weight:900;font-size:clamp(120px,42vw,260px);color:#ece2d2;pointer-events:none;user-select:none;line-height:1;">' + currentChar + '</div>' +
         '<canvas id="trace-canvas" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;"></canvas>' +
+      '</div>' +
+      '<div id="encourage-msg" style="text-align:center;min-height:20px;font-size:14.5px;font-weight:700;margin:8px 0 0;">' +
+        (s.drew ? '<span style="color:#3f8e63;">いいね！かけたら ボタンを おしてね</span>' : '<span style="color:#b6ab9a;">ゆびで なぞってね ✏️</span>') +
       '</div>' +
       '<div style="display:flex;justify-content:center;gap:14px;margin:14px auto 0;max-width:380px;width:100%;">' +
         '<button onclick="window.__undo()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;color:var(--sub);font-size:17px;box-shadow:0 4px 0 rgba(0,0,0,.07);">↩ もどす</button>' +
         '<button onclick="window.__clearCanvas()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;color:#d9694f;font-size:17px;box-shadow:0 4px 0 rgba(0,0,0,.07);">🧹 けす</button>' +
       '</div>' +
-      '<div style="max-width:380px;width:100%;margin:16px auto 0;">' +
-        '<button onclick="window.__confirmChar()" style="width:100%;min-height:80px;border-radius:22px;background:var(--accent2);font-size:26px;box-shadow:0 6px 0 var(--accent2d);">なぞれたよ！</button>' +
+      '<div id="confirm-btn-wrap" style="max-width:380px;width:100%;margin:16px auto 0;">' +
+        (s.drew
+          ? '<button onclick="window.__confirmChar()" style="width:100%;min-height:80px;border-radius:22px;background:var(--accent2);font-size:26px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">' + (s.charIndex + 1 >= word.length ? 'できた！' : 'なぞれたよ！') + '</button>'
+          : '<button style="width:100%;min-height:80px;border-radius:22px;background:#d8cfc0;color:#fff;font-size:26px;font-weight:900;box-shadow:0 5px 0 #bfb6a6;cursor:default;">かいて みよう</button>') +
       '</div>' +
     '</div>';
   }
@@ -361,7 +405,10 @@ export const clientApp = `
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
       '<div style="font-size:130px;line-height:1;margin:14px 0 4px;">' + preset.emoji + '</div>' +
-      '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:8px;">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
+        '<button onclick="window.__speakWord()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
+      '</div>' +
       (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
       '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;">' + preset.desc + '</div>' +
       reviewBanner +
@@ -491,7 +538,10 @@ export const clientApp = `
       '</div>' +
       '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">' +
         '<div style="width:220px;height:220px;border-radius:36px;background:var(--card);border:4px solid var(--cbd);display:flex;align-items:center;justify-content:center;font-size:130px;">' + preset.emoji + '</div>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;margin-top:20px;">' + word + '</div>' +
+        '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;">' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;">' + word + '</div>' +
+          '<button onclick="window.__speakWord()" style="width:50px;height:50px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
+        '</div>' +
         (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
         '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:360px;font-weight:500;">' + preset.desc + '</div>' +
       '</div>' +
@@ -565,6 +615,12 @@ export const clientApp = `
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ せってい</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
+          '<div><span style="font-size:16px;font-weight:700;">🗣️ よみあげ</span><div style="font-size:12px;color:var(--sub);margin-top:2px;">まだ じが よめない おこさま むけ</div></div>' +
+          '<button onclick="window.__toggleSpeak()" style="min-width:72px;min-height:40px;border-radius:20px;font-size:15px;font-weight:700;' +
+            (s.speak !== false ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
+            (s.speak !== false ? 'ON' : 'OFF') + '</button>' +
+        '</div>' +
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
           '<span style="font-size:16px;font-weight:700;">🔊 こうかおん</span>' +
           '<button onclick="window.__toggleSfx()" style="min-width:72px;min-height:40px;border-radius:20px;font-size:15px;font-weight:700;' +
@@ -939,46 +995,184 @@ export const clientApp = `
     return pool;
   }
 
+  function buildMask(ch, w, h) {
+    if (!_mask) return;
+    var x = _mask.getContext('2d');
+    x.clearRect(0, 0, w, h);
+    x.fillStyle = '#000';
+    x.textAlign = 'center';
+    x.textBaseline = 'middle';
+    var fs = Math.round(h * 0.66);
+    x.font = '900 ' + fs + "px 'Zen Maru Gothic','Zen Kaku Gothic New',sans-serif";
+    x.fillText(ch || '', w / 2, h / 2 + fs * 0.06);
+  }
+
+  function clearInk() {
+    if (_ink) {
+      var x = _ink.getContext('2d');
+      x.clearRect(0, 0, _ink.width, _ink.height);
+      x.lineWidth = Math.max(15, Math.round(_ink.height * 0.08));
+      x.lineCap = 'round';
+      x.lineJoin = 'round';
+      x.strokeStyle = 'var(--accent, #e8714c)';
+      var app = document.getElementById('app');
+      if (app) {
+        var v = getComputedStyle(app).getPropertyValue('--accent');
+        if (v && v.trim()) x.strokeStyle = v.trim();
+      }
+    }
+    _parts = [];
+    renderTrace();
+    if (state.drew) { state.drew = false; updateWriteUI(); }
+  }
+
+  function spark(x, y, n) {
+    var cols = ['#ffd24a', '#ff9e5e', '#7ad0a0', '#f0a6c4', '#ffffff'];
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2;
+      var sp = 0.6 + Math.random() * 2.4;
+      _parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 0.7, life: 1, decay: 0.02 + Math.random() * 0.03, size: 5 + Math.random() * 8, rot: Math.random() * Math.PI, col: cols[(Math.random() * cols.length) | 0] });
+    }
+    if (_parts.length > 200) _parts.splice(0, _parts.length - 200);
+  }
+
+  function starPath(ctx, s) {
+    ctx.beginPath();
+    for (var i = 0; i < 4; i++) {
+      var a = i * Math.PI / 2;
+      ctx.lineTo(Math.cos(a) * s, Math.sin(a) * s);
+      ctx.lineTo(Math.cos(a + Math.PI / 4) * s * 0.34, Math.sin(a + Math.PI / 4) * s * 0.34);
+    }
+    ctx.closePath();
+  }
+
+  function renderTrace() {
+    var c = document.getElementById('trace-canvas');
+    if (!c || !_ink) return;
+    var ctx = c.getContext('2d');
+    var w = c.width;
+    var h = c.height;
+    ctx.clearRect(0, 0, w, h);
+    if (_mask) { ctx.save(); ctx.globalAlpha = 0.14; ctx.drawImage(_mask, 0, 0); ctx.restore(); }
+    ctx.drawImage(_ink, 0, 0);
+    for (var i = _parts.length - 1; i >= 0; i--) {
+      var p = _parts[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.vx *= 0.98; p.life -= p.decay;
+      if (p.life <= 0) { _parts.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.col;
+      starPath(ctx, p.size * (0.4 + p.life * 0.6));
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function startLoop() {
+    if (_raf) return;
+    var step = function() {
+      var cc = document.getElementById('trace-canvas');
+      if (!cc) { _raf = 0; return; }
+      renderTrace();
+      _raf = (_drawing || _parts.length) ? requestAnimationFrame(step) : 0;
+    };
+    _raf = requestAnimationFrame(step);
+  }
+
+  function twinkle() {
+    if (!state.sfx) return;
+    var now = Date.now();
+    if (_lastChime && now - _lastChime < 85) return;
+    _lastChime = now;
+    try {
+      if (!_actx) { var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; _actx = new AC(); }
+      var ac = _actx;
+      if (ac.state === 'suspended') ac.resume();
+      var sc = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+      var f = sc[(Math.random() * sc.length) | 0];
+      var o = ac.createOscillator();
+      var g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      o.connect(g); g.connect(ac.destination);
+      var t = ac.currentTime;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.1, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      o.start(t); o.stop(t + 0.24);
+    } catch(e) {}
+  }
+
   function setupCanvas() {
     var c = document.getElementById('trace-canvas');
     if (!c || c === _canvasWired) return;
     _canvasWired = c;
     var rect = c.getBoundingClientRect();
     if (rect.width === 0) return;
-    var dpr = window.devicePixelRatio || 1;
-    c.width = Math.round(rect.width * dpr);
-    c.height = Math.round(rect.height * dpr);
-    var ctx = c.getContext('2d');
-    ctx.scale(dpr, dpr);
-    ctx.lineWidth = 20;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#2a241d';
+    var w = Math.round(rect.width);
+    var h = Math.round(rect.height);
+    c.width = w;
+    c.height = h;
 
+    if (!_ink) { _ink = document.createElement('canvas'); _mask = document.createElement('canvas'); _parts = []; }
+    _ink.width = w; _ink.height = h;
+    _mask.width = w; _mask.height = h;
+
+    var word = state.word || '';
+    var ch = word[Math.min(state.charIndex || 0, word.length - 1)] || '';
+    buildMask(ch, w, h);
+
+    var inkCtx2 = _ink.getContext('2d');
+    inkCtx2.clearRect(0, 0, w, h);
+    inkCtx2.lineWidth = Math.max(15, Math.round(h * 0.08));
+    inkCtx2.lineCap = 'round';
+    inkCtx2.lineJoin = 'round';
+    inkCtx2.strokeStyle = 'var(--accent, #e8714c)';
+    var app = document.getElementById('app');
+    if (app) { var v = getComputedStyle(app).getPropertyValue('--accent'); if (v && v.trim()) inkCtx2.strokeStyle = v.trim(); }
+    _parts = [];
+    renderTrace();
+
+    var inkCtx = _ink.getContext('2d');
     var drawing = false;
+    var last = null;
     function pos(e) {
       var r = c.getBoundingClientRect();
-      return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) };
+      return [e.clientX - r.left, e.clientY - r.top];
     }
     c.addEventListener('pointerdown', function(e) {
       e.preventDefault();
       drawing = true;
-      try { c.setPointerCapture(e.pointerId); } catch(_) {}
+      _drawing = true;
       var p = pos(e);
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      ctx.lineTo(p.x + 0.1, p.y + 0.1);
-      ctx.stroke();
+      last = p;
+      inkCtx.beginPath();
+      inkCtx.moveTo(p[0], p[1]);
+      inkCtx.lineTo(p[0] + 0.1, p[1] + 0.1);
+      inkCtx.stroke();
+      spark(p[0], p[1], 4);
+      twinkle();
+      startLoop();
+      if (!state.drew) { state.drew = true; updateWriteUI(); }
+      try { c.setPointerCapture(e.pointerId); } catch(ex) {}
     });
     c.addEventListener('pointermove', function(e) {
       if (!drawing) return;
       e.preventDefault();
       var p = pos(e);
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
+      inkCtx.beginPath();
+      inkCtx.moveTo(last[0], last[1]);
+      inkCtx.lineTo(p[0], p[1]);
+      inkCtx.stroke();
+      var dx = p[0] - last[0];
+      var dy = p[1] - last[1];
+      if (dx * dx + dy * dy > 22) { spark(p[0], p[1], 2); twinkle(); }
+      last = p;
     });
-    c.addEventListener('pointerup', function() { drawing = false; });
-    c.addEventListener('pointercancel', function() { drawing = false; });
+    c.addEventListener('pointerup', function() { drawing = false; _drawing = false; });
+    c.addEventListener('pointercancel', function() { drawing = false; _drawing = false; });
+    renderTrace();
   }
 
   window.__setState = setState;
@@ -1079,13 +1273,13 @@ export const clientApp = `
   window.__goWriteWord = function (word, discovering, kind) {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal' });
+    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal', drew: false });
   };
 
   window.__goWrite = function () {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal' });
+    setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal', drew: false });
   };
 
   window.__goZukan = function () {
@@ -1208,15 +1402,29 @@ export const clientApp = `
     setState({ bgm: !state.bgm });
   };
 
+  window.__toggleSpeak = function () {
+    setState({ speak: !state.speak });
+  };
+
+  window.__speakChar = function () {
+    var word = state.word || '';
+    var ch = word[state.charIndex || 0] || '';
+    speakText(ch);
+  };
+
+  window.__speakWord = function () {
+    speakText(state.word || state.detailWord || '');
+  };
+
   window.__confirmChar = function () {
+    if (!state.drew) return;
     var word = state.word;
     var idx = state.charIndex;
     var nc = state.confirmed.concat([word[idx]]);
 
     var dataURL = null;
-    var c = document.getElementById('trace-canvas');
-    if (c) {
-      dataURL = c.toDataURL('image/png');
+    if (_ink) {
+      dataURL = _ink.toDataURL('image/png');
     }
     var hw = Object.assign({}, state.handwriting);
     if (dataURL) {
@@ -1245,15 +1453,12 @@ export const clientApp = `
     } else {
       playSound('confirm');
       _canvasWired = null;
-      setState({ confirmed: nc, charIndex: idx + 1, handwriting: hw });
+      setState({ confirmed: nc, charIndex: idx + 1, handwriting: hw, drew: false });
     }
   };
 
   window.__clearCanvas = function () {
-    var c = document.getElementById('trace-canvas');
-    if (!c) return;
-    var ctx = c.getContext('2d');
-    ctx.clearRect(0, 0, c.width, c.height);
+    clearInk();
   };
 
   window.__undo = function () {
@@ -1372,12 +1577,13 @@ export const clientApp = `
   window.__openSecret = function(word) {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke' });
+    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false });
   };
 
   window.__tkAdd = function(ch) {
     if (state.tankenChars.length >= 6) return;
     playSound('tap');
+    speakText(ch);
     setState({ tankenChars: state.tankenChars.concat([ch]), tankenMsg: null });
   };
 

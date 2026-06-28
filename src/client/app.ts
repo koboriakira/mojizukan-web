@@ -59,7 +59,10 @@ export const clientApp = `
     discovered: saved.discovered || [],
     handwriting: saved.handwriting || {},
     authed: false,
+    userId: null,
     tickets: 0,
+    authMode: 'choose',
+    authError: '',
     lastHakken: false,
     sheet: null,
     hintWord: null,
@@ -578,6 +581,11 @@ export const clientApp = `
           '<div style="font-size:16px;font-weight:700;margin-bottom:10px;">🎨 はいしょくテーマ</div>' +
           '<div style="display:flex;gap:10px;">' + themeButtons + '</div>' +
         '</div>' +
+        (s.authed ?
+          '<div style="padding:16px 0 0;border-top:1px solid var(--cbd);margin-top:16px;">' +
+            '<button onclick="window.__logout()" style="width:100%;min-height:44px;border-radius:14px;background:transparent;border:1px solid #c44;color:#c44;font-size:14px;font-weight:700;box-shadow:none;">ログアウト</button>' +
+          '</div>'
+        : '') +
       '</div>' +
     '</div>';
   }
@@ -822,20 +830,42 @@ export const clientApp = `
     }
     if (s.sheet === 'signup') {
       var collectedCount = s.collected ? s.collected.length : 0;
+      var authMode = s.authMode || 'choose';
+      var authError = s.authError || '';
+      var errorHtml = authError ? '<div style="color:#c44;font-size:13px;text-align:center;margin-bottom:8px;">' + authError + '</div>' : '';
+      var formHtml = '';
+      if (authMode === 'choose') {
+        formHtml =
+          '<div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;">' +
+            '<button onclick="window.__setAuthMode(\\'email-signup\\')" style="min-height:64px;border-radius:18px;background:var(--ink);color:#fff;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.3);">✉️ メールで はじめる</button>' +
+            '<button onclick="window.__googleLogin()" style="min-height:60px;border-radius:18px;background:#fff;border:2px solid #e6ddcf;font-size:16px;box-shadow:none;color:var(--ink);">G Google で ログイン</button>' +
+            '<button onclick="window.__setAuthMode(\\'email-login\\')" style="min-height:48px;background:transparent;color:var(--sub);font-weight:700;font-size:15px;box-shadow:none;">メールで ログイン</button>' +
+            '<button onclick="window.__closeSheet()" style="min-height:48px;background:transparent;color:var(--sub);font-weight:700;font-size:15px;box-shadow:none;">あとで</button>' +
+          '</div>';
+      } else {
+        var isLogin = authMode === 'email-login';
+        var title = isLogin ? 'ログイン' : 'アカウント作成';
+        var submitLabel = isLogin ? 'ログイン' : 'とうろく';
+        var switchLabel = isLogin ? 'アカウントを つくる →' : 'ログインは こちら →';
+        var switchMode = isLogin ? 'email-signup' : 'email-login';
+        formHtml =
+          '<div style="display:flex;flex-direction:column;gap:12px;margin-top:18px;">' +
+            '<div style="font-weight:700;font-size:16px;text-align:center;">' + title + '</div>' +
+            errorHtml +
+            '<input id="auth-email" type="email" placeholder="メールアドレス" style="height:48px;border-radius:14px;border:2px solid #e6ddcf;padding:0 16px;font-size:16px;outline:none;" />' +
+            '<input id="auth-pass" type="password" placeholder="パスワード（6もじ いじょう）" style="height:48px;border-radius:14px;border:2px solid #e6ddcf;padding:0 16px;font-size:16px;outline:none;" />' +
+            '<button onclick="window.__submitAuth(\\'' + authMode + '\\')" style="min-height:56px;border-radius:18px;background:var(--ink);color:#fff;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.3);">' + submitLabel + '</button>' +
+            '<button onclick="window.__setAuthMode(\\'' + switchMode + '\\')" style="min-height:40px;background:transparent;color:var(--accent);font-weight:700;font-size:14px;box-shadow:none;">' + switchLabel + '</button>' +
+            '<button onclick="window.__setAuthMode(\\'choose\\')" style="min-height:40px;background:transparent;color:var(--sub);font-weight:700;font-size:14px;box-shadow:none;">← もどる</button>' +
+          '</div>';
+      }
       return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
         '<div class="sheet" onclick="event.stopPropagation()">' +
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
           '<div style="text-align:center;font-size:46px;">🔑📚</div>' +
           '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:24px;margin-top:8px;">じぶんの 図鑑を とっておこう</div>' +
           '<div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">いま集めた <b style="color:var(--accent);">' + collectedCount + 'けん</b> をそのまま引き継ぎ。<br>登録すると <b style="color:var(--accent);">はっけんチケット 5まい</b> プレゼント🎁</div>' +
-          '<div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;">' +
-            '<button onclick="window.__doSignup()" style="min-height:64px;border-radius:18px;background:var(--ink);color:#fff;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.3);">✉️ メールで はじめる</button>' +
-            '<div style="display:flex;gap:12px;">' +
-              '<button onclick="window.__doSignup()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;border:2px solid #e6ddcf;font-size:16px;box-shadow:none;color:var(--ink);"> Apple</button>' +
-              '<button onclick="window.__doSignup()" style="flex:1;min-height:60px;border-radius:18px;background:#fff;border:2px solid #e6ddcf;font-size:16px;box-shadow:none;color:var(--ink);">G Google</button>' +
-            '</div>' +
-            '<button onclick="window.__closeSheet()" style="min-height:48px;background:transparent;color:var(--sub);font-weight:700;font-size:15px;box-shadow:none;">あとで</button>' +
-          '</div>' +
+          formHtml +
           '<div style="text-align:center;font-size:11.5px;color:#b6ab9a;margin-top:10px;line-height:1.5;">🔒 登録は保護者のためのものです。お子さまの個人情報は集めません。</div>' +
         '</div>';
     }
@@ -1118,8 +1148,46 @@ export const clientApp = `
     setState({ sheet: 'hint', hintWord: word });
   };
 
-  window.__doSignup = function () {
-    setState({ authed: true, tickets: 5, sheet: null });
+  window.__setAuthMode = function (mode) {
+    setState({ authMode: mode, authError: '' });
+  };
+
+  window.__submitAuth = function (mode) {
+    var email = document.getElementById('auth-email');
+    var pass = document.getElementById('auth-pass');
+    if (!email || !pass) return;
+    var emailVal = email.value.trim();
+    var passVal = pass.value;
+    if (!emailVal || !passVal) {
+      setState({ authError: 'メールアドレスと パスワードを いれてね' });
+      return;
+    }
+    var endpoint = mode === 'email-login' ? '/api/auth/login' : '/api/auth/signup';
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailVal, password: passVal })
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) {
+          setState({ authError: data.error || 'エラーが おきました' });
+          return;
+        }
+        setState({ authed: true, userId: data.id, tickets: 5, sheet: null, authMode: 'choose', authError: '' });
+      });
+    }).catch(function () {
+      setState({ authError: 'つうしん エラーです' });
+    });
+  };
+
+  window.__googleLogin = function () {
+    window.location.href = '/api/auth/google';
+  };
+
+  window.__logout = function () {
+    fetch('/api/auth/logout', { method: 'POST' }).then(function () {
+      setState({ authed: false, userId: null, tickets: 0 });
+    });
   };
 
   window.__openDetail = function (word) {
@@ -1402,7 +1470,7 @@ export const clientApp = `
     fetch('/api/hakken/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ word: word, userId: 'local' })
+      body: JSON.stringify({ word: word })
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
@@ -1443,6 +1511,14 @@ export const clientApp = `
       tankenMode: false
     });
   };
+
+  fetch('/api/auth/me').then(function (res) {
+    return res.json();
+  }).then(function (data) {
+    if (data.authed) {
+      setState({ authed: true, userId: data.id });
+    }
+  }).catch(function () {});
 
   render(state);
 })();

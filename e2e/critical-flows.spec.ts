@@ -70,8 +70,15 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   await page.getByRole("button", { name: "ことばを 仕込む" }).click();
   await expect(page.getByText("じぶんの 図鑑を とっておこう")).toBeVisible();
 
-  // 登録 → 親メニューに戻る
-  await page.getByRole("button", { name: "メールで はじめる" }).click();
+  // 登録をモック（実際のAPI呼び出しはE2Eの範囲外）
+  await page.evaluate(() => {
+    (window as any).__setState({
+      authed: true,
+      userId: "test-user",
+      tickets: 5,
+      sheet: null,
+    });
+  });
   await expect(page.getByText("がくしゅう きろく")).toBeVisible();
 
   // 登録済みなので今度は prep へ遷移

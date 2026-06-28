@@ -93,10 +93,15 @@ export interface Bindings {
   DB: D1Database;
   IMAGES: R2Bucket;
   AI: Ai;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
 }
 
 export interface AppEnv {
   Bindings: Bindings;
+  Variables: {
+    userId?: string;
+  };
 }
 
 export type ClassifyStatus = 'ok' | 'dup' | 'seeded' | 'dict' | 'ng';

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv, ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenGenerateRequest, HakkenGenerateResponse } from "../types";
 import { AppError } from "../middleware/error-handler";
+import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../lib/ng-words";
 import { PRESET_WORDS } from "../lib/preset-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
@@ -70,10 +71,11 @@ hakken.get("/random", async (c) => {
   return c.json({ words });
 });
 
-hakken.post("/generate", async (c) => {
+hakken.post("/generate", requireAuth, async (c) => {
   const body = await c.req.json<HakkenGenerateRequest>();
-  if (!body.word || !body.userId) {
-    throw new AppError(400, "word と userId は必須です");
+  const userId = c.var.userId!;
+  if (!body.word) {
+    throw new AppError(400, "word は必須です");
   }
 
   const prompt = `「${body.word}」についての子ども向け図鑑エントリを作ってください。
@@ -95,10 +97,10 @@ hakken.post("/generate", async (c) => {
   await c.env.DB.prepare(
     "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description) VALUES (?, ?, ?, ?)"
   )
-    .bind(body.userId, body.word, generated.emoji, generated.description)
+    .bind(userId, body.word, generated.emoji, generated.description)
     .run();
 
-  await addTicket(c.env.DB, body.userId, -1, `はっけん生成: ${body.word}`);
+  await addTicket(c.env.DB, userId, -1, `はっけん生成: ${body.word}`);
 
   return c.json(generated);
 });

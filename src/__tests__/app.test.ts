@@ -239,14 +239,19 @@ describe("clientApp", () => {
     expect(clientApp).toContain("window.__showHint");
   });
 
-  it("サインアップシート (sheet === 'signup') に登録ボタンが含まれる", () => {
+  it("サインアップシート (sheet === 'signup') に認証フォームが含まれる", () => {
     expect(clientApp).toContain("s.sheet === 'signup'");
-    expect(clientApp).toContain("__doSignup()");
     expect(clientApp).toContain("メールで はじめる");
+    expect(clientApp).toContain("Google で ログイン");
+    expect(clientApp).toContain("auth-email");
+    expect(clientApp).toContain("auth-pass");
   });
 
-  it("__doSignup グローバル関数が定義されている", () => {
-    expect(clientApp).toContain("window.__doSignup");
+  it("認証関連グローバル関数が定義されている", () => {
+    expect(clientApp).toContain("window.__submitAuth");
+    expect(clientApp).toContain("window.__googleLogin");
+    expect(clientApp).toContain("window.__setAuthMode");
+    expect(clientApp).toContain("window.__logout");
   });
 
   it("_lastPromptCount パターンが含まれる", () => {

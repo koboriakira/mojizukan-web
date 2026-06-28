@@ -10,8 +10,8 @@ binding = "DB"
 database_name = "mojizukan-db"
 database_id = "14e6c603-1287-4301-aa78-40e1b527985c"
 
-# [vars]
-# OPENAI_API_KEY = "" # wrangler secret で設定する
+[ai]
+binding = "AI"
 
 # [[r2_buckets]]
 # binding = "IMAGES"

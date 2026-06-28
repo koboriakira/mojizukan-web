@@ -121,4 +121,8 @@ main ブランチへのマージで GitHub Actions が自動デプロイする�
 
 - `CLOUDFLARE_API_TOKEN`: GitHub Actions 用（Secrets に設定）
 - `CLOUDFLARE_ACCOUNT_ID`: GitHub Actions 用（Secrets に設定）
-- `OPENAI_API_KEY`: Workers 用（`npx wrangler secret put OPENAI_API_KEY`）
+
+### AI バインディング
+
+Workers AI を使用（`wrangler.toml` の `[ai]` セクションで設定済み）。
+プレビュー・本番デプロイとも API キー不要で動作する。

@@ -79,6 +79,16 @@ bin/                # 開発スクリプト
 public/             # 静的アセット（音声ファイル等）
 ```
 
+## ローカル開発のセットアップ
+
+```bash
+npm install
+npx wrangler d1 migrations apply mojizukan-db --local  # ローカル DB を初期化
+npm run dev
+```
+
+`wrangler.toml` の `database_id` は本番 D1 の UUID だが、`--local` / `wrangler dev` ではローカル SQLite が使われるため影響しない。
+
 ## マイグレーション
 
 ```bash
@@ -91,12 +101,19 @@ npx wrangler d1 migrations apply mojizukan-db --remote
 
 新しいマイグレーションは `migrations/NNNN_名前.sql` として追加する。
 
+## ブランチ運用
+
+- main への直接 push は禁止（GitHub リポジトリルールで強制）
+- 変更は必ず PR 経由でマージする
+- CI（test ジョブ）が必須ステータスチェック
+
 ## デプロイ
 
-main ブランチへの push で GitHub Actions が自動デプロイする。
+main ブランチへのマージで GitHub Actions が自動デプロイする。
 手動デプロイは `npm run deploy`。
 
 ### 必要なシークレット
 
 - `CLOUDFLARE_API_TOKEN`: GitHub Actions 用（Secrets に設定）
+- `CLOUDFLARE_ACCOUNT_ID`: GitHub Actions 用（Secrets に設定）
 - `OPENAI_API_KEY`: Workers 用（`npx wrangler secret put OPENAI_API_KEY`）

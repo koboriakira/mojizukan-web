@@ -24,6 +24,9 @@ export const clientApp = `
       localStorage.setItem('mojizukan_discovered', JSON.stringify(state.discovered));
       localStorage.setItem('mojizukan_handwriting', JSON.stringify(state.handwriting));
       localStorage.setItem('mojizukan_seeded', JSON.stringify(state.seeded));
+      localStorage.setItem('mojizukan_hakken_max', String(state.dailyHakkenMax));
+      localStorage.setItem('mojizukan_hakken_used', String(state.dailyHakkenUsed));
+      localStorage.setItem('mojizukan_hakken_date', new Date().toISOString().slice(0,10));
     } catch(e) {}
   }
 
@@ -34,7 +37,12 @@ export const clientApp = `
       var discovered = JSON.parse(localStorage.getItem('mojizukan_discovered') || '[]');
       var handwriting = JSON.parse(localStorage.getItem('mojizukan_handwriting') || '{}');
       var seeded = JSON.parse(localStorage.getItem('mojizukan_seeded') || '[]');
-      return { collected: entries, discovered: discovered, handwriting: handwriting, seeded: seeded };
+      var hakkenMax = parseInt(localStorage.getItem('mojizukan_hakken_max') || '3', 10);
+      var hakkenUsed = parseInt(localStorage.getItem('mojizukan_hakken_used') || '0', 10);
+      var hakkenDate = localStorage.getItem('mojizukan_hakken_date') || '';
+      var today = new Date().toISOString().slice(0,10);
+      if (hakkenDate !== today) { hakkenUsed = 0; }
+      return { collected: entries, discovered: discovered, handwriting: handwriting, seeded: seeded, dailyHakkenMax: hakkenMax, dailyHakkenUsed: hakkenUsed };
     } catch(e) {
       return {};
     }
@@ -67,7 +75,10 @@ export const clientApp = `
     revealKind: 'normal',
     tankenChars: [],
     tankenMsg: null,
-    tankenMode: false
+    tankenMode: false,
+    dailyHakkenMax: saved.dailyHakkenMax || 3,
+    dailyHakkenUsed: saved.dailyHakkenUsed || 0,
+    limitWord: ''
   };
 
   var _lastPromptCount = 0;
@@ -127,8 +138,9 @@ export const clientApp = `
       case 'storyPick': return renderStoryPick(s);
       case 'parent':    return renderParent(s);
       case 'mitsukeru': return renderMitsukeru(s);
-      case 'tanken':    return renderTanken(s);
-      case 'prep':      return renderPrep(s);
+      case 'tanken':      return renderTanken(s);
+      case 'tankenlimit': return renderTankenlimit(s);
+      case 'prep':        return renderPrep(s);
       case 'hakkengen': return renderHakkenGen(s);
       case 'story':     return '<p>おはなしを よみこみちゅう…</p>';
       default:          return '<p>不明な画面: ' + s.screen + '</p>';
@@ -276,7 +288,9 @@ export const clientApp = `
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">' +
           '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
           '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--accent);">🧭 たんけん</div>' +
-          '<div style="width:56px;"></div>' +
+          '<div style="width:56px;display:flex;justify-content:center;gap:4px;">' +
+            (function() { var pips = ''; for (var pi = 0; pi < s.dailyHakkenMax; pi++) { pips += '<div style="width:10px;height:10px;border-radius:50%;background:' + (pi < s.dailyHakkenUsed ? 'var(--accent)' : 'var(--locked)') + ';"></div>'; } return pips; })() +
+          '</div>' +
         '</div>' +
         '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:8px;">' + slots + '</div>' +
         '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:14px;">' +
@@ -298,6 +312,19 @@ export const clientApp = `
         '<button onclick="window.__tkNext()" style="width:100%;min-height:78px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">' +
           (canSubmit ? '✏️ これを かく（' + chars.length + 'もじ）' : 'もじを えらんでね') +
         '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderTankenlimit(s) {
+    var lw = s.limitWord || '';
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
+      '<div style="font-size:80px;animation:bob 2s ease-in-out infinite;">🌙</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:28px;color:var(--ink);margin-top:20px;">きょうの たんけんは おしまい！</div>' +
+      (lw ? '<div style="font-size:18px;color:var(--sub);font-weight:700;margin-top:12px;">「' + lw + '」は あした はっけん できるよ</div>' : '') +
+      '<div style="display:flex;gap:14px;margin-top:36px;width:100%;max-width:400px;">' +
+        '<button onclick="window.__goMitsukeru()" style="flex:1;min-height:72px;border-radius:20px;background:var(--accent2);font-size:20px;box-shadow:0 6px 0 var(--accent2d);">🔍 みつける へ</button>' +
+        '<button onclick="window.__goHome()" style="flex:1;min-height:72px;border-radius:20px;background:var(--accent);font-size:20px;box-shadow:0 6px 0 var(--accentd);">🏠 ホーム</button>' +
       '</div>' +
     '</div>';
   }
@@ -1240,6 +1267,10 @@ export const clientApp = `
     if (result === 'dict') {
       window.__goWriteWord(word, false, 'tanken');
     } else {
+      if (state.dailyHakkenUsed >= state.dailyHakkenMax || (state.tickets || 0) <= 0) {
+        setState({ screen: 'tankenlimit', limitWord: word });
+        return;
+      }
       setState({ tankenMode: true });
       window.__goWriteWord(word, true, 'tanken');
     }
@@ -1276,6 +1307,9 @@ export const clientApp = `
     if (!window.__hakkenCache) window.__hakkenCache = {};
     window.__hakkenCache[word] = { emoji: emoji, desc: desc };
 
+    var used = state.dailyHakkenUsed;
+    if (state.tankenMode) { used = used + 1; }
+
     setState({
       screen: 'reveal',
       collected: col,
@@ -1283,7 +1317,9 @@ export const clientApp = `
       seeded: newSeeded,
       tickets: tickets,
       lastHakken: true,
-      discovering: false
+      discovering: false,
+      dailyHakkenUsed: used,
+      tankenMode: false
     });
   };
 

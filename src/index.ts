@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import type { AppEnv } from "./types";
+import { withSentry } from "@sentry/cloudflare";
+import type { AppEnv, Bindings } from "./types";
 import { errorHandler } from "./middleware/error-handler";
 import { optionalAuth } from "./middleware/auth";
 import { entries } from "./routes/entries";
@@ -28,4 +29,12 @@ app.route("/api/styles", styles);
 app.route("/api/story", story);
 app.route("/api/hakken", hakken);
 
-export default app;
+export { app };
+
+export default withSentry<Bindings>(
+  (env) => ({
+    dsn: env?.SENTRY_DSN ?? "",
+    tracesSampleRate: 1.0,
+  }),
+  app,
+);

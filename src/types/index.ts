@@ -98,3 +98,26 @@ export interface Bindings {
 export interface AppEnv {
   Bindings: Bindings;
 }
+
+export type ClassifyStatus = 'ok' | 'dup' | 'seeded' | 'dict' | 'ng';
+
+export interface ClassifyRequest {
+  word: string;
+  collected: string[];
+  seeded: string[];
+}
+
+export interface ClassifyResponse {
+  status: ClassifyStatus;
+  message: string;
+}
+
+export interface HakkenGenerateRequest {
+  word: string;
+  userId: string;
+}
+
+export interface HakkenGenerateResponse {
+  emoji: string;
+  description: string;
+}

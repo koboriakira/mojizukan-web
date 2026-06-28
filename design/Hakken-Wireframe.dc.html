@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  .wf-screen{width:196px;flex:0 0 196px;background:#fffefb;border:2px solid #d9d0c0;border-radius:20px;padding:11px 11px 13px;box-shadow:0 3px 9px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:7px;font-family:'Zen Kurenaido',sans-serif;color:#4a4034;}
+  .wf-badge{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:#2a241d;color:#fff;font-family:'Yomogi',sans-serif;font-size:12px;display:flex;align-items:center;justify-content:center;}
+  .wf-st{font-family:'Yomogi',sans-serif;font-size:13px;color:#2a241d;line-height:1.2;}
+  .wf-box{background:#f2ede3;border:1.5px solid #ddd5c6;border-radius:10px;padding:7px 9px;font-size:12px;line-height:1.45;color:#5a5044;}
+  .wf-btn{margin-top:auto;background:#e8714c;color:#fff;border-radius:11px;padding:8px;text-align:center;font-family:'Yomogi',sans-serif;font-size:12.5px;}
+  .wf-arrow{flex:0 0 auto;align-self:center;font-family:'Yomogi',sans-serif;font-size:26px;color:#bcb09a;}
+  .wf-card{background:#f4efe6;border:1.5px solid #e4dccb;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.05);padding:20px 22px;display:flex;align-items:stretch;gap:12px;}
+  .wf-label{position:absolute;top:-27px;left:2px;font-family:'Yomogi',sans-serif;font-size:16px;color:#7a6b54;}
+  .wf-note{margin-top:13px;background:#fef4a8;border-radius:8px;padding:10px 13px;font-family:'Zen Kurenaido',sans-serif;font-size:13px;line-height:1.5;color:#5c5238;box-shadow:0 1px 3px rgba(0,0,0,.08);transform:rotate(-.3deg);}
+  .qcell{width:36px;height:36px;border-radius:9px;background:#f3ece0;border:1.5px solid #e0d6c5;display:flex;align-items:center;justify-content:center;font-size:17px;color:#c4b6a0;font-family:'Yomogi',sans-serif;}
+  .key{background:#fff;border:1.3px solid #e0d6c5;border-radius:6px;text-align:center;font-size:12px;padding:3px 0;color:#6b6053;font-family:'Zen Kurenaido',sans-serif;}
+  .chip{display:inline-block;background:#fff;border:1.3px solid #d9d0c0;border-radius:99px;padding:2px 9px;font-size:11.5px;margin:0 3px 3px 0;color:#5a5044;}
+</style>
+</helmet>
+
+<!-- ===================== TITLE ===================== -->
+<div style="position:absolute;left:80px;top:50px;width:1180px;">
+  <div style="font-family:'Yomogi',sans-serif;font-size:38px;color:#2a241d;line-height:1.15;">はっけん機能 ― 要件 &amp; フロー ワイヤー</div>
+  <div style="font-family:'Zen Kurenaido',sans-serif;font-size:16px;color:#6b6053;margin-top:8px;line-height:1.6;">辞書に無い言葉を AI で図鑑化する「はっけん」。フロー全体を <b>3案</b> で比較し、方向性を固めるためのラフです。<span style="color:#9a8f7e;">（low-fi・構造とフロー重視）</span></div>
+  <div style="display:inline-block;margin-top:14px;background:#fbeaf1;border:1.6px solid #e3b8cd;border-radius:12px;padding:11px 16px;font-family:'Zen Kurenaido',sans-serif;font-size:14px;color:#7a3e5b;line-height:1.55;transform:rotate(-.3deg);box-shadow:0 1px 3px rgba(0,0,0,.06);">
+    ★ 中心の転換 ― 「親が毎回2〜3字を仕込んで渡す」反復は負担大。<br><b>「親がまとめて仕込む／🎲ランダム候補 → 子が次々はっけん」</b>のバッチ型に再設計する。
+  </div>
+</div>
+
+<!-- ===================== PRINCIPLES ===================== -->
+<div style="position:absolute;left:80px;top:250px;width:1340px;">
+  <div class="wf-label">前提・原則</div>
+  <div style="display:flex;gap:16px;align-items:stretch;">
+    <div style="flex:1;background:#fdf3d6;border:1.5px solid #ecd58f;border-radius:12px;padding:13px 15px;font-family:'Zen Kurenaido',sans-serif;font-size:13px;line-height:1.55;color:#6b5a28;">
+      <div style="font-family:'Yomogi',sans-serif;font-size:14px;color:#8a6d1e;margin-bottom:5px;">はっけんとは</div>
+      辞書に無い言葉を AI で図鑑化。<b>チケット1枚消費・登録ユーザー限定</b>。辞書の言葉は無料・無制限。
+    </div>
+    <div style="flex:1;background:#e6f1e9;border:1.5px solid #b8d8c2;border-radius:12px;padding:13px 15px;font-family:'Zen Kurenaido',sans-serif;font-size:13px;line-height:1.55;color:#3a5e44;">
+      <div style="font-family:'Yomogi',sans-serif;font-size:14px;color:#3f7a52;margin-bottom:5px;">子どもの入力</div>
+      50音キーボードから選ぶ or 親が代行。<b>子ども単独では課金させない</b>（親ゲートの先で確定）。
+    </div>
+    <div style="flex:1;background:#fbeaf1;border:1.5px solid #e3b8cd;border-radius:12px;padding:13px 15px;font-family:'Zen Kurenaido',sans-serif;font-size:13px;line-height:1.55;color:#7a3e5b;">
+      <div style="font-family:'Yomogi',sans-serif;font-size:14px;color:#9c4d70;margin-bottom:5px;">仕込みの置き場</div>
+      保護者メニュー内に<b>「はっけん準備」</b>を新設。まとめ仕込み＆🎲ランダム候補で親の負担を最小化。
+    </div>
+    <div style="flex:1;background:#f0ece3;border:1.5px solid #ddd5c6;border-radius:12px;padding:13px 15px;font-family:'Zen Kurenaido',sans-serif;font-size:13px;line-height:1.55;color:#5a5044;">
+      <div style="font-family:'Yomogi',sans-serif;font-size:14px;color:#7a6b54;margin-bottom:5px;">演出</div>
+      生成中は<b>ワクワクする専用演出</b>を新規に。待ち時間を「育つ・ふくらむ」体験に変える。
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODE SELECTOR (保護者設定) ===================== -->
+<div style="position:absolute;left:80px;top:560px;width:1340px;">
+  <div class="wf-label">★ 中核 ― 保護者が「モード」を選ぶ（おうちの方 ▸ はっけん設定）</div>
+  <div style="background:#fff;border:2px solid #e3b8cd;border-radius:18px;box-shadow:0 3px 12px rgba(0,0,0,.07);padding:22px 24px;">
+    <div style="font-family:'Zen Kurenaido',sans-serif;font-size:14px;color:#6b6053;line-height:1.6;margin-bottom:16px;">子の学習状況・親のやりたいことに合わせて、<b>はっけんの主導権</b>と<b>チケットの使い方</b>を保護者が選べる。1つの機能を年齢で育てる設計。</div>
+
+    <div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#2a241d;margin-bottom:10px;">① はっけんモード（だれが 言葉を 決める？）</div>
+    <div style="display:flex;gap:14px;margin-bottom:22px;">
+      <div style="flex:1;background:#fbeaf1;border:2px solid #e3b8cd;border-radius:14px;padding:14px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-family:'Yomogi',sans-serif;font-size:16px;color:#9c4d70;">おまかせ</span><span style="background:#9c4d70;color:#fff;border-radius:99px;font-size:11px;padding:2px 9px;font-family:'Zen Kurenaido',sans-serif;">✓ デフォルト</span></div>
+        <div style="font-family:'Zen Kurenaido',sans-serif;font-size:13px;color:#7a3e5b;line-height:1.55;margin-top:6px;"><b>親が全部きめる</b>。子はならんだ「?」を なぞって はっけん。<br><span style="color:#b07f93;">3歳ごろ〜 ／ 下の モード① の流れ</span></div>
+      </div>
+      <div style="flex:1;background:#f7f3ec;border:2px solid #e0d6c5;border-radius:14px;padding:14px 16px;">
+        <div style="font-family:'Yomogi',sans-serif;font-size:16px;color:#7a6b54;">いっしょに</div>
+        <div style="font-family:'Zen Kurenaido',sans-serif;font-size:13px;color:#6b6053;line-height:1.55;margin-top:6px;">親の仕込み＋子の自由入力の<b>両方OK</b>。移行期。<br><span style="color:#9a8f7e;">4歳ごろ ／ ①と②の混在</span></div>
+      </div>
+      <div style="flex:1;background:#f7f3ec;border:2px solid #e0d6c5;border-radius:14px;padding:14px 16px;">
+        <div style="font-family:'Yomogi',sans-serif;font-size:16px;color:#7a6b54;">じぶんで</div>
+        <div style="font-family:'Zen Kurenaido',sans-serif;font-size:13px;color:#6b6053;line-height:1.55;margin-top:6px;"><b>子が言葉を決めて</b>50音で入力→なぞる。主体的。<br><span style="color:#9a8f7e;">5歳ごろ〜 ／ 下の モード② の流れ</span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:stretch;">
+      <div style="flex:1.1;">
+        <div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#2a241d;margin-bottom:10px;">② チケットの つかいかた（プリセットに無い言葉＝🎟️1枚）</div>
+        <div style="display:flex;gap:14px;">
+          <div style="flex:1;background:#fdf3d6;border:2px solid #ecd58f;border-radius:14px;padding:13px 15px;">
+            <div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#8a6d1e;">さきに よういする</div>
+            <div style="font-family:'Zen Kurenaido',sans-serif;font-size:12.5px;color:#6b5a28;line-height:1.5;margin-top:5px;">プリペイド。仕込み時に確保 → 子は課金UIに<b>非接触</b>。誤連打なし。<span style="color:#a8893a;">おまかせ向き</span></div>
+          </div>
+          <div style="flex:1;background:#fff;border:2px solid #e0d6c5;border-radius:14px;padding:13px 15px;">
+            <div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#7a6b54;">つかったとき</div>
+            <div style="font-family:'Zen Kurenaido',sans-serif;font-size:12.5px;color:#6b6053;line-height:1.5;margin-top:5px;">子が<b>自由入力を終えた瞬間</b>に消費（親ゲートの先）。残量を意識。<span style="color:#9a8f7e;">じぶんで向き</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:.9;background:#e6f1e9;border:1.6px solid #b8d8c2;border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;">
+        <div style="font-family:'Yomogi',sans-serif;font-size:14px;color:#3f7a52;margin-bottom:5px;">統一ルール</div>
+        <div style="font-family:'Zen Kurenaido',sans-serif;font-size:13px;color:#3a5e44;line-height:1.6;"><b>辞書（プリセット）の言葉＝無料・無制限</b>。プリセットに無い言葉を図鑑化するときだけ <b>🎟️1枚</b>。消費の確定は必ず<b>生成成功時</b>。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 案A ===================== -->
+<div style="position:absolute;left:80px;top:900px;width:1340px;">
+  <div class="wf-label">モード① おまかせ ― 親が言葉を決める（3歳ごろ〜）　｜　案A：ひみつのことば キュー型</div>
+  <div class="wf-card">
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">1</div><div class="wf-st">おうちの方 ▸ はっけん準備</div></div>
+      <div class="wf-box" style="background:#fbeaf1;border-color:#e3b8cd;">「ひみつの ことば」を仕込む</div>
+      <div class="wf-box" style="display:flex;align-items:center;justify-content:space-between;"><span style="color:#b3a892;">ひらがなで入力…</span><span>＋</span></div>
+      <div class="wf-box" style="background:#fff;border-color:#e3b8cd;color:#9c4d70;text-align:center;font-family:'Yomogi',sans-serif;">🎲 ランダム候補を出す</div>
+      <div class="wf-box"><span class="chip">☑ きりん</span><span class="chip">☑ にじ</span><span class="chip">☑ ほし</span><span class="chip" style="color:#b3a892;">☐ かさ</span></div>
+      <div class="wf-box" style="display:flex;justify-content:space-between;">残り 🎟️8<span>つかう 3</span></div>
+      <div class="wf-btn" style="background:#c2698f;">3こ 仕込む 🎟️3</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">2</div><div class="wf-st">チケット消費の確認</div></div>
+      <div class="wf-box" style="text-align:center;font-size:22px;">🔒 → 🎟️</div>
+      <div class="wf-box" style="background:#fdf3d6;border-color:#ecd58f;text-align:center;font-family:'Yomogi',sans-serif;color:#8a6d1e;">🎟️ 3まい つかう？</div>
+      <div class="wf-box">仕込む語： きりん・にじ・ほし</div>
+      <div class="wf-box" style="font-size:11px;color:#3f7a52;">✓ 辞書に無い ✓ 重複なし ✓ 安全チェック済</div>
+      <div style="display:flex;gap:8px;margin-top:auto;">
+        <div class="wf-btn" style="flex:1;margin:0;background:#efe7d8;color:#7a6b54;">やめる</div>
+        <div class="wf-btn" style="flex:1;margin:0;background:#c2698f;">仕込む</div>
+      </div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">3</div><div class="wf-st">子ども ▸ ずかん</div></div>
+      <div class="wf-box" style="background:#fdf3d6;border-color:#ecd58f;color:#8a6d1e;">⭐ ひみつの ことば ３</div>
+      <div style="display:flex;gap:6px;justify-content:center;"><div class="qcell" style="background:#fdf3d6;border-color:#ecd58f;color:#caa64a;">?</div><div class="qcell" style="background:#fdf3d6;border-color:#ecd58f;color:#caa64a;">?</div><div class="qcell" style="background:#fdf3d6;border-color:#ecd58f;color:#caa64a;">?</div></div>
+      <div class="wf-box" style="margin-top:4px;">🐾 どうぶつ 2/6</div>
+      <div style="display:flex;gap:6px;"><div class="qcell" style="font-size:15px;color:#5a5044;">🐶</div><div class="qcell" style="font-size:15px;color:#5a5044;">🐱</div><div class="qcell">?</div></div>
+      <div class="wf-box" style="margin-top:auto;text-align:center;font-size:11.5px;color:#9c4d70;">? を かいて はっけんしよう</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">4</div><div class="wf-st">てがき（お手本あり）</div></div>
+      <div style="text-align:center;font-family:'Yomogi',sans-serif;font-size:12px;color:#9a8f7e;">「きりん」を なぞろう</div>
+      <div style="display:flex;gap:6px;justify-content:center;"><div class="qcell" style="font-size:13px;">き</div><div class="qcell" style="color:#c4b6a0;">り</div><div class="qcell" style="color:#c4b6a0;">ん</div></div>
+      <div style="flex:1;min-height:120px;background:#fff;border:2px dashed #e0d6c5;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:60px;color:#efe7d8;">き</div>
+      <div style="display:flex;gap:6px;"><div class="wf-box" style="flex:1;text-align:center;">↩ もどす</div><div class="wf-box" style="flex:1;text-align:center;color:#d9694f;">けす</div></div>
+      <div class="wf-btn" style="background:#5fb583;">できた！</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">5</div><div class="wf-st">はっけん演出 → のったよ</div></div>
+      <div class="wf-box" style="background:#fdf3d6;border-color:#ecd58f;text-align:center;font-family:'Yomogi',sans-serif;color:#8a6d1e;">はっけん中… ✨</div>
+      <div style="text-align:center;font-size:34px;letter-spacing:4px;">✏️✨⭐</div>
+      <div style="flex:1;background:#fdf3d6;border:1.5px solid #ecd58f;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px;"><div style="font-size:40px;">🦒</div><div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#8a6d1e;">はっけん！ きりん</div><div style="font-size:11px;color:#7a6b54;text-align:center;">くびが ながいよ…</div></div>
+      <div class="wf-box" style="text-align:center;font-size:11.5px;">のこり ⭐2</div>
+      <div class="wf-btn" style="background:#c2698f;">つぎの ? へ</div>
+    </div>
+  </div>
+  <div class="wf-note">★ <b>チケットは仕込み時にまとめて確保</b>→子は課金UIに非接触。重複・不適切・実在しない語は<b>仕込み時に検証して弾く</b>。親は🎲ランダム候補で考えずに済む。1回仕込めば子は複数セッションで次々はっけんできる＝<b>親の反復負担を解消</b>。</div>
+</div>
+
+<!-- ===================== 案B ===================== -->
+<div style="position:absolute;left:80px;top:1500px;width:1340px;">
+  <div class="wf-label">モード② じぶんで ― 子が言葉を決めてなぞる（5歳ごろ〜）　｜　案B：自由がき型</div>
+  <div class="wf-card">
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">1</div><div class="wf-st">すきな ことばを かく</div></div>
+      <div class="wf-box" style="font-size:11.5px;">50音から 文字を えらぶ</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;"><div class="key">あ</div><div class="key">い</div><div class="key">う</div><div class="key">え</div><div class="key">お</div><div class="key">か</div><div class="key">き</div><div class="key">く</div><div class="key">け</div><div class="key">こ</div></div>
+      <div class="wf-box" style="display:flex;gap:5px;align-items:center;">えらんだ：<span class="chip" style="margin:0;">お</span><span class="chip" style="margin:0;">に</span></div>
+      <div style="flex:1;min-height:70px;background:#fff;border:2px dashed #e0d6c5;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:40px;color:#efe7d8;">お</div>
+      <div class="wf-btn" style="background:#5fb583;">かけた！</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">2</div><div class="wf-st">辞書を しらべる</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;"><div style="font-size:34px;">🔎</div><div style="font-family:'Yomogi',sans-serif;font-size:13px;color:#7a6b54;">しらべてるよ…</div><div style="font-size:18px;letter-spacing:3px;color:#bcb09a;">• • •</div></div>
+      <div class="wf-box" style="font-size:11px;">辞書にある → 通常のったよ<br>辞書に無い → はっけんへ分岐 ↓</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">3</div><div class="wf-st">あたらしい ことば！</div></div>
+      <div style="text-align:center;font-size:30px;">✨📖</div>
+      <div class="wf-box" style="background:#fdf3d6;border-color:#ecd58f;text-align:center;color:#8a6d1e;">「おに」は ずかんに ないよ</div>
+      <div class="wf-box">はっけんすると、AI が 図鑑に のせてくれる</div>
+      <div class="wf-btn" style="background:#e8714c;">はっけんする</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">4</div><div class="wf-st">おうちの方の確認</div></div>
+      <div class="wf-box" style="text-align:center;font-size:24px;">🔒</div>
+      <div class="wf-box" style="font-size:11.5px;text-align:center;">ボタンを 長押し（1.2秒）</div>
+      <div class="wf-box" style="background:#fdf3d6;border-color:#ecd58f;text-align:center;color:#8a6d1e;">🎟️ 1まい つかう？</div>
+      <div class="wf-box" style="font-size:10.5px;background:#fbeaf1;border-color:#e3b8cd;color:#9c4d70;">ゲスト時：とうろくを うながす</div>
+      <div style="display:flex;gap:8px;margin-top:auto;"><div class="wf-btn" style="flex:1;margin:0;background:#efe7d8;color:#7a6b54;">やめる</div><div class="wf-btn" style="flex:1;margin:0;background:#e8714c;">はっけん</div></div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">5</div><div class="wf-st">はっけん演出 → のったよ</div></div>
+      <div class="wf-box" style="background:#fdf3d6;border-color:#ecd58f;text-align:center;font-family:'Yomogi',sans-serif;color:#8a6d1e;">はっけん中… ✨</div>
+      <div style="flex:1;background:#fdf3d6;border:1.5px solid #ecd58f;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><div style="font-size:40px;">👹</div><div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#8a6d1e;">はっけん！ おに</div></div>
+      <div class="wf-btn" style="background:#5fb583;">ずかんを みる</div>
+    </div>
+  </div>
+  <div class="wf-note">△ 子ども主導で自由度は高い。ただし<b>遊びの最中に親ゲートが頻繁に挟まる</b>、<b>不適切／実在しない語の入力リスク</b>が高い。単体ではテンポを崩しやすい。→ 案A/Cの<b>補助（上級者向けトグル）</b>として将来追加が現実的。</div>
+</div>
+
+<!-- ===================== 案C ===================== -->
+<div style="position:absolute;left:80px;top:2100px;width:1340px;">
+  <div class="wf-label">演出オプション「ことばの たね」― どのモードにも乗せられる "育てる" 世界観（案C）</div>
+  <div class="wf-card">
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">1</div><div class="wf-st">おうちの方 ▸ ことばの たね</div></div>
+      <div class="wf-box" style="background:#e6f1e9;border-color:#b8d8c2;color:#3f7a52;text-align:center;font-family:'Yomogi',sans-serif;">🎲 おまかせで 10粒 つくる</div>
+      <div class="wf-box" style="font-size:11.5px;">いる / いらない で 間引き</div>
+      <div class="wf-box"><span class="chip">🐿 りす</span><span class="chip">☂ かさ</span><span class="chip">🌙 つき</span><span class="chip" style="color:#b3a892;text-decoration:line-through;">✕ ◯◯</span></div>
+      <div class="wf-box" style="background:#fdf3d6;border-color:#ecd58f;color:#8a6d1e;display:flex;justify-content:space-between;">まとめ買い<span>10粒 🎟️</span></div>
+      <div class="wf-btn" style="background:#5fb583;">たねを まく（10）</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">2</div><div class="wf-st">子ども ▸ たねばたけ</div></div>
+      <div style="flex:1;background:#eef6ef;border:1.5px solid #cfe6d6;border-radius:14px;padding:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:start;"><div style="text-align:center;font-size:22px;">🌱</div><div style="text-align:center;font-size:22px;">🌱</div><div style="text-align:center;font-size:22px;">🌸</div><div style="text-align:center;font-size:22px;">🌱</div><div style="text-align:center;font-size:22px;">🌱</div><div style="text-align:center;font-size:22px;">🌱</div></div>
+      <div class="wf-box" style="font-size:11.5px;text-align:center;">かくと 芽 → 花 に そだつ</div>
+      <div class="wf-btn" style="background:#5fb583;">たねを そだてる</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">3</div><div class="wf-st">てがき（たねの言葉）</div></div>
+      <div style="text-align:center;font-family:'Yomogi',sans-serif;font-size:12px;color:#9a8f7e;">「つき」を なぞろう</div>
+      <div style="display:flex;gap:6px;justify-content:center;"><div class="qcell" style="font-size:13px;">つ</div><div class="qcell" style="color:#c4b6a0;">き</div></div>
+      <div style="flex:1;min-height:110px;background:#fff;border:2px dashed #e0d6c5;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:60px;color:#efe7d8;">つ</div>
+      <div class="wf-btn" style="background:#5fb583;">できた！</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">4</div><div class="wf-st">そだつ演出（芽→花→図鑑）</div></div>
+      <div style="text-align:center;font-family:'Yomogi',sans-serif;font-size:12px;color:#3f7a52;">そだってる… ✨</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-size:30px;">🌱<span style="color:#bcb09a;">→</span>🌸<span style="color:#bcb09a;">→</span>📖</div>
+      <div style="background:#fdf3d6;border:1.5px solid #ecd58f;border-radius:14px;padding:9px;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="font-size:30px;">🌙</div><div style="font-family:'Yomogi',sans-serif;font-size:14px;color:#8a6d1e;">つき</div></div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-screen">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="wf-badge">5</div><div class="wf-st">ずかん ▸ ⭐はっけん</div></div>
+      <div class="wf-box" style="background:#fdf3d6;border-color:#ecd58f;color:#8a6d1e;">⭐ はっけん 4けん</div>
+      <div style="display:flex;gap:6px;"><div class="qcell" style="font-size:15px;color:#5a5044;">🌙</div><div class="qcell" style="font-size:15px;color:#5a5044;">🐿</div><div class="qcell" style="font-size:15px;color:#5a5044;">☂</div></div>
+      <div class="wf-box" style="font-size:11.5px;">のこりの たね ：6つぶ 🌱</div>
+      <div class="wf-btn" style="background:#5fb583;">つぎの たね へ</div>
+    </div>
+  </div>
+  <div class="wf-note">◎ <b>親負担が最小</b>（🎲ランダム＋まとめ買い＋子は課金非接触）。「育てる」世界観で<b>継続動機</b>が強い。畑＝残量の可視化で「次もやりたい」を誘発。ただし<b>実装コストは高め</b>（畑/成長アニメ/たね在庫の状態管理）。</div>
+</div>
+
+<!-- ===================== EDGE CASES ===================== -->
+<div style="position:absolute;left:80px;top:2710px;width:1340px;">
+  <div class="wf-label">エッジケース &amp; 安全（幼児向けなので最重要）</div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">
+    <div style="background:#fff;border:1.5px solid #e4dccb;border-radius:14px;padding:14px 16px;font-family:'Zen Kurenaido',sans-serif;font-size:13.5px;line-height:1.6;color:#5a5044;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+      <div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#c95835;margin-bottom:4px;">⚠ 不適切・実在しない語</div>
+      サーバ辞書＋AI判定で<b>仕込み（または検出）時に弾く</b>。子の画面では「この ことばは まだ つくれないみたい」とやさしく。<b>チケットは消費しない</b>。
+    </div>
+    <div style="background:#fff;border:1.5px solid #e4dccb;border-radius:14px;padding:14px 16px;font-family:'Zen Kurenaido',sans-serif;font-size:13.5px;line-height:1.6;color:#5a5044;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+      <div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#c95835;margin-bottom:4px;">⚠ AI が生成できなかった</div>
+      プレースホルダ図鑑で<b>保留→後で生成</b>／リトライ導線。<b>消費確定は「生成成功時」</b>にして失敗で減らさない。
+    </div>
+    <div style="background:#fff;border:1.5px solid #e4dccb;border-radius:14px;padding:14px 16px;font-family:'Zen Kurenaido',sans-serif;font-size:13.5px;line-height:1.6;color:#5a5044;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+      <div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#c95835;margin-bottom:4px;">⚠ 重複（既に図鑑にある）</div>
+      仕込み／検出時に弾き「もう ずかんに あるよ！」と既存の詳細へ誘導。<b>消費なし</b>。仕込みUIでも採用前にバッジ表示。
+    </div>
+    <div style="background:#fff;border:1.5px solid #e4dccb;border-radius:14px;padding:14px 16px;font-family:'Zen Kurenaido',sans-serif;font-size:13.5px;line-height:1.6;color:#5a5044;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+      <div style="font-family:'Yomogi',sans-serif;font-size:15px;color:#c95835;margin-bottom:4px;">⚠ 通信エラー・タイムアウト</div>
+      生成は<b>非同期</b>。失敗時は「あとで できるよ」状態で保留し<b>チケットを保護</b>、ネット復帰で再開。子には待たせない。
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ECONOMY ===================== -->
+<div style="position:absolute;left:80px;top:3060px;width:650px;">
+  <div class="wf-label">チケット経済の比較</div>
+  <div style="background:#fff;border:1.5px solid #e4dccb;border-radius:14px;padding:16px 18px;font-family:'Zen Kurenaido',sans-serif;font-size:13.5px;line-height:1.7;color:#5a5044;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+    <div style="display:flex;gap:8px;margin-bottom:8px;"><span style="font-family:'Yomogi',sans-serif;color:#5fb583;">◎</span><div><b>案A / C（まとめ確保）</b>：親が仕込み・まとめ買い時に消費確定 → <b>子は課金UIに非接触</b>。誤連打リスクなし。<span style="color:#3f7a52;">推奨</span></div></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;"><span style="font-family:'Yomogi',sans-serif;color:#caa64a;">△</span><div><b>案B（都度消費）</b>：はっけんの度に親ゲート＋確認 → 摩擦が多くテンポを崩す。</div></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;"><span style="font-family:'Yomogi',sans-serif;color:#9c4d70;">●</span><div><b>ゲスト共通</b>：保存不可の旨＋<b>登録で5枚付与</b>を自然に誘導。</div></div>
+    <div style="display:flex;gap:8px;"><span style="font-family:'Yomogi',sans-serif;color:#c95835;">★</span><div><b>消費確定タイミング</b>：必ず「生成<b>成功時</b>」に確定（失敗・重複・不適切では減らさない）。</div></div>
+  </div>
+</div>
+
+<!-- ===================== OPEN QUESTIONS ===================== -->
+<div style="position:absolute;left:770px;top:3060px;width:650px;">
+  <div class="wf-label">決めたいこと（要相談）</div>
+  <div style="background:#fef4a8;border-radius:14px;padding:16px 18px;font-family:'Zen Kurenaido',sans-serif;font-size:13.5px;line-height:1.75;color:#5c5238;box-shadow:0 1px 4px rgba(0,0,0,.07);transform:rotate(-.3deg);">
+    <div style="margin-bottom:6px;">① 🎲ランダム候補のソース ― カテゴリ別／年齢別／季節・イベント？</div>
+    <div style="margin-bottom:6px;">② 不適切語フィルタの強度と、親の最終承認は必須にするか</div>
+    <div style="margin-bottom:6px;">③ 子の「自由入力」(案B要素) を A/C に上級トグルとして足すか</div>
+    <div style="margin-bottom:6px;">④ はっけん演出の長さ＝待ち時間の体験設計（何秒・スキップ可否）</div>
+    <div>⑤ 1回のまとめ仕込み上限（5／10／無制限）と価格パッケージ</div>
+  </div>
+  <div style="margin-top:14px;background:#e6f1e9;border:1.6px solid #b8d8c2;border-radius:12px;padding:12px 16px;font-family:'Zen Kurenaido',sans-serif;font-size:13.5px;line-height:1.6;color:#3a5e44;transform:rotate(.2deg);box-shadow:0 1px 3px rgba(0,0,0,.06);">
+    <b>おすすめ</b>：単一の正解ではなく、<b>保護者が子の発達段階で「モード」を選ぶ</b>設計に。3歳ごろ＝<b>おまかせ（案A）</b>、5歳ごろ＝<b>じぶんで（案B）</b>。実装は <b>案A 基盤 →「じぶんで入力」を解放 → 必要なら "たね" 演出(案C) を上乗せ</b> の順が軽い。チケットは「プリセットに無い言葉＝🎟️1枚」で統一し、<b>消費タイミング（先払い／入力完了時）も保護者設定</b>に。
+  </div>
+</div>
+
+</x-dc>
+</body>
+</html>

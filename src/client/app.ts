@@ -218,12 +218,12 @@ export const clientApp = `
         var cw = catWords[k];
         var preset = PRESETS[cw];
         if (s.collected.indexOf(cw) !== -1) {
-          sections += '<button onclick="window.__openDetail(\'' + cw + '\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
+          sections += '<button onclick="window.__openDetail(\\'' + cw + '\\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
             '<span style="font-size:40px;line-height:1;">' + preset.emoji + '</span>' +
             '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + cw + '</span>' +
           '</button>';
         } else {
-          sections += '<button onclick="window.__showHint(\'' + cw + '\')" style="background:var(--locked);border-radius:20px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:#c4b6a0;font-size:32px;font-weight:900;border:none;cursor:pointer;">?</button>';
+          sections += '<button onclick="window.__showHint(\\'' + cw + '\\')" style="background:var(--locked);border-radius:20px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:#c4b6a0;font-size:32px;font-weight:900;border:none;cursor:pointer;">?</button>';
         }
       }
       sections += '</div>';

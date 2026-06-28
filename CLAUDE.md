@@ -101,6 +101,15 @@ npx wrangler d1 migrations apply mojizukan-db --remote
 
 新しいマイグレーションは `migrations/NNNN_名前.sql` として追加する。
 
+### DB リセット
+
+```bash
+bash bin/reset-db.sh          # ローカル DB をリセット
+bash bin/reset-db.sh --remote # リモート（ステージング）DB をリセット
+```
+
+全テーブルを DROP してマイグレーションを再適用する。リモート実行時は確認プロンプトあり。
+
 ## Issue 実装フロー
 
 GitHub Issue の機能実装を開始するときは `/dev-pipeline start <Issue番号>` を実行する。

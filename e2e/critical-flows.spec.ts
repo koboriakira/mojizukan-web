@@ -12,7 +12,10 @@ test("書く → 図鑑登録 → 詳細表示", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("もじずかん")).toBeVisible();
 
-  await page.getByRole("button", { name: "もじを かく" }).click();
+  await page.getByRole("button", { name: "みつける" }).click();
+  await expect(page.getByText("かいて あつめよう")).toBeVisible();
+
+  await page.getByRole("button", { name: "おまかせで 1つ えらぶ" }).click();
   await expect(page.locator("canvas")).toBeVisible();
 
   // 最初の語は「て」（1文字）。キャンバスに描かなくても「なぞれたよ！」で進む
@@ -102,8 +105,8 @@ test("ひみつのことば → 発見モード → hakkengen 演出", async ({ 
     });
   });
 
-  // ずかんへ
-  await page.getByRole("button", { name: "ずかんを みる" }).click();
+  // ずかんへ（ホーム画面のボタンは「📖 ずかん」）
+  await page.getByRole("button", { name: "ずかん" }).click();
   await expect(page.getByText("ひみつの ことば")).toBeVisible();
 
   // ? マスをタップ → 発見モードで書く画面
@@ -122,7 +125,8 @@ test("ひみつのことば → 発見モード → hakkengen 演出", async ({ 
   ).toBeVisible();
 
   // API は OPENAI_API_KEY なしで失敗 → フォールバック → Reveal
-  await expect(page.getByText("はっけん！ ⭐")).toBeVisible({
+  // revealKind='mitsuke' なのでタイトルは「みつけた！⭐」
+  await expect(page.getByText("みつけた！")).toBeVisible({
     timeout: 10_000,
   });
 

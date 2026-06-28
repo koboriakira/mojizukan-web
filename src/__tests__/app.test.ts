@@ -93,6 +93,24 @@ describe("clientApp", () => {
     expect(clientApp).toContain("tankenMode:");
   });
 
+  it("tankenlimit 画面の switch case が含まれる", () => {
+    expect(clientApp).toContain("case 'tankenlimit'");
+    expect(clientApp).toContain("renderTankenlimit");
+    expect(clientApp).toContain("きょうの たんけんは おしまい");
+  });
+
+  it("日次制限 state が定義されている", () => {
+    expect(clientApp).toContain("dailyHakkenMax:");
+    expect(clientApp).toContain("dailyHakkenUsed:");
+    expect(clientApp).toContain("limitWord:");
+  });
+
+  it("日次制限の localStorage キーが定義されている", () => {
+    expect(clientApp).toContain("mojizukan_hakken_max");
+    expect(clientApp).toContain("mojizukan_hakken_used");
+    expect(clientApp).toContain("mojizukan_hakken_date");
+  });
+
   it("グローバル関数が定義されている", () => {
     const funcs = ["__goHome", "__goWrite", "__goZukan", "__confirmChar", "__clearCanvas", "__undo", "__goMitsukeru", "__goTanken", "__goWriteWord"];
     for (const f of funcs) {

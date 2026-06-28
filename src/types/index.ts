@@ -70,6 +70,25 @@ export interface UserSettings {
   updated_at: string;
 }
 
+export interface StoryRequest {
+  words: string[];
+}
+
+export interface StoryToken {
+  t: "text" | "word";
+  s?: string;
+  w?: string;
+}
+
+export interface StoryPage {
+  hero: string[];
+  tokens: StoryToken[];
+}
+
+export interface StoryResponse {
+  pages: StoryPage[];
+}
+
 export interface Bindings {
   DB: D1Database;
   IMAGES: R2Bucket;

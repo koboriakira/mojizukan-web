@@ -81,8 +81,7 @@ test.describe("ステージング認証済みフロー", () => {
     ).toBeVisible({ timeout: 5_000 });
   });
 
-  // PR #78 デプロイ後に有効化する
-  test.skip("認証状態ではっけん生成（Workers AI）", async ({ page }) => {
+  test("認証状態ではっけん生成（Workers AI）", async ({ page }) => {
     await page.goto("/");
 
     await page.evaluate(() => {

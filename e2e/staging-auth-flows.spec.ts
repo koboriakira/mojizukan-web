@@ -112,6 +112,57 @@ test.describe("ステージング認証済みフロー", () => {
     });
   });
 
+  test("おはなしフロー: 語選択 → AI生成 → 絵本表示", async ({ page }) => {
+    test.setTimeout(60_000);
+    await page.goto("/");
+
+    await page.evaluate(() => {
+      (window as any).__setState({
+        authed: true,
+        tickets: 5,
+        collected: ["かめ", "いぬ", "ねこ"],
+        discovered: { かめ: true, いぬ: true, ねこ: true },
+      });
+    });
+
+    await page.getByRole("button", { name: "おはなし" }).click();
+    await expect(
+      page.getByRole("button", { name: /おはなしを つくる/ })
+    ).toBeVisible({ timeout: 5_000 });
+
+    await page.getByRole("button", { name: /おはなしを つくる/ }).click();
+
+    await expect(
+      page.getByText("AIが おはなしを かいているよ")
+    ).toBeVisible({ timeout: 5_000 });
+
+    await expect(page.getByText("おはなし")).toBeVisible({ timeout: 60_000 });
+  });
+
+  test("新規登録 → ログイン → セッション確認", async ({ page, context }) => {
+    const uniqueEmail = `e2e-signup-${Date.now()}@example.com`;
+    const password = "e2e-signup-password-2026";
+
+    const signupRes = await context.request.post(
+      `${baseURL}/api/auth/signup`,
+      { data: { email: uniqueEmail, password } }
+    );
+    expect(signupRes.ok()).toBe(true);
+
+    const meRes = await page.request.get(`${baseURL}/api/auth/me`);
+    expect(meRes.ok()).toBe(true);
+    const me = await meRes.json();
+    expect(me.id).toBeTruthy();
+
+    await context.request.post(`${baseURL}/api/auth/logout`);
+
+    const loginRes = await context.request.post(
+      `${baseURL}/api/auth/login`,
+      { data: { email: uniqueEmail, password } }
+    );
+    expect(loginRes.ok()).toBe(true);
+  });
+
   test("ログアウト → セッション無効化", async ({ page }) => {
     await page.goto("/");
 

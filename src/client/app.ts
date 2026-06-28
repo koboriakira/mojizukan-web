@@ -235,6 +235,32 @@ export const clientApp = `
       '</span>' +
     '</button>' : '');
 
+    var secretSection = '';
+    if (s.seeded && s.seeded.length > 0) {
+      secretSection += '<div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">' +
+        '<span style="font-size:22px;">⭐</span>' +
+        '<span style="font-family:var(--fhead);font-weight:900;font-size:20px;color:#9c4d70;">ひみつの ことば ' + s.seeded.length + 'こ</span>' +
+      '</div>';
+      secretSection += '<div style="font-size:14px;color:#9c4d70;margin-bottom:12px;">? を かいて はっけんしよう！</div>';
+      secretSection += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:26px;">';
+      for (var si = 0; si < s.seeded.length; si++) {
+        var sw = s.seeded[si];
+        secretSection += '<button onclick="window.__openSecret(\\'' + sw + '\\')" style="background:#fff;border:2px dashed #e3b8cd;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;cursor:pointer;">' +
+          '<span style="font-size:38px;font-weight:900;color:#c2698f;line-height:1;">?</span>' +
+          '<span style="font-size:11px;color:#c2698f;font-weight:700;">かいて みよう</span>' +
+        '</button>';
+      }
+      secretSection += '</div>';
+    } else if (s.authed) {
+      secretSection += '<button onclick="window.__showParentGate()" style="width:100%;text-align:left;background:linear-gradient(135deg,#fbeaf1,#f7dfe9);border:2px solid var(--accent3);border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:18px;box-shadow:none;">' +
+        '<span style="font-size:26px;">⭐</span>' +
+        '<span>' +
+          '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent3);display:block;">ひみつのことばを しこもう</span>' +
+          '<span style="font-size:12.5px;color:var(--sub);">おうちの ひと メニューから ことばを えらべるよ</span>' +
+        '</span>' +
+      '</button>';
+    }
+
     var sections = '';
     for (var ci = 0; ci < CATEGORIES.length; ci++) {
       var cat = CATEGORIES[ci];
@@ -273,6 +299,25 @@ export const clientApp = `
       sections += '</div>';
     }
 
+    if (s.discovered && s.discovered.length > 0) {
+      sections += '<div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">' +
+        '<span style="font-size:22px;">⭐</span>' +
+        '<span style="font-family:var(--fhead);font-weight:900;font-size:20px;">はっけん</span>' +
+        '<span style="font-size:14px;color:var(--sub);font-weight:700;">' + s.discovered.length + 'こ</span>' +
+      '</div>';
+      sections += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:26px;">';
+      for (var di = 0; di < s.discovered.length; di++) {
+        var dw = s.discovered[di];
+        var dEmoji = (window.__hakkenCache && window.__hakkenCache[dw]) ? window.__hakkenCache[dw].emoji : '✨';
+        sections += '<button onclick="window.__openDetail(\\'' + dw + '\\')" style="background:var(--card);border:3px solid #f3dd9a;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
+          '<span style="font-size:40px;line-height:1;">' + dEmoji + '</span>' +
+          '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + dw + '</span>' +
+          '<span style="font-size:10px;color:var(--accent3);font-weight:700;">はっけん</span>' +
+        '</button>';
+      }
+      sections += '</div>';
+    }
+
     if (count === 0) {
       sections += '<div style="text-align:center;padding:48px 0;color:var(--sub);font-size:18px;font-weight:700;">' +
         '<div style="font-size:48px;margin-bottom:16px;">📖</div>' +
@@ -280,7 +325,7 @@ export const clientApp = `
       '</div>';
     }
 
-    return '<div style="flex:1;padding:18px 0;">' + header + sections + '</div>';
+    return '<div style="flex:1;padding:18px 0;">' + header + secretSection + sections + '</div>';
   }
 
   function renderDetail(s) {

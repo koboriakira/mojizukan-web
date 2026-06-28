@@ -34,13 +34,23 @@
       <div style="font-size:80px;line-height:1;">📖✏️</div>
       <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:clamp(48px,15vw,72px);color:var(--ink,#2a241d);margin:18px 0 6px;letter-spacing:.02em;">もじずかん</div>
       <div style="font-size:18px;color:var(--sub,#9a8f7e);font-weight:700;margin-bottom:44px;">もじを かいて あつめよう</div>
-      <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:18px;">
-        <button class="tap" onClick="{{ goWrite }}" style="min-height:84px;border-radius:var(--rad,24px);background:var(--accent,#e8714c);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:24px;box-shadow:0 5px 0 var(--accentd,#c95835);">✏️ もじを かく</button>
-        <button class="tap" onClick="{{ goZukan }}" style="min-height:84px;border-radius:var(--rad,24px);background:var(--accent2,#5fb583);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:24px;box-shadow:0 5px 0 var(--accent2d,#3f8e63);">📖 ずかんを みる</button>
-        <sc-if value="{{ storyAvailable }}">
-        <button class="tap" onClick="{{ goStoryPick }}" style="min-height:84px;border-radius:var(--rad,24px);background:var(--accent3,#c2698f);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:24px;box-shadow:0 5px 0 var(--accent3d,#9c4d70);position:relative;">📚 おはなしを つくる<span style="position:absolute;top:-8px;right:-6px;background:#fff;color:var(--accent3,#c2698f);font-size:11px;font-weight:900;padding:3px 9px;border-radius:99px;box-shadow:0 2px 6px rgba(0,0,0,.12);transform:rotate(6deg);">NEW</span></button>
-        </sc-if>
-        <button class="tap" onClick="{{ goParent }}" style="min-height:60px;border-radius:18px;background:transparent;color:var(--sub,#9a8f7e);font-weight:700;font-size:18px;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;">🏠 おうちの ひとは こちら</button>
+      <div style="width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px;">
+        <button class="tap" onClick="{{ goMitsukeru }}" style="min-height:90px;border-radius:var(--rad,24px);background:var(--accent2,#5fb583);color:#fff;box-shadow:0 5px 0 var(--accent2d,#3f8e63);display:flex;align-items:center;gap:16px;padding:0 22px;text-align:left;">
+          <span style="font-size:38px;">🔍</span>
+          <span style="flex:1;"><span style="display:block;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:25px;">みつける</span><span style="display:block;font-size:13px;font-weight:700;opacity:.92;margin-top:1px;">おまかせ ・ よういされた ことばを さがそう</span></span>
+        </button>
+        <button class="tap" onClick="{{ goTanken }}" style="min-height:90px;border-radius:var(--rad,24px);background:var(--accent,#e8714c);color:#fff;box-shadow:0 5px 0 var(--accentd,#c95835);display:flex;align-items:center;gap:16px;padding:0 22px;text-align:left;position:relative;">
+          <span style="font-size:38px;">🧭</span>
+          <span style="flex:1;"><span style="display:block;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:25px;">たんけんに でる</span><span style="display:block;font-size:13px;font-weight:700;opacity:.92;margin-top:1px;">じぶんで ・ すきな ことばを つくって はっけん</span></span>
+          <span style="position:absolute;top:-8px;right:-6px;background:#fff;color:var(--accent,#e8714c);font-size:11px;font-weight:900;padding:3px 9px;border-radius:99px;box-shadow:0 2px 6px rgba(0,0,0,.12);transform:rotate(6deg);">NEW</span>
+        </button>
+        <div style="display:flex;gap:12px;">
+          <button class="tap" onClick="{{ goZukan }}" style="flex:1;min-height:66px;border-radius:18px;background:#fff;color:var(--ink,#2a241d);font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.07);">📖 ずかん</button>
+          <sc-if value="{{ storyAvailable }}">
+          <button class="tap" onClick="{{ goStoryPick }}" style="flex:1;min-height:66px;border-radius:18px;background:var(--accent3,#c2698f);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:18px;box-shadow:0 4px 0 var(--accent3d,#9c4d70);">📚 おはなし</button>
+          </sc-if>
+        </div>
+        <button class="tap" onClick="{{ goParent }}" style="min-height:56px;border-radius:18px;background:transparent;color:var(--sub,#9a8f7e);font-weight:700;font-size:17px;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:8px;">🏠 おうちの ひとは こちら</button>
       </div>
     </div>
     </sc-if>
@@ -83,6 +93,113 @@
       <div style="display:flex;gap:14px;margin-top:36px;width:100%;max-width:400px;">
         <button class="tap" onClick="{{ goWrite }}" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent,#e8714c);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:20px;box-shadow:0 5px 0 var(--accentd,#c95835);">つぎも かく！</button>
         <button class="tap" onClick="{{ goZukan }}" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent2,#5fb583);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:20px;box-shadow:0 5px 0 var(--accent2d,#3f8e63);">ずかんを みる</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ===== MITSUKERU (おまかせ・さがす) ===== -->
+    <sc-if value="{{ isMitsukeru }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="みつける" style="flex:1;display:flex;flex-direction:column;padding-top:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <button class="tap" onClick="{{ goHome }}" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;display:flex;align-items:center;justify-content:center;">←</button>
+        <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:22px;color:var(--accent2,#5fb583);">🔍 みつける</div>
+        <div style="width:56px;"></div>
+      </div>
+      <div style="text-align:center;font-size:14px;color:#7a7060;font-weight:700;margin:2px 0 18px;">よういされた ことばを さがして かこう</div>
+
+      <sc-if value="{{ hasSeeded }}">
+        <div style="display:flex;align-items:center;gap:8px;margin:0 0 6px;">
+          <span style="font-size:22px;">⭐</span><span style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:19px;">ひみつの ことば</span><span style="font-size:13px;color:var(--sub,#9a8f7e);font-weight:700;">{{ seededCount }}こ</span>
+        </div>
+        <div style="font-size:13px;color:#9c4d70;font-weight:700;margin:0 0 12px;">? を かいて はっけんしよう！</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:24px;">
+          <sc-for list="{{ seededCells }}" as="c" hint-placeholder-count="2">
+            <button class="tap" onClick="{{ c.onOpen }}" style="background:#fff;border:3px dashed #e3b8cd;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+              <span style="font-size:38px;color:#c2698f;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;">?</span>
+              <span style="font-size:11px;color:#9c4d70;font-weight:700;">かいて みよう</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasMitsukeCands }}">
+        <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">
+          <span style="font-size:22px;">✏️</span><span style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:19px;">かいて あつめよう</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:24px;">
+          <sc-for list="{{ mitsukeCands }}" as="m" hint-placeholder-count="4">
+            <button class="tap" onClick="{{ m.onWrite }}" style="background:#fff;border:3px solid var(--cbd,#f0e4d0);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+              <span style="font-size:36px;">{{ m.emoji }}</span><span style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;">{{ m.w }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ mitsukeEmpty }}">
+        <div style="text-align:center;font-size:14px;color:#7a7060;font-weight:700;line-height:1.8;background:var(--card,#fff8ee);border:1px dashed var(--cbd,#f0e4d0);border-radius:20px;padding:28px 18px;margin-bottom:20px;">じしょの ことばは ぜんぶ あつめたよ！🎉<br><span style="font-size:13px;color:var(--sub,#9a8f7e);">おうちの方に「ひみつの ことば」を よういして もらうか、<br>「たんけん」で じぶんの ことばを つくろう。</span></div>
+      </sc-if>
+
+      <div style="margin-top:auto;padding-top:8px;">
+        <button class="tap" onClick="{{ goWrite }}" style="width:100%;min-height:62px;border-radius:18px;background:#fff;border:2px solid var(--accent2,#5fb583);color:var(--accent2d,#3f8e63);font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:17px;">🎲 おまかせで 1つ えらぶ</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ===== TANKEN (じぶんで・50音A) ===== -->
+    <sc-if value="{{ isTanken }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="たんけん" style="flex:1;display:flex;flex-direction:column;padding-top:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <button class="tap" onClick="{{ goHome }}" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;display:flex;align-items:center;justify-content:center;">←</button>
+        <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:22px;color:var(--accent,#e8714c);">🧭 たんけん</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:56px;">
+          <span style="font-size:9px;font-weight:900;color:var(--sub,#9a8f7e);">きょうの はっけん</span>
+          <div style="display:flex;gap:3px;"><sc-for list="{{ tkPips }}" as="p" hint-placeholder-count="3"><span style="width:11px;height:11px;border-radius:50%;background:{{ p.bg }};border:1.5px solid #d8b9c8;"></span></sc-for></div>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:14px;color:#7a7060;font-weight:700;margin-bottom:12px;">すきな ことばを つくって なぞろう</div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <div style="flex:1;display:flex;gap:7px;flex-wrap:wrap;align-items:center;min-height:60px;background:#fff;border:3px solid var(--cbd,#f0e4d0);border-radius:18px;padding:8px 10px;">
+          <sc-for list="{{ tkSlots }}" as="s" hint-placeholder-count="2"><div style="width:44px;height:44px;border-radius:12px;background:{{ s.bg }};border:2px dashed {{ s.bd }};display:flex;align-items:center;justify-content:center;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:28px;color:var(--ink,#2a241d);">{{ s.c }}</div></sc-for>
+        </div>
+        <button class="tap" onClick="{{ tkClearAll }}" style="width:52px;height:52px;border-radius:14px;background:#fff;color:#d9694f;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:13px;box-shadow:0 3px 0 rgba(0,0,0,.06);line-height:1.1;">ぜんぶ<br>けす</button>
+      </div>
+
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <button class="tap" onClick="{{ tkBack }}" style="flex:1.4;min-height:46px;border-radius:12px;background:#efe7d8;color:#7a6b54;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;">⌫ もどす</button>
+        <button class="tap" onClick="{{ tkDaku }}" style="flex:1;min-height:46px;border-radius:12px;background:#fff;border:2px solid var(--cbd,#f0e4d0);color:#5a5044;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:18px;">゛</button>
+        <button class="tap" onClick="{{ tkHandaku }}" style="flex:1;min-height:46px;border-radius:12px;background:#fff;border:2px solid var(--cbd,#f0e4d0);color:#5a5044;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:18px;">゜</button>
+        <button class="tap" onClick="{{ tkSmall }}" style="flex:1;min-height:46px;border-radius:12px;background:#fff;border:2px solid var(--cbd,#f0e4d0);color:#5a5044;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:14px;">小</button>
+        <button class="tap" onClick="{{ tkChouon }}" style="flex:1;min-height:46px;border-radius:12px;background:#fff;border:2px solid var(--cbd,#f0e4d0);color:#5a5044;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:18px;">ー</button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <sc-for list="{{ tkGridRows }}" as="row" hint-placeholder-count="5">
+          <div style="display:flex;gap:5px;">
+            <sc-for list="{{ row }}" as="k">
+              <sc-if value="{{ k.blank }}"><div style="flex:1;"></div></sc-if>
+              <sc-if value="{{ k.real }}"><button class="tap" onClick="{{ k.onTap }}" style="flex:1;aspect-ratio:1;border-radius:11px;background:#fff;border:2px solid var(--cbd,#f0e4d0);font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:23px;color:var(--ink,#2a241d);display:flex;align-items:center;justify-content:center;">{{ k.ch }}</button></sc-if>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ tankenMsgShow }}"><div style="margin-top:12px;background:#fff0e6;border:1.5px solid #f0c4ad;border-radius:14px;padding:12px 16px;text-align:center;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;color:#c95835;">{{ tankenMsgText }}</div></sc-if>
+
+      <button class="tap" onClick="{{ tkNext }}" style="margin-top:14px;min-height:70px;border-radius:20px;background:{{ tkCtaBg }};color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:22px;box-shadow:0 5px 0 {{ tkCtaSh }};">✏️ これを かく（{{ tkCount }}もじ）</button>
+    </div>
+    </sc-if>
+
+    <!-- ===== TANKEN LIMIT ===== -->
+    <sc-if value="{{ isTankenLimit }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="たんけんおしまい" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:0 8px;">
+      <div style="font-size:66px;animation:bob 1.4s ease-in-out infinite;">🌙</div>
+      <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:24px;margin-top:8px;line-height:1.5;">きょうの たんけんは<br>おしまい！</div>
+      <div style="font-size:16px;color:#5a5145;font-weight:500;line-height:1.8;max-width:320px;margin-top:6px;">「<b style="color:var(--accent,#e8714c);">{{ tankenLimitWord }}</b>」は あした はっけん できるよ。<br>いまは <b>みつける</b> で あそぼう！</div>
+      <div style="font-size:12px;color:#b6ab9a;font-weight:700;margin-top:10px;">※ かいすうは おうちの方が きめています</div>
+      <div style="display:flex;gap:14px;margin-top:30px;width:100%;max-width:360px;">
+        <button class="tap" onClick="{{ goMitsukeru }}" style="flex:1;min-height:66px;border-radius:18px;background:var(--accent2,#5fb583);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:17px;box-shadow:0 5px 0 var(--accent2d,#3f8e63);">🔍 みつける へ</button>
+        <button class="tap" onClick="{{ goHome }}" style="flex:1;min-height:66px;border-radius:18px;background:#fff;color:var(--sub,#9a8f7e);font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:17px;box-shadow:0 4px 0 rgba(0,0,0,.06);">🏠 ホーム</button>
       </div>
     </div>
     </sc-if>
@@ -155,11 +272,7 @@
                   <sc-if value="{{ tok.isWord }}">
                     <span style="display:inline-flex;align-items:flex-end;vertical-align:bottom;margin:0 3px;">
                       <sc-if value="{{ tok.hasImg }}">
-                        <span style="display:inline-flex;align-items:flex-end;gap:1px;background:#fff;border-radius:8px;padding:2px 3px;border:2px solid var(--cbd,#f0e4d0);box-shadow:0 1px 3px rgba(0,0,0,.05);">
-                          <sc-for list="{{ tok.imgs }}" as="im">
-                            <img src="{{ im }}" alt="" style="height:34px;width:34px;object-fit:contain;display:block;"/>
-                          </sc-for>
-                        </span>
+                        <span style="display:inline-flex;align-items:flex-end;gap:1px;background:#fff;border-radius:8px;padding:2px 3px;border:2px solid var(--cbd,#f0e4d0);box-shadow:0 1px 3px rgba(0,0,0,.05);">{{ tok.imgEls }}</span>
                       </sc-if>
                       <sc-if value="{{ tok.noImg }}">
                         <span style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:26px;color:var(--accent,#e8714c);border-bottom:3px solid var(--accent,#e8714c);line-height:1.15;">{{ tok.w }}</span>
@@ -316,29 +429,29 @@
 
       <div style="background:var(--card,#fff8ee);border:1px solid var(--cbd,#f0e4d0);border-radius:20px;padding:20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-          <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:16px;">はっけん準備</div>
-          <span style="font-size:12px;font-weight:700;color:#9c4d70;background:#fbeaf1;border-radius:99px;padding:3px 10px;">モード：おまかせ</span>
+          <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:16px;">みつける と たんけん の じゅんび</div>
+          <span style="font-size:12px;font-weight:700;color:#9c4d70;background:#fbeaf1;border-radius:99px;padding:3px 10px;">保護者が設定</span>
         </div>
-        <p style="font-size:13px;color:#6b6256;line-height:1.7;margin:6px 0 14px;">お子さまが「なぞって はっけん」する言葉を、まとめて仕込めます。🎲ランダム候補も使えます。チケットは<b>お子さまが書き終えて図鑑にできた時（生成成功時）</b>に1枚消費。</p>
+        <p style="font-size:13px;color:#6b6256;line-height:1.7;margin:6px 0 14px;"><b>みつける</b>＝お子さまに発見させる「ひみつのことば」をまとめて仕込みます（🎲ランダム候補も可）。<b>たんけん</b>＝お子さまが自分で言葉を作る遊び。下で1日の回数を決められます。チケットは<b>図鑑にできた時（生成成功時）</b>に1枚消費。</p>
         <div style="display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:12px;">
           <span style="font-size:22px;">⭐</span>
-          <span style="flex:1;font-size:14px;color:#5a5044;">仕込み中の ひみつのことば</span>
+          <span style="flex:1;font-size:14px;color:#5a5044;">みつける用 ひみつのことば</span>
           <span style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:18px;color:var(--accent3,#c2698f);">{{ seededCount }}</span>
         </div>
         <button class="tap" onClick="{{ goPrep }}" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3,#c2698f);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;">＋ ことばを 仕込む</button>
-        <div style="display:flex;gap:8px;margin-top:14px;">
-          <div style="flex:1;border:2px solid var(--accent3,#c2698f);border-radius:12px;padding:10px;text-align:center;background:#fbeaf1;">
-            <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:13px;color:#9c4d70;">おまかせ ✓</div>
-            <div style="font-size:10.5px;color:#7a3e5b;margin-top:2px;">親が決める・3歳〜</div>
+        <div style="border-top:1px solid #efe7d8;margin-top:16px;padding-top:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div style="flex:1;">
+              <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:14px;">🧭 たんけん の 1日かいすう</div>
+              <div style="font-size:11.5px;color:#7a7060;line-height:1.5;margin-top:2px;">お子さまが「たんけん」で じゆうに はっけんできる 回数。0で停止します。</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button class="tap" onClick="{{ decDaily }}" style="width:42px;height:42px;border-radius:12px;background:#fff;border:2px solid var(--accent3,#c2698f);color:#9c4d70;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:22px;">−</button>
+              <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:24px;color:#9c4d70;min-width:50px;text-align:center;">{{ dailyMaxParent }}<span style="font-size:12px;">回</span></div>
+              <button class="tap" onClick="{{ incDaily }}" style="width:42px;height:42px;border-radius:12px;background:var(--accent3,#c2698f);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:22px;box-shadow:0 3px 0 var(--accent3d,#9c4d70);">＋</button>
+            </div>
           </div>
-          <div style="flex:1;border:1.5px solid #e0d6c5;border-radius:12px;padding:10px;text-align:center;opacity:.6;">
-            <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:13px;color:#7a6b54;">いっしょに</div>
-            <div style="font-size:10.5px;color:#9a8f7e;margin-top:2px;">近日</div>
-          </div>
-          <div style="flex:1;border:1.5px solid #e0d6c5;border-radius:12px;padding:10px;text-align:center;opacity:.6;">
-            <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:13px;color:#7a6b54;">じぶんで</div>
-            <div style="font-size:10.5px;color:#9a8f7e;margin-top:2px;">近日・5歳〜</div>
-          </div>
+          <div style="font-size:11px;color:#9a8f7e;font-weight:700;margin-top:10px;line-height:1.55;">※「たんけん」で じしょに ない 言葉を 図鑑化すると 🎟️1まい つかいます（生成成功時）。じしょの 言葉は 無料です。遊びの最中に 課金画面は 出ません。</div>
         </div>
       </div>
 
@@ -521,7 +634,8 @@ class Component extends DCLogic {
     this.state = { screen:'home', word:'いぬ', charIndex:0, confirmed:[], detailWord:null,
       collected:['ねこ','りんご','ばなな'], discovered:[], authed:true, tickets:5, lastHakken:false, sheet:null, sfx:true, bgm:true,
       handwriting:{}, storySel:[], story:null, storyLoading:false, storyPage:0,
-      mode:'omakase', seeded:['きりん','つき'], discovering:false, prepInput:'', prepSel:[] };
+      mode:'omakase', seeded:['きりん','つき'], discovering:false, prepInput:'', prepSel:[],
+      tankenChars:[], tankenMsg:null, dailyHakkenMax:3, dailyHakkenUsed:0, tankenMode:false, revealKind:'normal', limitWord:'' };
     this._lastPromptCount=0;
     this._wimgs=[];
   }
@@ -559,6 +673,11 @@ class Component extends DCLogic {
     'ぺんぎん':{e:'🐧',cat:'はっけん',ci:'⭐',d:'こおりの うえに いるよ。\nおよぐのが じょうずだよ。'},
   }; }
   get NG(){ return ['ばか','あほ','ぶす','うんち']; }
+  get ROWS(){ return [['あ','い','う','え','お'],['か','き','く','け','こ'],['さ','し','す','せ','そ'],['た','ち','つ','て','と'],['な','に','ぬ','ね','の'],['は','ひ','ふ','へ','ほ'],['ま','み','む','め','も'],['や','','ゆ','','よ'],['ら','り','る','れ','ろ'],['わ','','ん','','を']]; }
+  get DAKU(){ return {か:'が',き:'ぎ',く:'ぐ',け:'げ',こ:'ご',さ:'ざ',し:'じ',す:'ず',せ:'ぜ',そ:'ぞ',た:'だ',ち:'ぢ',つ:'づ',て:'で',と:'ど',は:'ば',ひ:'び',ふ:'ぶ',へ:'べ',ほ:'ぼ',う:'ゔ'}; }
+  get HANDAKU(){ return {は:'ぱ',ひ:'ぴ',ふ:'ぷ',へ:'ぺ',ほ:'ぽ'}; }
+  get SMALL(){ return {つ:'っ',や:'ゃ',ゆ:'ゅ',よ:'ょ',あ:'ぁ',い:'ぃ',う:'ぅ',え:'ぇ',お:'ぉ',わ:'ゎ'}; }
+  get HAKKEN_EMOJI(){ return {おに:'👹',にじ:'🌈',つき:'🌙',きりん:'🦒',たこ:'🐙',ほし:'⭐',かさ:'☂️',ろけっと:'🚀',でんしゃ:'🚃',ちょうちょ:'🦋',かに:'🦀',ふね:'⛵',かめ:'🐢',りす:'🐿️',ぺんぎん:'🐧'}; }
   get HAKKEN_WORDS(){ return Object.keys(this.PRESETS).filter(w=>this.PRESETS[w].cat==='はっけん'); }
   get CATS(){ return [
     {name:'からだ',icon:'🖐️',words:['て','め','みみ','くち','あし']},
@@ -614,7 +733,27 @@ class Component extends DCLogic {
   nextPresetWord(){ return this.WORDPOOL.find(w=>!this.state.collected.includes(w)) || 'て'; }
 
   goHome(){ this.setState({screen:'home',sheet:null}); }
-  goWrite(){ this._wimgs=[]; this.setState({screen:'write', word:this.nextPresetWord(), charIndex:0, confirmed:[], lastHakken:false, discovering:false, sheet:null}); setTimeout(()=>this.clearStrokes(),0); }
+  goWrite(){ this._wimgs=[]; this.setState({screen:'write', word:this.nextPresetWord(), charIndex:0, confirmed:[], lastHakken:false, discovering:false, sheet:null, revealKind:'normal', tankenMode:false}); setTimeout(()=>this.clearStrokes(),0); }
+  goMitsukeru(){ this.setState({screen:'mitsukeru', sheet:null}); }
+  goTanken(){ this.setState({screen:'tanken', tankenChars:[], tankenMsg:null, sheet:null}); }
+  goWriteWord(w, discovering, kind){ this._wimgs=[]; this.setState({screen:'write', word:w, charIndex:0, confirmed:[], discovering:!!discovering, lastHakken:false, sheet:null, revealKind:kind||'normal', tankenMode: kind==='tanken'}); setTimeout(()=>this.clearStrokes(),0); }
+  tkAdd(ch){ if(!ch) return; if(this.state.tankenChars.length>=6) return; this.setState({tankenChars:[...this.state.tankenChars,ch], tankenMsg:null}); }
+  tkBack(){ this.setState({tankenChars:this.state.tankenChars.slice(0,-1), tankenMsg:null}); }
+  tkClear(){ this.setState({tankenChars:[], tankenMsg:null}); }
+  tkConvert(map){ const cs=this.state.tankenChars; if(!cs.length) return; const last=cs[cs.length-1]; if(map[last]){ const n=cs.slice(); n[n.length-1]=map[last]; this.setState({tankenChars:n}); } }
+  tkDaku(){ this.tkConvert(this.DAKU); }
+  tkHandaku(){ this.tkConvert(this.HANDAKU); }
+  tkSmall(){ this.tkConvert(this.SMALL); }
+  tkChouon(){ this.tkAdd('ー'); }
+  classifyTanken(w){ if(!w) return 'ng'; if(this.NG.includes(w)) return 'ng'; if(this.state.collected.includes(w)) return 'dup'; const p=this.PRESETS[w]; if(p&&p.cat!=='はっけん') return 'dict'; return 'hakken'; }
+  tkNext(){ const w=this.state.tankenChars.join(''); if(!w) return; const k=this.classifyTanken(w);
+    if(k==='ng'){ this.setState({tankenMsg:{type:'ng'}}); return; }
+    if(k==='dup'){ this.setState({tankenMsg:{type:'dup',w}}); return; }
+    if(k==='dict'){ this.goWriteWord(w,false,'tanken'); return; }
+    if(this.state.dailyHakkenUsed>=this.state.dailyHakkenMax || this.state.tickets<=0){ this.setState({screen:'tankenlimit', limitWord:w}); return; }
+    this.goWriteWord(w,true,'tanken'); }
+  incDaily(){ this.setState({dailyHakkenMax:Math.min(9,this.state.dailyHakkenMax+1)}); }
+  decDaily(){ this.setState({dailyHakkenMax:Math.max(0,this.state.dailyHakkenMax-1)}); }
 
   captureCanvas(){ const c=this.canvasRef.current; if(!c) return null; try{ return c.toDataURL('image/png'); }catch(e){ return null; } }
 
@@ -742,13 +881,14 @@ class Component extends DCLogic {
   }
 
   // ----- 子ども：ひみつのことばを なぞって はっけん -----
-  openSecret(w){ this._wimgs=[]; this.setState({screen:'write', word:w, charIndex:0, confirmed:[], discovering:true, lastHakken:false, sheet:null}); setTimeout(()=>this.clearStrokes(),0); }
+  openSecret(w){ this._wimgs=[]; this.setState({screen:'write', word:w, charIndex:0, confirmed:[], discovering:true, lastHakken:false, sheet:null, revealKind:'mitsuke', tankenMode:false}); setTimeout(()=>this.clearStrokes(),0); }
   finishHakken(){
     const w=this.state.word;
     const col=this.state.collected.includes(w)?this.state.collected:[...this.state.collected,w];
+    const used=this.state.tankenMode? Math.min(this.state.dailyHakkenMax,this.state.dailyHakkenUsed+1): this.state.dailyHakkenUsed;
     this.setState({ screen:'reveal', lastHakken:true, discovering:false, collected:col,
       discovered:[...this.state.discovered, w], seeded:this.state.seeded.filter(x=>x!==w),
-      tickets:Math.max(0,this.state.tickets-1) });
+      tickets:Math.max(0,this.state.tickets-1), dailyHakkenUsed:used });
   }
 
   clearCanvas(){ this.clearStrokes(); }
@@ -791,7 +931,7 @@ class Component extends DCLogic {
         cells: cat.words.map(w=>{ const open=s.collected.includes(w); return {
           open, locked:!open, word:w, emoji:(P[w]||{}).e||'⭐', label:w, onOpen:()=>this.openDetail(w) }; }) };
     });
-    const hakkenCells=s.discovered.map(w=>({ word:w, emoji:(P[w]||{}).e||'⭐', label:w, onOpen:()=>this.openDetail(w) }));
+    const hakkenCells=s.discovered.map(w=>({ word:w, emoji:(P[w]||{}).e||this.HAKKEN_EMOJI[w]||'✨', label:w, onOpen:()=>this.openDetail(w) }));
     const c=s.collected.length;
     const tiers=[10,20,50,100];
     const next=tiers.find(t=>c<t)||100;
@@ -807,7 +947,8 @@ class Component extends DCLogic {
     const pageTokens=(curPage.tokens||[]).map(tok=>{
       if(tok.t==='text') return { isText:true, isWord:false, s:tok.s };
       const imgs=s.handwriting[tok.w]||[]; const hasImg=imgs.length>0;
-      return { isText:false, isWord:true, w:tok.w, imgs, hasImg, noImg:!hasImg };
+      const imgEls=imgs.map((src,i)=>React.createElement('img',{key:i,src,alt:'',style:{height:'34px',width:'34px',objectFit:'contain',display:'block'}}));
+      return { isText:false, isWord:true, w:tok.w, imgs, imgEls, hasImg, noImg:!hasImg };
     });
     const tints=['#fbe7d8','#e3f0e6','#e9ebfa'];
     const storyDots=pages.map((p,i)=>({ w: i===pageIdx?'26px':'10px', bg: i===pageIdx?'var(--accent3,#c2698f)':'#e2d6c6' }));
@@ -823,6 +964,16 @@ class Component extends DCLogic {
     const prepN=this.prepCount();
     const prepEnough=s.tickets>=prepN;
     const seededCells=s.seeded.map(w=>({ w, onOpen:()=>this.openSecret(w) }));
+    // ----- たんけん（じぶんで・50音A） -----
+    const tkChars=s.tankenChars;
+    const tkSlots=[]; tkChars.forEach(ch=>tkSlots.push({c:ch,bg:'var(--card,#fff8ee)',bd:'#e3b8cd'})); if(tkChars.length<6) tkSlots.push({c:'',bg:'#faf4ea',bd:'#e8dcc8'});
+    const dmax=s.dailyHakkenMax, dused=s.dailyHakkenUsed;
+    const tkPips=[]; for(let i=0;i<dmax;i++) tkPips.push({bg:i<dused?'var(--accent3,#c2698f)':'#fbeaf1'});
+    const tkGridRows=this.ROWS.map(row=>row.map(ch=>({ch,blank:ch==='',real:ch!=='',onTap:ch?()=>this.tkAdd(ch):null})));
+    const tkWord=tkChars.join('');
+    let tankenMsgShow=false, tankenMsgText='';
+    if(s.tankenMsg){ tankenMsgShow=true; tankenMsgText=s.tankenMsg.type==='dup'?('「'+s.tankenMsg.w+'」は もう ずかんに あるよ！'):'この ことばは まだ つくれないみたい。'; }
+    const mitsukeCands=this.CATS.reduce((a,c)=>a.concat(c.words),[]).filter(w=>!s.collected.includes(w)).map(w=>({w,emoji:(P[w]||{}).e||'⭐',onWrite:()=>this.goWriteWord(w,false,'normal')}));
     return {
       rootRef:this.rootRef, canvasRef:this.canvasRef, gateBarRef:this.gateBarRef,
       isHome:s.screen==='home', isWrite:s.screen==='write', isReveal:s.screen==='reveal', isZukan:s.screen==='zukan', isDetail:s.screen==='detail', isParent:s.screen==='parent',
@@ -855,16 +1006,24 @@ class Component extends DCLogic {
       boxes, currentChar: word[Math.min(s.charIndex,word.length-1)],
       traceLabel:'「'+word+'」を なぞろう',
       confirmLabel: lastChar? 'できた！' : (s.charIndex===word.length-1? 'さいごの もじ！' : 'なぞれたよ！'),
-      revealTitle: s.lastHakken? 'はっけん！ ⭐' : 'ずかんに のったよ！🎉',
-      revealEmoji:cur.e||'⭐', revealWord:word, revealCat:cur.cat||'', revealCatIcon:cur.ci||'', revealDesc:cur.d||'',
+      revealTitle: s.lastHakken? (s.revealKind==='tanken'?'あたらしい ことば はっけん！⭐':'みつけた！⭐') : 'ずかんに のったよ！🎉',
+      revealEmoji:cur.e||this.HAKKEN_EMOJI[word]||'⭐', revealWord:word, revealCat:cur.cat|| (s.lastHakken?'はっけん':''), revealCatIcon:cur.ci|| (s.lastHakken?'⭐':''), revealDesc:cur.d|| (s.lastHakken?'あたらしい ことばを みつけたよ。\nずかんに のったよ。':''),
       collectedCount:s.collected.length, zukanCats,
       authed:s.authed, isGuest:!s.authed, tickets:s.tickets,
       hasHakken:s.discovered.length>0, hakkenCount:s.discovered.length, hakkenCells,
       sheetSignup:s.sheet==='signup', sheetTickets:s.sheet==='tickets', sheetGate:s.sheet==='gate',
       ticketSheetTitle: s.tickets<=0? 'チケットが なくなったよ' : 'チケットを ふやす',
-      detailEmoji:det.e||'⭐', detailWordText:s.detailWord||'', detailCat:det.cat||'', detailCatIcon:det.ci||'', detailDesc:det.d||'', detailDate:this.fmtDate(),
+      detailEmoji:det.e||this.HAKKEN_EMOJI[s.detailWord]||'⭐', detailWordText:s.detailWord||'', detailCat:det.cat||'はっけん', detailCatIcon:det.ci||'⭐', detailDesc:det.d||'あたらしく みつけた ことばだよ。', detailDate:this.fmtDate(),
       historyList, historyCount:c, noHistory:c===0,
       milestoneTitle:this.milestone(c), milestonePct:pct+'%', milestoneNext:next,
+      isTanken:s.screen==='tanken', isMitsukeru:s.screen==='mitsukeru', isTankenLimit:s.screen==='tankenlimit',
+      goMitsukeru:()=>this.goMitsukeru(), goTanken:()=>this.goTanken(),
+      tkSlots, tkPips, tkGridRows, tkWord, tkCount:tkChars.length,
+      tkClearAll:()=>this.tkClear(), tkBack:()=>this.tkBack(), tkDaku:()=>this.tkDaku(), tkHandaku:()=>this.tkHandaku(), tkSmall:()=>this.tkSmall(), tkChouon:()=>this.tkChouon(),
+      tkNext:()=>this.tkNext(), tkCtaBg: tkChars.length?'var(--accent,#e8714c)':'#d8cfc0', tkCtaSh: tkChars.length?'var(--accentd,#c95835)':'#bfb6a6',
+      tankenMsgShow, tankenMsgText, tankenLimitWord:s.limitWord,
+      mitsukeCands, hasMitsukeCands:mitsukeCands.length>0, mitsukeEmpty:(mitsukeCands.length===0 && s.seeded.length===0),
+      dailyMaxParent:s.dailyHakkenMax, incDaily:()=>this.incDaily(), decDaily:()=>this.decDaily(),
       sfxBg: s.sfx? 'var(--accent2,#5fb583)':'#d8cfc0', sfxX: s.sfx?'25px':'3px',
       bgmBg: s.bgm? 'var(--accent2,#5fb583)':'#d8cfc0', bgmX: s.bgm?'25px':'3px',
     };

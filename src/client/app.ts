@@ -23,6 +23,7 @@ export const clientApp = `
       localStorage.setItem('mojizukan_entries', JSON.stringify(state.collected));
       localStorage.setItem('mojizukan_discovered', JSON.stringify(state.discovered));
       localStorage.setItem('mojizukan_handwriting', JSON.stringify(state.handwriting));
+      localStorage.setItem('mojizukan_seeded', JSON.stringify(state.seeded));
     } catch(e) {}
   }
 
@@ -32,7 +33,8 @@ export const clientApp = `
       var entries = JSON.parse(localStorage.getItem('mojizukan_entries') || '[]');
       var discovered = JSON.parse(localStorage.getItem('mojizukan_discovered') || '[]');
       var handwriting = JSON.parse(localStorage.getItem('mojizukan_handwriting') || '{}');
-      return { collected: entries, discovered: discovered, handwriting: handwriting };
+      var seeded = JSON.parse(localStorage.getItem('mojizukan_seeded') || '[]');
+      return { collected: entries, discovered: discovered, handwriting: handwriting, seeded: seeded };
     } catch(e) {
       return {};
     }
@@ -56,7 +58,12 @@ export const clientApp = `
     sfx: true,
     bgm: false,
     theme: 'A',
-    storySel: []
+    storySel: [],
+    mode: 'omakase',
+    seeded: saved.seeded || [],
+    discovering: false,
+    prepInput: '',
+    prepSel: []
   };
 
   var _lastPromptCount = 0;
@@ -115,9 +122,21 @@ export const clientApp = `
       case 'detail':    return renderDetail(s);
       case 'storyPick': return renderStoryPick(s);
       case 'parent':    return renderParent(s);
+      case 'prep':      return renderPrep(s);
       case 'story':     return '<p>おはなしを よみこみちゅう…</p>';
       default:          return '<p>不明な画面: ' + s.screen + '</p>';
     }
+  }
+
+  function classify(word) {
+    var ngWords = [];
+    for (var i = 0; i < ngWords.length; i++) {
+      if (word.indexOf(ngWords[i]) !== -1) return 'ng';
+    }
+    if (PRESETS[word]) return 'dict';
+    if (state.collected.indexOf(word) !== -1) return 'dup';
+    if (state.seeded.indexOf(word) !== -1) return 'seeded';
+    return 'ok';
   }
 
   function renderHome(s) {
@@ -322,6 +341,34 @@ export const clientApp = `
         '<div style="font-size:16px;color:var(--sub);font-weight:700;margin-bottom:12px;">とりあつかい: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + s.collected.length + '</span> こ</div>' +
         catProgress +
       '</div>' +
+      '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;">はっけん準備</div>' +
+          '<div style="background:#fbeaf1;color:#9c4d70;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:700;">モード：おまかせ</div>' +
+        '</div>' +
+        '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">お子さまに はっけんさせたい ことばを まとめて しこめます。チケットは 生成成功時に 消費します。</div>' +
+        (s.seeded && s.seeded.length > 0 ?
+          '<div style="background:#fff;border:1px solid var(--cbd);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
+            '<span style="font-size:14px;color:var(--sub);font-weight:700;">⭐ 仕込み中の ひみつのことば</span>' +
+            '<span style="font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent3);">' + (s.seeded ? s.seeded.length : 0) + '</span>' +
+          '</div>'
+        : '') +
+        '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ ことばを 仕込む</button>' +
+        '<div style="display:flex;gap:8px;">' +
+          '<div style="flex:1;border:2px solid var(--accent3);background:#fbeaf1;border-radius:12px;padding:10px 8px;text-align:center;">' +
+            '<div style="font-size:12px;color:var(--sub);margin-bottom:4px;">✓</div>' +
+            '<div style="font-size:13px;font-weight:900;color:var(--accent3);">おまかせ</div>' +
+          '</div>' +
+          '<div style="flex:1;border:2px solid var(--cbd);background:var(--locked);border-radius:12px;padding:10px 8px;text-align:center;opacity:.6;">' +
+            '<div style="font-size:12px;color:var(--sub);margin-bottom:4px;">近日</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--sub);">いっしょに</div>' +
+          '</div>' +
+          '<div style="flex:1;border:2px solid var(--cbd);background:var(--locked);border-radius:12px;padding:10px 8px;text-align:center;opacity:.6;">' +
+            '<div style="font-size:12px;color:var(--sub);margin-bottom:4px;">近日</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--sub);">じぶんで</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ せってい</div>' +
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
@@ -399,6 +446,69 @@ export const clientApp = `
     '</div>';
   }
 
+  function renderPrep(s) {
+    var prepSel = s.prepSel || [];
+    var okCount = 0;
+    for (var i = 0; i < prepSel.length; i++) {
+      if (prepSel[i].selected && prepSel[i].status === 'ok') okCount++;
+    }
+    var btnBg = (okCount > 0 && (s.tickets || 0) >= okCount) ? 'var(--accent3)' : '#d8cfc0';
+    var btnShadow = (okCount > 0 && (s.tickets || 0) >= okCount) ? '0 6px 0 var(--accent3d)' : '0 6px 0 #bfb6a6';
+
+    var statusMeta = {
+      ok:     { text: 'はっけんOK',              tc: '#9c4d70', bg: '#fbeaf1' },
+      dup:    { text: 'もう ずかんに あるよ',    tc: '#c95835', bg: '#fff0e6' },
+      seeded: { text: 'もう しこみずみ',         tc: '#8a6d1e', bg: '#fdf3d6' },
+      dict:   { text: 'じしょに あり・むりょう', tc: '#3f7a52', bg: '#e6f1e9' },
+      ng:     { text: 'この ことばは つかえないよ', tc: '#b03a3a', bg: '#fbe6e6' }
+    };
+
+    var cards = '';
+    for (var j = 0; j < prepSel.length; j++) {
+      var item = prepSel[j];
+      var meta = statusMeta[item.status] || statusMeta.ok;
+      var emoji = (PRESETS[item.w] && PRESETS[item.w].emoji) ? PRESETS[item.w].emoji : '✨';
+      var checkEl = (item.selected && item.status === 'ok')
+        ? '<div style="position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:50%;background:var(--accent3);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;font-weight:900;">✓</div>'
+        : '';
+      var removeEl = '<div onclick="event.stopPropagation();window.__removePrepSel(\\'' + item.w + '\\')" style="position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:#f5ede6;color:#9a8878;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:900;">✕</div>';
+      var badgeEl = '<div style="font-size:11px;font-weight:700;color:' + meta.tc + ';background:' + meta.bg + ';padding:3px 8px;border-radius:8px;margin-top:4px;">' + meta.text + '</div>';
+      cards += '<div onclick="window.__togglePrepSel(\\'' + item.w + '\\')" style="position:relative;background:#fff;border:2px solid var(--cbd);border-radius:16px;padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;min-height:100px;">' +
+        checkEl +
+        removeEl +
+        '<div style="font-size:32px;line-height:1;">' + emoji + '</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);margin-top:4px;">' + item.w + '</div>' +
+        badgeEl +
+      '</div>';
+    }
+
+    return '<div style="display:flex;flex-direction:column;min-height:100vh;">' +
+      '<div style="padding:18px 18px 0;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+          '<button onclick="window.__goParent()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--accent3);">はっけん準備</div>' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;">🎟️ ' + (s.tickets || 0) + '</div>' +
+        '</div>' +
+        '<div style="font-size:14px;color:var(--sub);text-align:center;margin-bottom:4px;">お子さまが なぞって はっけんする ことばを えらんでね</div>' +
+        '<div style="font-size:12px;color:var(--sub);text-align:center;margin-bottom:16px;">プリセットに ない ことば ＝ 🎟️1まい</div>' +
+        '<div style="display:flex;gap:10px;margin-bottom:12px;">' +
+          '<input id="prep-input" type="text" value="' + (s.prepInput || '') + '" oninput="window.__updatePrepInput(this)" placeholder="ことばを にゅうりょく" style="flex:1;min-height:54px;border-radius:16px;border:2px solid var(--cbd);padding:0 16px;font-size:18px;font-family:var(--fhead);background:#fff;color:var(--ink);outline:none;" />' +
+          '<button onclick="window.__addPrepWord()" style="width:54px;height:54px;border-radius:16px;background:var(--accent3);color:#fff;font-size:26px;font-weight:900;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:none;">＋</button>' +
+        '</div>' +
+        '<button onclick="window.__rollRandom()" style="width:100%;min-height:48px;border-radius:16px;background:#fff;border:2px dashed var(--accent3);color:var(--accent3);font-size:16px;font-weight:700;margin-bottom:16px;box-shadow:none;">🎲 ランダム候補を 3つ だす</button>' +
+      '</div>' +
+      '<div style="flex:1;padding:0 18px;">' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">' +
+          cards +
+        '</div>' +
+      '</div>' +
+      '<div style="position:sticky;bottom:0;background:var(--bg);padding:16px 18px 8px;">' +
+        '<button onclick="window.__openSeedConfirm()" style="width:100%;min-height:78px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">⭐ ' + okCount + ' こ 仕込む</button>' +
+        '<div style="text-align:center;font-size:12px;color:var(--sub);margin-top:8px;padding-bottom:12px;">仕込んだ言葉は ずかんに『?』で ならびます</div>' +
+      '</div>' +
+    '</div>';
+  }
+
   function renderSheet(s) {
     if (s.sheet === 'hint') {
       var hw = s.hintWord || '';
@@ -443,6 +553,32 @@ export const clientApp = `
     }
     if (s.sheet === 'tickets') {
       return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div><div class="sheet"><p>[tickets sheet placeholder]</p></div>';
+    }
+    if (s.sheet === 'prepconfirm') {
+      var selWords = [];
+      for (var pi = 0; pi < (s.prepSel || []).length; pi++) {
+        if (s.prepSel[pi].selected && s.prepSel[pi].status === 'ok') {
+          selWords.push(s.prepSel[pi].w);
+        }
+      }
+      var wList = '';
+      for (var wi = 0; wi < selWords.length; wi++) {
+        wList += '<div style="display:inline-block;background:#fbeaf1;color:#9c4d70;font-weight:700;font-size:15px;padding:4px 12px;border-radius:10px;margin:4px;">' + selWords[wi] + '</div>';
+      }
+      return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
+        '<div class="sheet" onclick="event.stopPropagation()">' +
+          '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
+          '<div style="text-align:center;font-size:36px;">⭐🎟️</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-top:8px;">' + selWords.length + ' こ 仕込む？</div>' +
+          '<div style="display:flex;flex-wrap:wrap;justify-content:center;margin:16px 0;">' + wList + '</div>' +
+          '<div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:8px;">チケットは…図鑑にできた時（生成成功時）に 1枚ずつ</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent);margin-bottom:16px;">いま 🎟️ ' + (s.tickets || 0) + '</div>' +
+          '<div style="display:flex;gap:12px;">' +
+            '<button onclick="window.__confirmSeed()" style="flex:1;min-height:64px;border-radius:18px;background:var(--accent3);color:#fff;font-size:18px;font-weight:900;box-shadow:0 4px 0 var(--accent3d);">⭐ 仕込む</button>' +
+            '<button onclick="window.__closeSheet()" style="flex:1;min-height:64px;border-radius:18px;background:var(--locked);color:var(--sub);font-size:18px;box-shadow:none;">やめる</button>' +
+          '</div>' +
+          '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:12px;line-height:1.5;">仕込み・支払いは保護者メニューの中だけ。お子さまは課金画面に触れません</div>' +
+        '</div>';
     }
     if (s.sheet === 'parentGate') {
       return '<div class="sheet-overlay" onclick="window.__closeSheet()" style="background:rgba(20,15,10,.45);"></div>' +
@@ -686,6 +822,98 @@ export const clientApp = `
       state.handwriting = hw;
       saveState();
     }
+  };
+
+  window.__goParent = function() {
+    playSound('cancel');
+    setState({ screen: 'parent', sheet: null });
+  };
+
+  window.__goPrep = function() {
+    playSound('tap');
+    if (!state.authed) {
+      setState({ sheet: 'signup' });
+      return;
+    }
+    setState({ screen: 'prep', prepInput: '', prepSel: [] });
+  };
+
+  window.__addPrepWord = function() {
+    var word = state.prepInput.trim();
+    if (!word) return;
+    playSound('tap');
+    var status = classify(word);
+    var existing = state.prepSel.filter(function(p) { return p.w === word; });
+    if (existing.length > 0) return;
+    var sel = state.prepSel.concat([{ w: word, status: status, selected: status === 'ok' }]);
+    setState({ prepSel: sel, prepInput: '' });
+  };
+
+  window.__rollRandom = function() {
+    playSound('tap');
+    var available = [];
+    for (var i = 0; i < HAKKEN_WORDS.length; i++) {
+      var w = HAKKEN_WORDS[i];
+      if (state.collected.indexOf(w) === -1 && state.seeded.indexOf(w) === -1) {
+        var alreadyInSel = false;
+        for (var j = 0; j < state.prepSel.length; j++) {
+          if (state.prepSel[j].w === w) { alreadyInSel = true; break; }
+        }
+        if (!alreadyInSel) available.push(w);
+      }
+    }
+    for (var k = available.length - 1; k > 0; k--) {
+      var r = Math.floor(Math.random() * (k + 1));
+      var tmp = available[k]; available[k] = available[r]; available[r] = tmp;
+    }
+    var picked = available.slice(0, 3);
+    var newSel = state.prepSel.slice();
+    for (var m = 0; m < picked.length; m++) {
+      newSel.push({ w: picked[m], status: 'ok', selected: true });
+    }
+    setState({ prepSel: newSel });
+  };
+
+  window.__togglePrepSel = function(word) {
+    playSound('tap');
+    var sel = state.prepSel.map(function(p) {
+      if (p.w === word && p.status === 'ok') {
+        return { w: p.w, status: p.status, selected: !p.selected };
+      }
+      return p;
+    });
+    setState({ prepSel: sel });
+  };
+
+  window.__removePrepSel = function(word) {
+    playSound('cancel');
+    var sel = state.prepSel.filter(function(p) { return p.w !== word; });
+    setState({ prepSel: sel });
+  };
+
+  window.__updatePrepInput = function(el) {
+    state.prepInput = el.value;
+  };
+
+  window.__openSeedConfirm = function() {
+    var okCount = 0;
+    for (var i = 0; i < state.prepSel.length; i++) {
+      if (state.prepSel[i].selected && state.prepSel[i].status === 'ok') okCount++;
+    }
+    if (okCount === 0) return;
+    playSound('tap');
+    setState({ sheet: 'prepconfirm' });
+  };
+
+  window.__confirmSeed = function() {
+    playSound('success');
+    var newSeeded = state.seeded.slice();
+    for (var i = 0; i < state.prepSel.length; i++) {
+      if (state.prepSel[i].selected && state.prepSel[i].status === 'ok') {
+        newSeeded.push(state.prepSel[i].w);
+      }
+    }
+    setState({ seeded: newSeeded, prepSel: [], sheet: null, screen: 'parent' });
   };
 
   render(state);

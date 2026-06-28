@@ -192,58 +192,12 @@ export const clientApp = `
   }
 
   function renderMitsukeru(s) {
-    var secretSection = '';
-    if (s.seeded && s.seeded.length > 0) {
-      secretSection += '<div style="margin-bottom:24px;">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:#9c4d70;margin-bottom:12px;">⭐ ひみつの ことば</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;">';
-      for (var si = 0; si < s.seeded.length; si++) {
-        var sw = s.seeded[si];
-        secretSection += '<button onclick="window.__openSecret(\\'' + sw + '\\')" style="background:#fff;border:2px dashed #e3b8cd;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;cursor:pointer;">' +
-          '<span style="font-size:38px;font-weight:900;color:#c2698f;line-height:1;">?</span>' +
-          '<span style="font-size:11px;color:#c2698f;font-weight:700;">かいて みよう</span>' +
-        '</button>';
-      }
-      secretSection += '</div></div>';
-    }
-
-    var uncollected = [];
-    for (var w in PRESETS) {
-      if (s.collected.indexOf(w) === -1) uncollected.push(w);
-    }
-
-    var cardsSection = '';
-    if (uncollected.length > 0) {
-      cardsSection += '<div style="margin-bottom:24px;">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--ink);margin-bottom:12px;">✏️ かいて あつめよう</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;">';
-      for (var ui = 0; ui < uncollected.length; ui++) {
-        var uw = uncollected[ui];
-        var upreset = PRESETS[uw];
-        cardsSection += '<button onclick="window.__goWriteWord(\\'' + uw + '\\',false,\\'normal\\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
-          '<span style="font-size:40px;line-height:1;">' + upreset.emoji + '</span>' +
-          '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + uw + '</span>' +
-        '</button>';
-      }
-      cardsSection += '</div></div>';
-    } else {
-      cardsSection += '<div style="text-align:center;padding:32px 0;color:var(--sub);font-size:18px;font-weight:700;">' +
-        '<div style="font-size:48px;margin-bottom:12px;">🎉</div>' +
-        'ぜんぶ あつめたよ！' +
-      '</div>';
-    }
-
-    return '<div style="flex:1;padding:18px;">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">' +
-        '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:24px;color:var(--accent2);">🔍 みつける</div>' +
-        '<div style="width:56px;"></div>' +
-      '</div>' +
-      secretSection +
-      cardsSection +
-      '<div style="margin-top:8px;">' +
-        '<button onclick="window.__goWrite()" style="width:100%;min-height:72px;border-radius:22px;background:var(--accent);font-size:22px;font-weight:900;box-shadow:0 6px 0 var(--accentd);">🎲 おまかせで 1つ えらぶ</button>' +
-      '</div>' +
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
+      '<div style="font-size:80px;line-height:1;margin-bottom:16px;animation:bob 2s ease-in-out infinite;">🌟</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:28px;color:var(--accent2);margin-bottom:12px;">いまの ことばは<br>ぜんぶ みつけたよ！</div>' +
+      '<div style="font-size:16px;color:var(--sub);font-weight:600;line-height:1.8;margin-bottom:36px;">あたらしい ことばは<br>おうちの ひとに そうだんしてね</div>' +
+      '<button onclick="window.__showParentGate()" style="min-height:72px;width:100%;max-width:340px;border-radius:22px;background:var(--accent2);font-size:22px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">🏠 おうちの ひとに みせる</button>' +
+      '<button onclick="window.__goHome()" style="min-height:52px;width:100%;max-width:340px;background:transparent;color:var(--sub);font-weight:700;font-size:16px;box-shadow:none;margin-top:12px;">← もどる</button>' +
     '</div>';
   }
 
@@ -839,6 +793,23 @@ export const clientApp = `
     return WORDPOOL[0];
   }
 
+  function mitsukePool(s) {
+    var pool = [];
+    for (var i = 0; i < s.seeded.length; i++) {
+      pool.push(s.seeded[i]);
+    }
+    for (var w in PRESETS) {
+      if (s.collected.indexOf(w) === -1 && pool.indexOf(w) === -1) {
+        pool.push(w);
+      }
+    }
+    for (var j = pool.length - 1; j > 0; j--) {
+      var k = Math.floor(Math.random() * (j + 1));
+      var tmp = pool[j]; pool[j] = pool[k]; pool[k] = tmp;
+    }
+    return pool;
+  }
+
   function setupCanvas() {
     var c = document.getElementById('trace-canvas');
     if (!c || c === _canvasWired) return;
@@ -919,7 +890,19 @@ export const clientApp = `
 
   window.__goMitsukeru = function () {
     playSound('tap');
-    setState({ screen: 'mitsukeru' });
+    var pool = mitsukePool(state);
+    if (pool.length > 0) {
+      var pick = pool[Math.floor(Math.random() * pool.length)];
+      if (state.seeded.indexOf(pick) !== -1) {
+        window.__openSecret(pick);
+      } else {
+        window.__goWriteWord(pick, false, 'mitsuke');
+      }
+    } else if (state.collected.length > 0) {
+      setState({ screen: 'mitsukeru' });
+    } else {
+      setState({ screen: 'mitsukeru' });
+    }
   };
 
   window.__goTanken = function () {

@@ -58,10 +58,20 @@ describe("clientApp", () => {
     expect(clientApp).toContain("みつけた！");
   });
 
-  it("みつける画面のレンダリングロジックが含まれる", () => {
+  it("みつける画面が完了通知として表示される", () => {
     expect(clientApp).toContain("renderMitsukeru");
-    expect(clientApp).toContain("おまかせで 1つ えらぶ");
-    expect(clientApp).toContain("かいて あつめよう");
+    expect(clientApp).toContain("ぜんぶ みつけたよ");
+    expect(clientApp).toContain("おうちの ひとに みせる");
+  });
+
+  it("mitsukePool 関数が定義されている", () => {
+    expect(clientApp).toContain("function mitsukePool");
+  });
+
+  it("goMitsukeru が即時遷移ロジックを持つ", () => {
+    expect(clientApp).toContain("mitsukePool(state)");
+    expect(clientApp).toContain("__openSecret(pick)");
+    expect(clientApp).toContain("__goWriteWord(pick");
   });
 
   it("たんけん画面の switch case が含まれる", () => {

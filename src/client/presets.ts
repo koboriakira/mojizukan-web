@@ -53,6 +53,19 @@ var PRESETS = {
   'えほん':       { emoji: '📚', cat: 'その他', catIcon: '✨', desc: 'えと おはなしが いっぱいだよ。よんでもらうと わくわくするね。' }
 };
 
+var CATEGORIES = [
+  { name: 'どうぶつ', icon: '🐾' },
+  { name: 'たべもの', icon: '🍽️' },
+  { name: 'のりもの', icon: '🚌' },
+  { name: 'しぜん', icon: '🌿' },
+  { name: 'むし', icon: '🐛' },
+  { name: 'からだ', icon: '💪' },
+  { name: 'いえのもの', icon: '🏠' },
+  { name: 'ふく', icon: '👗' },
+  { name: 'いろ', icon: '🎨' },
+  { name: 'その他', icon: '✨' }
+];
+
 var WORDPOOL = [
   'て', 'め',
   'いぬ', 'ねこ', 'うし', 'うみ', 'そら', 'はな', 'つき', 'やま',

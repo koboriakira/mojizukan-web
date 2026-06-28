@@ -206,9 +206,27 @@ describe("clientApp", () => {
     expect(clientApp).toContain("hw[word] = hw[word].slice(0, -1)");
   });
 
-  it("setupCanvas が DPR に合わせて内部解像度を設定する", () => {
-    expect(clientApp).toContain("devicePixelRatio");
-    expect(clientApp).toContain("ctx.scale(dpr, dpr)");
+  it("setupCanvas がオフスクリーン Canvas（ink, mask）を使用する", () => {
+    expect(clientApp).toContain("_ink");
+    expect(clientApp).toContain("_mask");
+    expect(clientApp).toContain("buildMask");
+    expect(clientApp).toContain("renderTrace");
+  });
+
+  it("キラキラ粒子（spark）が実装されている", () => {
+    expect(clientApp).toContain("function spark");
+    expect(clientApp).toContain("starPath");
+    expect(clientApp).toContain("#ffd24a");
+  });
+
+  it("チャイム音（twinkle）が実装されている", () => {
+    expect(clientApp).toContain("function twinkle");
+    expect(clientApp).toContain("AudioContext");
+    expect(clientApp).toContain("523.25");
+  });
+
+  it("手書きキャプチャが ink Canvas から取得される", () => {
+    expect(clientApp).toContain("_ink.toDataURL");
   });
 
   it("setState で saveState が呼ばれる", () => {

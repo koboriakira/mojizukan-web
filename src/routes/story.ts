@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv, StoryRequest, StoryResponse } from "../types";
 import { AppError } from "../middleware/error-handler";
+import { generateJson } from "../lib/ai";
 
 export const story = new Hono<AppEnv>();
 
@@ -29,33 +30,12 @@ story.post("/", async (c) => {
     throw new AppError(400, "words は 2〜5 個の配列で指定してください");
   }
 
-  const prompt = buildStoryPrompt(body.words);
+  const prompt = buildStoryPrompt(body.words) +
+    "\n\nJSONのみを出力してください。コードブロックや説明文は不要です。";
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${c.env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      response_format: { type: "json_object" },
-      messages: [{ role: "user", content: prompt }],
-    }),
+  const result = await generateJson<StoryResponse>({
+    ai: c.env.AI,
+    prompt,
   });
-
-  if (!response.ok) {
-    const text = await response.text();
-    console.error("OpenAI API error:", response.status, text);
-    throw new AppError(502, "おはなしの生成に失敗しました");
-  }
-
-  const data = await response.json<{ choices: { message: { content: string } }[] }>();
-  const content = data.choices[0]?.message?.content;
-  if (!content) {
-    throw new AppError(502, "おはなしの生成に失敗しました");
-  }
-
-  const story = JSON.parse(content) as StoryResponse;
-  return c.json(story);
+  return c.json(result);
 });

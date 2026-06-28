@@ -5,6 +5,7 @@ import { isNgWord } from "../lib/ng-words";
 import { PRESET_WORDS } from "../lib/preset-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
 import { addTicket } from "../lib/tickets";
+import { generateJson } from "../lib/ai";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -83,35 +84,13 @@ hakken.post("/generate", async (c) => {
 - ですます調・〜よ・〜ね のトーンで書く
 - 2文で書く（1文目と2文目を「。」で区切る）
 
-出力はJSON形式のみで返し、以下の構造にすること:
+出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
 {"emoji":"絵文字1つ","description":"説明文（2文）"}`;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${c.env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      response_format: { type: "json_object" },
-      messages: [{ role: "user", content: prompt }],
-    }),
+  const generated = await generateJson<HakkenGenerateResponse>({
+    ai: c.env.AI,
+    prompt,
   });
-
-  if (!response.ok) {
-    const text = await response.text();
-    console.error("OpenAI API error:", response.status, text);
-    throw new AppError(502, "図鑑エントリの生成に失敗しました");
-  }
-
-  const data = await response.json<{ choices: { message: { content: string } }[] }>();
-  const content = data.choices[0]?.message?.content;
-  if (!content) {
-    throw new AppError(502, "図鑑エントリの生成に失敗しました");
-  }
-
-  const generated = JSON.parse(content) as HakkenGenerateResponse;
 
   await c.env.DB.prepare(
     "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description) VALUES (?, ?, ?, ?)"

@@ -92,7 +92,7 @@ export interface StoryResponse {
 export interface Bindings {
   DB: D1Database;
   IMAGES: R2Bucket;
-  OPENAI_API_KEY: string;
+  AI: Ai;
 }
 
 export interface AppEnv {

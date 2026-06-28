@@ -90,14 +90,21 @@
       <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:46px;margin-top:16px;">{{ revealWord }}</div>
       <div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2,#5fb583);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:700;font-size:15px;padding:5px 14px;border-radius:99px;margin-top:10px;">{{ revealCatIcon }} {{ revealCat }}</div>
       <div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;margin-top:14px;">{{ revealDesc }}</div>
-      <div style="display:flex;gap:14px;margin-top:36px;width:100%;max-width:400px;">
-        <button class="tap" onClick="{{ goWrite }}" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent,#e8714c);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:20px;box-shadow:0 5px 0 var(--accentd,#c95835);">つぎも かく！</button>
+      <sc-if value="{{ isReviewReveal }}">
+        <div style="margin-top:18px;max-width:360px;background:linear-gradient(100deg,#e3f0e6,#fff3d6);border:1.5px solid #bcdcc6;border-radius:18px;padding:14px 18px;text-align:left;">
+          <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:16px;color:#3f7a52;line-height:1.5;">この ことばは もう ずかんに いるよ！</div>
+          <div style="font-size:13.5px;color:#7a6b54;font-weight:700;line-height:1.7;margin-top:6px;">なんども かけて すごい！あたらしい ことばも かいて みたいね。</div>
+          <div style="font-size:12px;color:#9c6a26;font-weight:700;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px dashed #d8c79a;">▶ おうちの方へ：あたらしい ことばを おぼえる チャンスです。「ひみつの ことば」を 図鑑に 追加して あげましょう。</div>
+        </div>
+      </sc-if>
+      <div style="display:flex;gap:14px;margin-top:28px;width:100%;max-width:400px;">
+        <button class="tap" onClick="{{ revealNext }}" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent,#e8714c);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:20px;box-shadow:0 5px 0 var(--accentd,#c95835);">つぎも かく！</button>
         <button class="tap" onClick="{{ goZukan }}" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent2,#5fb583);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:20px;box-shadow:0 5px 0 var(--accent2d,#3f8e63);">ずかんを みる</button>
       </div>
     </div>
     </sc-if>
 
-    <!-- ===== MITSUKERU (おまかせ・さがす) ===== -->
+    <!-- ===== MITSUKERU (ぜんぶ みつけた・保護者へ相談を促す) ===== -->
     <sc-if value="{{ isMitsukeru }}" hint-placeholder-val="{{ true }}">
     <div data-screen-label="みつける" style="flex:1;display:flex;flex-direction:column;padding-top:18px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -105,42 +112,23 @@
         <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:22px;color:var(--accent2,#5fb583);">🔍 みつける</div>
         <div style="width:56px;"></div>
       </div>
-      <div style="text-align:center;font-size:14px;color:#7a7060;font-weight:700;margin:2px 0 18px;">よういされた ことばを さがして かこう</div>
 
-      <sc-if value="{{ hasSeeded }}">
-        <div style="display:flex;align-items:center;gap:8px;margin:0 0 6px;">
-          <span style="font-size:22px;">⭐</span><span style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:19px;">ひみつの ことば</span><span style="font-size:13px;color:var(--sub,#9a8f7e);font-weight:700;">{{ seededCount }}こ</span>
+      <!-- 上部メッセージ：保護者へ相談を促す -->
+      <div style="background:linear-gradient(100deg,#fff3d6,#fbeaf1);border:1.5px solid #ecd58f;border-radius:20px;padding:18px;display:flex;align-items:flex-start;gap:12px;margin:6px 0 8px;">
+        <span style="font-size:30px;line-height:1;">🌟</span>
+        <div>
+          <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:17px;color:#9c6a26;line-height:1.5;">いまの ことばは ぜんぶ みつけたよ！</div>
+          <div style="font-size:14px;color:#7a6b54;font-weight:700;line-height:1.7;margin-top:5px;">もっと あたらしいのを みつけたい ときは、<br>パパや ママに そうだんしてね。</div>
         </div>
-        <div style="font-size:13px;color:#9c4d70;font-weight:700;margin:0 0 12px;">? を かいて はっけんしよう！</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:24px;">
-          <sc-for list="{{ seededCells }}" as="c" hint-placeholder-count="2">
-            <button class="tap" onClick="{{ c.onOpen }}" style="background:#fff;border:3px dashed #e3b8cd;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
-              <span style="font-size:38px;color:#c2698f;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;">?</span>
-              <span style="font-size:11px;color:#9c4d70;font-weight:700;">かいて みよう</span>
-            </button>
-          </sc-for>
-        </div>
-      </sc-if>
+      </div>
 
-      <sc-if value="{{ hasMitsukeCands }}">
-        <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">
-          <span style="font-size:22px;">✏️</span><span style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:19px;">かいて あつめよう</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:24px;">
-          <sc-for list="{{ mitsukeCands }}" as="m" hint-placeholder-count="4">
-            <button class="tap" onClick="{{ m.onWrite }}" style="background:#fff;border:3px solid var(--cbd,#f0e4d0);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
-              <span style="font-size:36px;">{{ m.emoji }}</span><span style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;">{{ m.w }}</span>
-            </button>
-          </sc-for>
-        </div>
-      </sc-if>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;">
+        <div style="font-size:74px;animation:bob 1.5s ease-in-out infinite;">📖</div>
+        <div style="font-size:15px;color:#9a8f7e;font-weight:700;line-height:1.8;max-width:280px;">おうちの ひとが あたらしい「ひみつの ことば」を よういすると、また みつけられるよ。</div>
+      </div>
 
-      <sc-if value="{{ mitsukeEmpty }}">
-        <div style="text-align:center;font-size:14px;color:#7a7060;font-weight:700;line-height:1.8;background:var(--card,#fff8ee);border:1px dashed var(--cbd,#f0e4d0);border-radius:20px;padding:28px 18px;margin-bottom:20px;">じしょの ことばは ぜんぶ あつめたよ！🎉<br><span style="font-size:13px;color:var(--sub,#9a8f7e);">おうちの方に「ひみつの ことば」を よういして もらうか、<br>「たんけん」で じぶんの ことばを つくろう。</span></div>
-      </sc-if>
-
-      <div style="margin-top:auto;padding-top:8px;">
-        <button class="tap" onClick="{{ goWrite }}" style="width:100%;min-height:62px;border-radius:18px;background:#fff;border:2px solid var(--accent2,#5fb583);color:var(--accent2d,#3f8e63);font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:17px;">🎲 おまかせで 1つ えらぶ</button>
+      <div style="padding-top:8px;">
+        <button class="tap" onClick="{{ goParent }}" style="width:100%;min-height:66px;border-radius:18px;background:var(--accent2,#5fb583);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:18px;box-shadow:0 5px 0 var(--accent2d,#3f8e63);">🏠 おうちの ひとに みせる</button>
       </div>
     </div>
     </sc-if>
@@ -734,7 +722,24 @@ class Component extends DCLogic {
 
   goHome(){ this.setState({screen:'home',sheet:null}); }
   goWrite(){ this._wimgs=[]; this.setState({screen:'write', word:this.nextPresetWord(), charIndex:0, confirmed:[], lastHakken:false, discovering:false, sheet:null, revealKind:'normal', tankenMode:false}); setTimeout(()=>this.clearStrokes(),0); }
-  goMitsukeru(){ this.setState({screen:'mitsukeru', sheet:null}); }
+  mitsukePool(){
+    const sh=a=>a.slice().sort(()=>Math.random()-0.5);
+    const seeded=this.state.seeded;
+    const presets=this.CATS.reduce((a,c)=>a.concat(c.words),[]).filter(w=>!this.state.collected.includes(w));
+    return [...sh(seeded), ...sh(presets)];
+  }
+  goMitsukeru(){
+    const pool=this.mitsukePool();
+    if(pool.length===0){
+      // すべて発見ずみ → 復習モード：すでに ずかんに ある ことばを ランダムで なぞる
+      const w=this.pick(this.state.collected);
+      if(w){ this.goWriteWord(w,false,'review'); return; }
+      this.setState({screen:'mitsukeru', sheet:null}); return;
+    }
+    const w=pool[0];
+    if(this.state.seeded.includes(w)) this.openSecret(w);
+    else this.goWriteWord(w,false,'mitsuke');
+  }
   goTanken(){ this.setState({screen:'tanken', tankenChars:[], tankenMsg:null, sheet:null}); }
   goWriteWord(w, discovering, kind){ this._wimgs=[]; this.setState({screen:'write', word:w, charIndex:0, confirmed:[], discovering:!!discovering, lastHakken:false, sheet:null, revealKind:kind||'normal', tankenMode: kind==='tanken'}); setTimeout(()=>this.clearStrokes(),0); }
   tkAdd(ch){ if(!ch) return; if(this.state.tankenChars.length>=6) return; this.setState({tankenChars:[...this.state.tankenChars,ch], tankenMsg:null}); }
@@ -998,6 +1003,8 @@ class Component extends DCLogic {
       nextPage:()=>this.nextPage(), prevPage:()=>this.prevPage(),
       regenerate:()=>this.regenerate(),
       goHome:()=>this.goHome(), goWrite:()=>this.goWrite(), goZukan:()=>this.goZukan(), goParent:()=>this.goParent(),
+      revealNext: (s.revealKind==='mitsuke'||s.revealKind==='review')? ()=>this.goMitsukeru() : ()=>this.goWrite(),
+      isReviewReveal: s.revealKind==='review',
       undo:()=>this.undo(), clearCanvas:()=>this.clearCanvas(), confirmChar:()=>this.confirmChar(),
       openSignup:()=>this.openSignup(), closeSheet:()=>this.closeSheet(), doSignup:()=>this.doSignup(), tapHakken:()=>this.tapHakken(),
       buy5:()=>this.buy(5), buy15:()=>this.buy(15), buy40:()=>this.buy(40), stop:(e)=>this.stop(e),
@@ -1006,7 +1013,8 @@ class Component extends DCLogic {
       boxes, currentChar: word[Math.min(s.charIndex,word.length-1)],
       traceLabel:'「'+word+'」を なぞろう',
       confirmLabel: lastChar? 'できた！' : (s.charIndex===word.length-1? 'さいごの もじ！' : 'なぞれたよ！'),
-      revealTitle: s.lastHakken? (s.revealKind==='tanken'?'あたらしい ことば はっけん！⭐':'みつけた！⭐') : 'ずかんに のったよ！🎉',
+      revealTitle: s.revealKind==='review'? 'また かけたね！😊'
+        : s.lastHakken? (s.revealKind==='tanken'?'あたらしい ことば はっけん！⭐':'みつけた！⭐') : 'ずかんに のったよ！🎉',
       revealEmoji:cur.e||this.HAKKEN_EMOJI[word]||'⭐', revealWord:word, revealCat:cur.cat|| (s.lastHakken?'はっけん':''), revealCatIcon:cur.ci|| (s.lastHakken?'⭐':''), revealDesc:cur.d|| (s.lastHakken?'あたらしい ことばを みつけたよ。\nずかんに のったよ。':''),
       collectedCount:s.collected.length, zukanCats,
       authed:s.authed, isGuest:!s.authed, tickets:s.tickets,

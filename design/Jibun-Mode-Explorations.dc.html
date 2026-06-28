@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+</helmet>
+
+<!-- ===== TITLE ===== -->
+<div style="position:absolute;left:60px;top:48px;width:1520px;font-family:'Zen Kaku Gothic New',sans-serif;color:#2a241d;">
+  <div style="display:inline-flex;align-items:center;gap:8px;background:#fbeaf1;border:1.5px solid #e3b8cd;border-radius:99px;padding:6px 16px;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;color:#9c4d70;">じぶんで モード ・ 子ども主導</div>
+  <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:42px;line-height:1.15;margin-top:14px;">子どもが じぶんで ことばを 決めて なぞる</div>
+  <div style="font-size:17px;color:#6b6053;margin-top:10px;line-height:1.6;max-width:1100px;">50音で 1文字ずつ 組んで → なぞって → 図鑑へ。<b>入力方式を 3案</b>ならべて 触り比べられます（実際に 文字を 組めます）。辞書に ある言葉は <b style="color:#3f8e63;">のった（無料）</b>、辞書に ない言葉は <b style="color:#9c4d70;">はっけん</b>。<span style="color:#9a8f7e;">親ゲートを 毎回 出さない「じゆうはっけん枠」付き。</span></div>
+</div>
+
+<!-- ===== FLOW CARD ===== -->
+<div style="position:absolute;left:60px;top:236px;width:720px;">
+  <div data-drags-parent="1" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:15px;color:#7a6b54;margin-bottom:10px;">ぜんたいの ながれ</div>
+  <div style="background:#fff;border-radius:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:24px 26px;font-family:'Zen Kaku Gothic New',sans-serif;">
+    <div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:84px;background:#fdf6ec;border:1.5px solid #f0e4d0;border-radius:14px;padding:12px 8px;text-align:center;">
+        <div style="font-size:26px;">🏠</div><div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:13px;margin-top:4px;">ホームで えらぶ</div></div>
+      <div style="align-self:center;color:#bcb09a;font-weight:900;">→</div>
+      <div style="flex:1;min-width:84px;background:#fdf6ec;border:1.5px solid #f0e4d0;border-radius:14px;padding:12px 8px;text-align:center;">
+        <div style="font-size:26px;">🔤</div><div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:13px;margin-top:4px;">ことばを つくる</div><div style="font-size:10px;color:#9a8f7e;font-weight:700;">50音</div></div>
+      <div style="align-self:center;color:#bcb09a;font-weight:900;">→</div>
+      <div style="flex:1;min-width:84px;background:#fdf6ec;border:1.5px solid #f0e4d0;border-radius:14px;padding:12px 8px;text-align:center;">
+        <div style="font-size:26px;">✏️</div><div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:13px;margin-top:4px;">なぞる</div></div>
+      <div style="align-self:center;color:#bcb09a;font-weight:900;">→</div>
+      <div style="flex:1;min-width:84px;background:#fdf6ec;border:1.5px solid #f0e4d0;border-radius:14px;padding:12px 8px;text-align:center;">
+        <div style="font-size:26px;">🔎</div><div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:13px;margin-top:4px;">しらべる</div></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:14px;">
+      <div style="flex:1;background:#e6f1e9;border:1.5px solid #b8d8c2;border-radius:14px;padding:12px 14px;">
+        <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;color:#3f7a52;">じしょに ある → のった 🎉</div>
+        <div style="font-size:12.5px;color:#3a5e44;line-height:1.5;margin-top:4px;">そのまま 図鑑に。<b>無料・なんかいでも</b>。親ゲートなし。</div></div>
+      <div style="flex:1;background:#fbeaf1;border:1.5px solid #e3b8cd;border-radius:14px;padding:12px 14px;">
+        <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;color:#9c4d70;">じしょに ない → はっけん ⭐</div>
+        <div style="font-size:12.5px;color:#7a3e5b;line-height:1.5;margin-top:4px;">AIが 新しく 図鑑化。<b>じゆうはっけん枠を 1つ</b> つかう。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PARENT SETTING + ENTRY NAME ===== -->
+<div style="position:absolute;left:820px;top:236px;width:760px;">
+  <div data-drags-parent="1" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:15px;color:#7a6b54;margin-bottom:10px;">★ 摩擦の解決 ― 親が さきに きめておく</div>
+  <div style="background:#fff;border-radius:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:22px 24px;font-family:'Zen Kaku Gothic New',sans-serif;">
+    <div style="font-size:13.5px;color:#6b6053;line-height:1.6;">案Bの 弱点＝「遊びの 最中に 親ゲートが 何度も 挟まる」。そこで <b>おうちの方が 事前に「1日◯回まで じゆうはっけんOK」</b>と 許可。<b>枠が ある限り 子は ノンストップ</b>、0に なったら やさしく「あした また」。</div>
+    <div style="display:flex;align-items:center;gap:14px;background:#fbeaf1;border:1.5px solid #e3b8cd;border-radius:16px;padding:14px 18px;margin-top:16px;">
+      <span style="font-size:30px;">🎟️</span>
+      <div style="flex:1;">
+        <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:15px;color:#9c4d70;">1日 じゆうはっけん</div>
+        <div style="font-size:11.5px;color:#7a3e5b;font-weight:700;">右の 3台 ぜんぶに すぐ 反映されます</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onClick="{{ dec }}" style="width:44px;height:44px;border-radius:13px;background:#fff;border:2px solid #c2698f;color:#9c4d70;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px;">−</button>
+        <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:30px;color:#9c4d70;min-width:54px;text-align:center;">{{ dailyMax }}<span style="font-size:14px;">かい</span></div>
+        <button onClick="{{ inc }}" style="width:44px;height:44px;border-radius:13px;background:#c2698f;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px;box-shadow:0 3px 0 #9c4d70;">＋</button>
+      </div>
+    </div>
+    <div style="border-top:1px solid #efe7d8;margin-top:18px;padding-top:16px;">
+      <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;color:#2a241d;margin-bottom:4px;">ホームの メニュー名（候補）</div>
+      <div style="font-size:12px;color:#9a8f7e;font-weight:700;margin-bottom:10px;">いまの「もじを かく（おまかせ）」と ならべる 子ども向けの 言いまわし</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span style="background:#e8714c;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;padding:7px 16px;border-radius:99px;">✏️ じぶんで かく <span style="font-size:10px;opacity:.85;">おすすめ</span></span>
+        <span style="background:#fff;border:1.5px solid #e0d6c5;color:#5a5044;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;padding:7px 16px;border-radius:99px;">すきな ことば</span>
+        <span style="background:#fff;border:1.5px solid #e0d6c5;color:#5a5044;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;padding:7px 16px;border-radius:99px;">すきなのを かく</span>
+        <span style="background:#fff;border:1.5px solid #e0d6c5;color:#5a5044;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;padding:7px 16px;border-radius:99px;">ことば つくり</span>
+        <span style="background:#fff;border:1.5px solid #e0d6c5;color:#5a5044;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;padding:7px 16px;border-radius:99px;">じぶんで えらぶ</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VARIANT A ===== -->
+<div style="position:absolute;left:60px;top:680px;width:420px;">
+  <div data-drags-parent="1" style="margin-bottom:10px;">
+    <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:17px;color:#2a241d;">方式A ― 50音表（ぜんぶ 見える）</div>
+    <div style="font-size:13px;color:#7a6b54;font-weight:700;line-height:1.5;margin-top:3px;">全部 一覧。<span style="color:#3f8e63;">○ 探しやすい</span> ／ <span style="color:#c95835;">△ キーが小さめ・量が多い</span></div>
+  </div>
+  <div style="width:390px;background:#fff;border-radius:34px;box-shadow:0 8px 30px rgba(0,0,0,.12);overflow:hidden;border:1px solid #ece3d4;">
+    <dc-import name="JibunPhone" variant="A" daily-max="{{ dailyMax }}" hint-size="390px,720px" style="width:390px;height:720px;"></dc-import>
+  </div>
+</div>
+
+<!-- ===== VARIANT B ===== -->
+<div style="position:absolute;left:580px;top:680px;width:420px;">
+  <div data-drags-parent="1" style="margin-bottom:10px;">
+    <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:17px;color:#2a241d;">方式B ― 行→段の 2ステップ</div>
+    <div style="font-size:13px;color:#7a6b54;font-weight:700;line-height:1.5;margin-top:3px;">ぎょうを 選ぶ→5つから。<span style="color:#3f8e63;">○ 大きい・迷わない</span> ／ <span style="color:#c95835;">△ タップ2回</span></div>
+  </div>
+  <div style="width:390px;background:#fff;border-radius:34px;box-shadow:0 8px 30px rgba(0,0,0,.12);overflow:hidden;border:1px solid #ece3d4;">
+    <dc-import name="JibunPhone" variant="B" daily-max="{{ dailyMax }}" hint-size="390px,720px" style="width:390px;height:720px;"></dc-import>
+  </div>
+</div>
+
+<!-- ===== VARIANT C ===== -->
+<div style="position:absolute;left:1100px;top:680px;width:420px;">
+  <div data-drags-parent="1" style="margin-bottom:10px;">
+    <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:17px;color:#2a241d;">方式C ― フリック風（タップで 十字）</div>
+    <div style="font-size:13px;color:#7a6b54;font-weight:700;line-height:1.5;margin-top:3px;">ぎょうを 押すと 周りに 段。<span style="color:#3f8e63;">○ コンパクト・親に馴染み</span> ／ <span style="color:#c95835;">△ 概念が やや難しい</span></div>
+  </div>
+  <div style="width:390px;background:#fff;border-radius:34px;box-shadow:0 8px 30px rgba(0,0,0,.12);overflow:hidden;border:1px solid #ece3d4;">
+    <dc-import name="JibunPhone" variant="C" daily-max="{{ dailyMax }}" hint-size="390px,720px" style="width:390px;height:720px;"></dc-import>
+  </div>
+</div>
+
+<!-- ===== TRY HINT ===== -->
+<div style="position:absolute;left:1100px;top:560px;width:430px;">
+  <div style="background:#fef4a8;border-radius:14px;padding:14px 18px;font-family:'Zen Kaku Gothic New',sans-serif;font-size:13.5px;line-height:1.6;color:#5c5238;box-shadow:0 1px 4px rgba(0,0,0,.08);transform:rotate(-.4deg);">
+    💡 ためしに「<b>いぬ</b>」＝のった（無料）、「<b>おに</b>」＝はっけん で 動きが 変わります。上の 回数を 0 に すると「あした また」も 見られます。
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){ super(props); this.state={ dailyMax:3 }; }
+  inc(){ this.setState({dailyMax:Math.min(9,this.state.dailyMax+1)}); }
+  dec(){ this.setState({dailyMax:Math.max(0,this.state.dailyMax-1)}); }
+  renderVals(){ return { dailyMax:this.state.dailyMax, inc:()=>this.inc(), dec:()=>this.dec() }; }
+}
+</script>
+</body>
+</html>

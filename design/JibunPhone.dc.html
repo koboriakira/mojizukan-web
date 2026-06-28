@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  @keyframes jpPop{0%{transform:scale(.6);opacity:0;}60%{transform:scale(1.08);}100%{transform:scale(1);opacity:1;}}
+  @keyframes jpFade{from{opacity:0;}to{opacity:1;}}
+  @keyframes jpBob{0%,100%{transform:translateY(0) rotate(-6deg);}50%{transform:translateY(-10px) rotate(6deg);}}
+  @keyframes jpKey{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+</style>
+</helmet>
+<div ref="{{ rootRef }}" style="height:100%;min-height:720px;background:#fdf6ec;font-family:'Zen Kaku Gothic New',sans-serif;color:#2a241d;display:flex;flex-direction:column;padding:18px 16px 20px;position:relative;overflow:hidden;">
+
+  <!-- header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex:0 0 auto;">
+    <div style="width:46px;height:46px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.07);font-size:20px;display:flex;align-items:center;justify-content:center;color:#9a8f7e;">←</div>
+    <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:18px;text-align:center;line-height:1.2;">{{ headTitle }}</div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:46px;">
+      <span style="font-size:9px;font-weight:900;color:#9a8f7e;letter-spacing:.04em;">きょうの はっけん</span>
+      <div style="display:flex;gap:3px;">
+        <sc-for list="{{ pips }}" as="p" hint-placeholder-count="3">
+          <span style="width:11px;height:11px;border-radius:50%;background:{{ p.bg }};border:1.5px solid #d8b9c8;"></span>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BUILD ============ -->
+  <sc-if value="{{ isBuild }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
+    <!-- slots -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex:0 0 auto;">
+      <div style="flex:1;display:flex;gap:7px;flex-wrap:wrap;align-items:center;min-height:58px;background:#fff;border:3px solid #f0e4d0;border-radius:18px;padding:8px 10px;">
+        <sc-for list="{{ slots }}" as="s" hint-placeholder-count="2">
+          <div style="width:42px;height:42px;border-radius:11px;background:{{ s.bg }};border:2px dashed {{ s.bd }};display:flex;align-items:center;justify-content:center;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;color:#2a241d;">{{ s.c }}</div>
+        </sc-for>
+      </div>
+      <button onClick="{{ clearAll }}" style="width:48px;height:48px;border-radius:14px;background:#fff;color:#d9694f;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:13px;box-shadow:0 3px 0 rgba(0,0,0,.06);flex:0 0 auto;">ぜんぶ<br>けす</button>
+    </div>
+
+    <!-- util toolbar (shared across variants) -->
+    <div style="display:flex;gap:6px;margin-bottom:10px;flex:0 0 auto;">
+      <button onClick="{{ backspace }}" style="flex:1.4;min-height:44px;border-radius:12px;background:#efe7d8;color:#7a6b54;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:15px;">⌫ もどす</button>
+      <button onClick="{{ daku }}" style="flex:1;min-height:44px;border-radius:12px;background:#fff;border:2px solid #f0e4d0;color:#5a5044;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:18px;">゛</button>
+      <button onClick="{{ handaku }}" style="flex:1;min-height:44px;border-radius:12px;background:#fff;border:2px solid #f0e4d0;color:#5a5044;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:18px;">゜</button>
+      <button onClick="{{ small }}" style="flex:1;min-height:44px;border-radius:12px;background:#fff;border:2px solid #f0e4d0;color:#5a5044;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:14px;">小</button>
+      <button onClick="{{ chouon }}" style="flex:1;min-height:44px;border-radius:12px;background:#fff;border:2px solid #f0e4d0;color:#5a5044;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:18px;">ー</button>
+    </div>
+
+    <!-- keyboard area -->
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;position:relative;">
+
+      <!-- VARIANT A : 50音表（全部見える） -->
+      <sc-if value="{{ isA }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <sc-for list="{{ gridRows }}" as="row" hint-placeholder-count="5">
+          <div style="display:flex;gap:5px;">
+            <sc-for list="{{ row }}" as="k">
+              <sc-if value="{{ k.blank }}"><div style="flex:1;"></div></sc-if>
+              <sc-if value="{{ k.real }}"><button onClick="{{ k.onTap }}" style-active="transform:scale(.9);" style="flex:1;aspect-ratio:1;border-radius:11px;background:#fff;border:2px solid #f0e4d0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px;color:#2a241d;transition:transform .07s;display:flex;align-items:center;justify-content:center;">{{ k.ch }}</button></sc-if>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <!-- VARIANT B : 行→段の2ステップ -->
+      <sc-if value="{{ isB }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ bStep1 }}" hint-placeholder-val="{{ true }}">
+        <div style="text-align:center;font-size:13px;color:#7a7060;font-weight:700;margin-bottom:10px;">どの ぎょう？</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;">
+          <sc-for list="{{ rowKeys }}" as="r" hint-placeholder-count="6">
+            <button onClick="{{ r.onTap }}" style-active="transform:scale(.94);" style="min-height:62px;border-radius:16px;background:#fff;border:2.5px solid #f0e4d0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:30px;color:#2a241d;transition:transform .07s;">{{ r.ch }}</button>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{ bStep2 }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <button onClick="{{ bBack }}" style="width:46px;height:46px;border-radius:13px;background:#efe7d8;color:#7a6b54;font-weight:900;font-size:18px;">←</button>
+          <span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:16px;color:#9a8f7e;">「{{ bRowRep }}」の ぎょう ・ どれ かな？</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ stepKeys }}" as="k" hint-placeholder-count="5">
+            <button onClick="{{ k.onTap }}" style-active="transform:scale(.97);" style="min-height:64px;border-radius:16px;background:#fff;border:2.5px solid #c2698f;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:34px;color:#9c4d70;transition:transform .07s;animation:jpKey .18s ease;">{{ k.ch }}</button>
+          </sc-for>
+        </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- VARIANT C : フリック風（タップで十字） -->
+      <sc-if value="{{ isC }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:300px;margin:6px auto 0;">
+        <sc-for list="{{ padKeys }}" as="r" hint-placeholder-count="6">
+          <button onClick="{{ r.onTap }}" style-active="transform:scale(.94);" style="aspect-ratio:1.15;border-radius:16px;background:#fff;border:2.5px solid #f0e4d0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:28px;color:#2a241d;transition:transform .07s;display:flex;align-items:center;justify-content:center;">{{ r.ch }}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ flickOpen }}">
+        <div onClick="{{ closeFlick }}" style="position:absolute;inset:-18px -16px;background:rgba(42,36,29,.32);display:flex;align-items:center;justify-content:center;z-index:5;animation:jpFade .14s ease;">
+          <div onClick="{{ stop }}" style="background:#fff;border-radius:24px;box-shadow:0 14px 36px rgba(0,0,0,.22);padding:16px;animation:jpPop .2s cubic-bezier(.2,.9,.3,1.2);">
+            <div style="display:grid;grid-template-columns:repeat(3,76px);grid-template-rows:repeat(3,76px);gap:7px;">
+              <sc-for list="{{ flickGrid }}" as="f" hint-placeholder-count="9">
+                <sc-if value="{{ f.has }}"><button onClick="{{ f.onTap }}" style-active="transform:scale(.9);" style="border-radius:16px;background:{{ f.bg }};border:2.5px solid #c2698f;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:34px;color:#9c4d70;transition:transform .07s;">{{ f.ch }}</button></sc-if>
+                <sc-if value="{{ f.empty }}"><div></div></sc-if>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+      </sc-if>
+
+    </div>
+
+    <!-- CTA -->
+    <button onClick="{{ buildNext }}" style="flex:0 0 auto;margin-top:12px;min-height:66px;border-radius:20px;background:{{ ctaBg }};color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:22px;box-shadow:0 5px 0 {{ ctaSh }};">✏️ これを かく（{{ wordCount }}もじ）</button>
+  </div>
+  </sc-if>
+
+  <!-- ============ TRACE ============ -->
+  <sc-if value="{{ isTrace }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:1;display:flex;flex-direction:column;">
+    <div style="text-align:center;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:20px;color:#9a8f7e;margin-bottom:14px;">「{{ wordStr }}」を なぞろう</div>
+    <div style="position:relative;width:100%;aspect-ratio:1;max-width:330px;margin:0 auto;background:#fff;border-radius:24px;box-shadow:0 4px 16px rgba(0,0,0,.07);overflow:hidden;touch-action:none;">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;color:#efe7d8;text-align:center;line-height:1;font-size:{{ outlineSize }};padding:0 10px;">{{ wordStr }}</div>
+      <canvas ref="{{ canvasRef }}" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;"></canvas>
+    </div>
+    <div style="display:flex;gap:12px;margin:14px auto 0;max-width:330px;width:100%;">
+      <button onClick="{{ traceClear }}" style="flex:1;min-height:54px;border-radius:16px;background:#fff;color:#d9694f;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:16px;box-shadow:0 3px 0 rgba(0,0,0,.06);">けす</button>
+      <button onClick="{{ traceBack }}" style="flex:1;min-height:54px;border-radius:16px;background:#fff;color:#9a8f7e;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:16px;box-shadow:0 3px 0 rgba(0,0,0,.06);">← かえる</button>
+    </div>
+    <button onClick="{{ traceDone }}" style="margin:14px auto 0;max-width:330px;width:100%;min-height:70px;border-radius:20px;background:#5fb583;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px;box-shadow:0 5px 0 #3f8e63;">できた！</button>
+  </div>
+  </sc-if>
+
+  <!-- ============ RESULT ============ -->
+  <sc-if value="{{ isResult }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+
+    <sc-if value="{{ rDict }}" hint-placeholder-val="{{ true }}">
+      <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px;color:#5fb583;">ずかんに のったよ！🎉</div>
+      <div style="width:172px;height:172px;border-radius:32px;background:#fff8ee;border:4px solid #f0e4d0;display:flex;align-items:center;justify-content:center;font-size:100px;margin-top:16px;animation:jpPop .4s cubic-bezier(.2,.9,.3,1.2);">{{ rEmoji }}</div>
+      <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:40px;margin-top:14px;">{{ wordStr }}</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#5fb583;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:14px;padding:5px 14px;border-radius:99px;margin-top:10px;">{{ rCat }}</div>
+      <div style="font-size:13px;color:#9a8f7e;font-weight:700;margin-top:14px;">じしょの ことば ・ むりょうだよ</div>
+    </sc-if>
+
+    <sc-if value="{{ rHakken }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size:24px;letter-spacing:6px;">✨⭐✨</div>
+      <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;color:#c2698f;margin-top:6px;">はっけん！</div>
+      <div style="width:172px;height:172px;border-radius:36px;background:radial-gradient(circle at 50% 40%,#fff3d6,#fbeaf1);display:flex;align-items:center;justify-content:center;font-size:96px;margin-top:14px;animation:jpBob 1.1s ease-in-out infinite;">{{ rEmoji }}</div>
+      <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:40px;margin-top:14px;">{{ wordStr }}</div>
+      <div style="font-size:14px;color:#7a7060;font-weight:700;margin-top:10px;line-height:1.6;">じしょに ない ことばを<br>あたらしく ずかんに したよ ⭐</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#fbeaf1;color:#9c4d70;font-weight:900;font-size:13px;padding:6px 14px;border-radius:99px;margin-top:12px;">きょうの じゆうはっけん のこり {{ hakkenLeft }}かい</div>
+    </sc-if>
+
+    <sc-if value="{{ rLimit }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size:64px;animation:jpBob 1.4s ease-in-out infinite;">🌙</div>
+      <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:23px;margin-top:14px;line-height:1.5;">きょうの じゆうはっけんは<br>おしまい！</div>
+      <div style="font-size:15px;color:#7a7060;font-weight:700;margin-top:12px;line-height:1.7;max-width:280px;">「{{ wordStr }}」は あした はっけん できるよ。<br>いまは ずかんの ことばを かいて あそぼう！</div>
+      <div style="font-size:12px;color:#b6ab9a;font-weight:700;margin-top:14px;">※ かいすうは おうちの方が きめています</div>
+    </sc-if>
+
+    <sc-if value="{{ rNg }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size:60px;">🤔</div>
+      <div style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:22px;margin-top:14px;line-height:1.5;">この ことばは<br>まだ つくれないみたい</div>
+      <div style="font-size:15px;color:#7a7060;font-weight:700;margin-top:12px;line-height:1.7;max-width:280px;">べつの ことばを かいて みてね。</div>
+    </sc-if>
+
+    <div style="display:flex;gap:12px;margin-top:30px;width:100%;max-width:330px;">
+      <button onClick="{{ againSame }}" style="flex:1;min-height:62px;border-radius:18px;background:#fff;color:#9a8f7e;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:16px;box-shadow:0 4px 0 rgba(0,0,0,.06);">🔄 もういちど</button>
+      <button onClick="{{ againNew }}" style="flex:1.2;min-height:62px;border-radius:18px;background:#e8714c;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:16px;box-shadow:0 5px 0 #c95835;">つぎの ことば →</button>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:720},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;],&quot;default&quot;:&quot;A&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;dailyMax&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:3,&quot;min&quot;:0,&quot;max&quot;:9,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.rootRef=React.createRef();
+    this.canvasRef=React.createRef();
+    this.state={ phase:'build', chars:[], stepRow:null, flickRow:null, result:null, dailyUsed:0 };
+  }
+  get ROWS(){ return [
+    ['あ','い','う','え','お'],
+    ['か','き','く','け','こ'],
+    ['さ','し','す','せ','そ'],
+    ['た','ち','つ','て','と'],
+    ['な','に','ぬ','ね','の'],
+    ['は','ひ','ふ','へ','ほ'],
+    ['ま','み','む','め','も'],
+    ['や','','ゆ','','よ'],
+    ['ら','り','る','れ','ろ'],
+    ['わ','','ん','','を'],
+  ]; }
+  get DAKU(){ return {か:'が',き:'ぎ',く:'ぐ',け:'げ',こ:'ご',さ:'ざ',し:'じ',す:'ず',せ:'ぜ',そ:'ぞ',た:'だ',ち:'ぢ',つ:'づ',て:'で',と:'ど',は:'ば',ひ:'び',ふ:'ぶ',へ:'べ',ほ:'ぼ',う:'ゔ'}; }
+  get HANDAKU(){ return {は:'ぱ',ひ:'ぴ',ふ:'ぷ',へ:'ぺ',ほ:'ぽ'}; }
+  get SMALL(){ return {つ:'っ',や:'ゃ',ゆ:'ゅ',よ:'ょ',あ:'ぁ',い:'ぃ',う:'ぅ',え:'ぇ',お:'ぉ',わ:'ゎ'}; }
+  get DICT(){ return {
+    いぬ:{e:'🐶',c:'どうぶつ'}, ねこ:{e:'🐱',c:'どうぶつ'}, ぞう:{e:'🐘',c:'どうぶつ'}, うさぎ:{e:'🐰',c:'どうぶつ'}, くま:{e:'🐻',c:'どうぶつ'},
+    りんご:{e:'🍎',c:'たべもの'}, ばなな:{e:'🍌',c:'たべもの'}, ぱん:{e:'🍞',c:'たべもの'}, けーき:{e:'🍰',c:'たべもの'},
+    て:{e:'🖐️',c:'からだ'}, め:{e:'👁️',c:'からだ'}, くち:{e:'👄',c:'からだ'}, みみ:{e:'👂',c:'からだ'}, あし:{e:'🦵',c:'からだ'},
+  }; }
+  get HAKKEN_EMOJI(){ return {おに:'👹',にじ:'🌈',つき:'🌙',きりん:'🦒',たこ:'🐙',ほし:'⭐',かさ:'☂️',ろけっと:'🚀',でんしゃ:'🚃',ちょうちょ:'🦋',かに:'🦀',ふね:'⛵',かめ:'🐢',りす:'🐿️',ぺんぎん:'🐧'}; }
+  get NG(){ return ['ばか','あほ','ぶす','うんち','しね']; }
+
+  componentDidMount(){ if(this.state.phase==='trace') this.setupCanvas(); }
+  componentDidUpdate(){ if(this.state.phase==='trace') this.setupCanvas(); }
+
+  add(ch){ if(!ch) return; if(this.state.chars.length>=6) return; this.setState({chars:[...this.state.chars,ch]}); }
+  backspace(){ this.setState({chars:this.state.chars.slice(0,-1)}); }
+  clearAll(){ this.setState({chars:[]}); }
+  convertLast(map){ const cs=this.state.chars; if(!cs.length) return; const last=cs[cs.length-1]; if(map[last]){ const n=cs.slice(); n[n.length-1]=map[last]; this.setState({chars:n}); } }
+  daku(){ this.convertLast(this.DAKU); }
+  handaku(){ this.convertLast(this.HANDAKU); }
+  small(){ this.convertLast(this.SMALL); }
+  chouon(){ this.add('ー'); }
+
+  buildNext(){ if(!this.state.chars.length) return; this.setState({phase:'trace',flickRow:null,stepRow:null}); setTimeout(()=>this.clearStrokes(),0); }
+  traceBack(){ this.setState({phase:'build'}); }
+
+  setupCanvas(){
+    const c=this.canvasRef.current; if(!c) return;
+    const rect=c.getBoundingClientRect(); if(rect.width===0) return;
+    if(c.width!==Math.round(rect.width)){ c.width=Math.round(rect.width); c.height=Math.round(rect.height); this._resetCtx(); }
+    if(c._wired) return; c._wired=true;
+    const ctx=c.getContext('2d'); this._resetCtx();
+    let drawing=false;
+    const pos=e=>{ const r=c.getBoundingClientRect(); return [(e.clientX-r.left)*(c.width/r.width),(e.clientY-r.top)*(c.height/r.height)]; };
+    const down=e=>{ drawing=true; const [x,y]=pos(e); ctx.beginPath(); ctx.moveTo(x,y); if(c.setPointerCapture) c.setPointerCapture(e.pointerId); e.preventDefault(); };
+    const move=e=>{ if(!drawing) return; const [x,y]=pos(e); ctx.lineTo(x,y); ctx.stroke(); e.preventDefault(); };
+    const up=()=>{ drawing=false; };
+    c.addEventListener('pointerdown',down); c.addEventListener('pointermove',move); c.addEventListener('pointerup',up); c.addEventListener('pointercancel',up);
+  }
+  _resetCtx(){ const c=this.canvasRef.current; if(!c) return; const ctx=c.getContext('2d'); ctx.lineWidth=18; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#2a241d'; }
+  clearStrokes(){ const c=this.canvasRef.current; if(!c) return; c.width=c.width; c._wired=false; this.setupCanvas(); }
+  traceClear(){ this.clearStrokes(); }
+
+  classify(w){ if(!w) return 'ng'; if(this.NG.includes(w)) return 'ng'; if(this.DICT[w]) return 'dict'; return 'hakken'; }
+  traceDone(){
+    const w=this.state.chars.join('');
+    const k=this.classify(w);
+    const max=this.props.dailyMax||3;
+    if(k==='dict'){ this.setState({phase:'result',result:{type:'dict'}}); return; }
+    if(k==='ng'){ this.setState({phase:'result',result:{type:'ng'}}); return; }
+    // hakken
+    if(this.state.dailyUsed>=max){ this.setState({phase:'result',result:{type:'limit'}}); return; }
+    this.setState({phase:'result',result:{type:'hakken'},dailyUsed:this.state.dailyUsed+1});
+  }
+  againSame(){ this.setState({phase:'build'}); }
+  againNew(){ this.setState({phase:'build',chars:[],stepRow:null,flickRow:null,result:null}); }
+
+  flickGridFor(idx){
+    const row=this.ROWS[idx]; // [center,left,up,right,down]
+    const map={ '1,1':0, '1,0':1, '0,1':2, '1,2':3, '2,1':4 };
+    const cells=[];
+    for(let r=0;r<3;r++) for(let cc=0;cc<3;cc++){
+      const key=r+','+cc; const i=map[key];
+      if(i!==undefined && this.ROWS[idx][i]){ const ch=this.ROWS[idx][i]; cells.push({has:true,empty:false,ch,bg:i===0?'#fbeaf1':'#fff',onTap:()=>{ this.add(ch); this.setState({flickRow:null}); }}); }
+      else cells.push({has:false,empty:true}); 
+    }
+    return cells;
+  }
+
+  renderVals(){
+    const s=this.state, v=this.props.variant||'A';
+    const max=this.props.dailyMax||3;
+    const chars=s.chars, wordStr=chars.join('');
+    const slots=[]; chars.forEach(c=>slots.push({c,bg:'#fff8ee',bd:'#e3b8cd'})); if(chars.length<6) slots.push({c:'',bg:'#faf4ea',bd:'#e8dcc8'});
+    const pips=[]; for(let i=0;i<max;i++) pips.push({bg: i<s.dailyUsed? '#c2698f':'#fbeaf1'});
+    const len=wordStr.length;
+    const outlineSize = len<=1?'190px':len===2?'150px':len===3?'104px':len===4?'78px':'58px';
+    // variant data
+    const gridRows=this.ROWS.map(row=>row.map(ch=>({ch,blank:ch==='',real:ch!=='',onTap: ch? ()=>this.add(ch):null})));
+    const rowKeys=this.ROWS.map((row,i)=>({ch:row[0],onTap:()=>this.setState({stepRow:i})}));
+    const padKeys=this.ROWS.map((row,i)=>({ch:row[0],onTap:()=>this.setState({flickRow:i})}));
+    const bStep1 = v==='B' && s.stepRow==null;
+    const bStep2 = v==='B' && s.stepRow!=null;
+    const stepKeys = bStep2 ? this.ROWS[s.stepRow].filter(c=>c).map(ch=>({ch,onTap:()=>{ this.add(ch); this.setState({stepRow:null}); }})) : [];
+    const bRowRep = bStep2 ? this.ROWS[s.stepRow][0] : '';
+    const flickOpen = v==='C' && s.flickRow!=null;
+    const flickGrid = flickOpen ? this.flickGridFor(s.flickRow) : [];
+    // result
+    const res=s.result||{};
+    let rEmoji='✨', rCat='';
+    if(res.type==='dict'){ const d=this.DICT[wordStr]||{}; rEmoji=d.e||'⭐'; rCat=d.c||''; }
+    if(res.type==='hakken'){ rEmoji=this.HAKKEN_EMOJI[wordStr]||'✨'; }
+    return {
+      rootRef:this.rootRef, canvasRef:this.canvasRef,
+      headTitle: s.phase==='trace'? 'なぞって みよう' : (s.phase==='result'? 'できたよ' : 'すきな ことばを つくろう'),
+      pips,
+      isBuild:s.phase==='build', isTrace:s.phase==='trace', isResult:s.phase==='result',
+      isA:v==='A', isB:v==='B', isC:v==='C',
+      slots, clearAll:()=>this.clearAll(), backspace:()=>this.backspace(),
+      daku:()=>this.daku(), handaku:()=>this.handaku(), small:()=>this.small(), chouon:()=>this.chouon(),
+      gridRows, rowKeys, padKeys,
+      bStep1, bStep2, stepKeys, bRowRep, bBack:()=>this.setState({stepRow:null}),
+      flickOpen, flickGrid, closeFlick:()=>this.setState({flickRow:null}), stop:(e)=>{ if(e&&e.stopPropagation) e.stopPropagation(); },
+      wordStr, wordCount:chars.length, outlineSize,
+      ctaBg: chars.length? '#e8714c':'#d8cfc0', ctaSh: chars.length? '#c95835':'#bfb6a6',
+      buildNext:()=>this.buildNext(), traceBack:()=>this.traceBack(), traceClear:()=>this.traceClear(), traceDone:()=>this.traceDone(),
+      rDict:res.type==='dict', rHakken:res.type==='hakken', rLimit:res.type==='limit', rNg:res.type==='ng',
+      rEmoji, rCat, hakkenLeft: Math.max(0, max - s.dailyUsed),
+      againSame:()=>this.againSame(), againNew:()=>this.againNew(),
+    };
+  }
+}
+</script>
+</body>
+</html>

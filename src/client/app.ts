@@ -1380,7 +1380,7 @@ export const clientApp = `
 
   window.__logout = function () {
     fetch('/api/auth/logout', { method: 'POST' }).then(function () {
-      setState({ authed: false, userId: null, tickets: 0 });
+      setState({ authed: false, userId: null, tickets: 0, screen: 'home', sheet: null });
     });
   };
 

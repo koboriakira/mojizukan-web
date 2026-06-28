@@ -64,7 +64,10 @@ export const clientApp = `
     discovering: false,
     prepInput: '',
     prepSel: [],
-    revealKind: 'normal'
+    revealKind: 'normal',
+    tankenChars: [],
+    tankenMsg: null,
+    tankenMode: false
   };
 
   var _lastPromptCount = 0;
@@ -124,6 +127,7 @@ export const clientApp = `
       case 'storyPick': return renderStoryPick(s);
       case 'parent':    return renderParent(s);
       case 'mitsukeru': return renderMitsukeru(s);
+      case 'tanken':    return renderTanken(s);
       case 'prep':      return renderPrep(s);
       case 'hakkengen': return renderHakkenGen(s);
       case 'story':     return '<p>おはなしを よみこみちゅう…</p>';
@@ -140,6 +144,17 @@ export const clientApp = `
     if (state.collected.indexOf(word) !== -1) return 'dup';
     if (state.seeded.indexOf(word) !== -1) return 'seeded';
     return 'ok';
+  }
+
+  function classifyTanken(word) {
+    if (!word || word.length === 0) return 'ng';
+    var ngWords = [];
+    for (var i = 0; i < ngWords.length; i++) {
+      if (word.indexOf(ngWords[i]) !== -1) return 'ng';
+    }
+    if (state.collected.indexOf(word) !== -1 || state.discovered.indexOf(word) !== -1) return 'dup';
+    if (PRESETS[word]) return 'dict';
+    return 'hakken';
   }
 
   function renderHome(s) {
@@ -216,6 +231,73 @@ export const clientApp = `
       cardsSection +
       '<div style="margin-top:8px;">' +
         '<button onclick="window.__goWrite()" style="width:100%;min-height:72px;border-radius:22px;background:var(--accent);font-size:22px;font-weight:900;box-shadow:0 6px 0 var(--accentd);">🎲 おまかせで 1つ えらぶ</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderTanken(s) {
+    var chars = s.tankenChars || [];
+    var maxChars = 6;
+
+    var slots = '';
+    for (var si = 0; si < maxChars; si++) {
+      var ch = si < chars.length ? chars[si] : '';
+      var bg = ch ? 'var(--accent)' : 'var(--locked)';
+      var color = ch ? '#fff' : '#c4b6a0';
+      slots += '<div style="width:48px;height:48px;border-radius:14px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-family:var(--fhead);font-weight:900;font-size:26px;color:' + color + ';">' + (ch || '') + '</div>';
+    }
+
+    var grid = '';
+    for (var ri = 0; ri < ROWS.length; ri++) {
+      for (var ci = 0; ci < ROWS[ri].length; ci++) {
+        var c = ROWS[ri][ci];
+        if (c === '') {
+          grid += '<div></div>';
+        } else {
+          grid += '<button onclick="window.__tkAdd(\\'' + c + '\\')" style="min-height:48px;border-radius:12px;background:#fff;font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--ink);box-shadow:0 2px 0 rgba(0,0,0,.06);">' + c + '</button>';
+        }
+      }
+    }
+
+    var msgBanner = '';
+    if (s.tankenMsg) {
+      var msgColor = s.tankenMsg.type === 'ng' ? '#b03a3a' : (s.tankenMsg.type === 'dup' ? '#c95835' : 'var(--sub)');
+      var msgBg = s.tankenMsg.type === 'ng' ? '#fbe6e6' : (s.tankenMsg.type === 'dup' ? '#fff0e6' : '#f5ede6');
+      msgBanner = '<div style="background:' + msgBg + ';color:' + msgColor + ';font-weight:700;font-size:15px;padding:10px 16px;border-radius:14px;text-align:center;margin-bottom:12px;">' + s.tankenMsg.text + '</div>';
+    }
+
+    var word = chars.join('');
+    var canSubmit = chars.length >= 2;
+    var btnBg = canSubmit ? 'var(--accent)' : '#d8cfc0';
+    var btnShadow = canSubmit ? '0 6px 0 var(--accentd)' : '0 6px 0 #bfb6a6';
+
+    return '<div style="display:flex;flex-direction:column;min-height:100vh;">' +
+      '<div style="padding:18px 18px 0;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">' +
+          '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--accent);">🧭 たんけん</div>' +
+          '<div style="width:56px;"></div>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:8px;">' + slots + '</div>' +
+        '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:14px;">' +
+          (chars.length > 0 ? '<button onclick="window.__tkClearAll()" style="min-height:36px;padding:0 14px;border-radius:10px;background:var(--locked);color:var(--sub);font-size:13px;font-weight:700;box-shadow:none;">ぜんぶ けす</button>' : '') +
+        '</div>' +
+        msgBanner +
+      '</div>' +
+      '<div style="flex:1;padding:0 12px;">' +
+        '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:10px;">' +
+          '<button onclick="window.__tkBack()" style="flex:1;max-width:80px;min-height:42px;border-radius:12px;background:#fff;font-size:16px;box-shadow:0 2px 0 rgba(0,0,0,.06);">⌫</button>' +
+          '<button onclick="window.__tkDaku()" style="flex:1;max-width:56px;min-height:42px;border-radius:12px;background:#fff;font-size:20px;box-shadow:0 2px 0 rgba(0,0,0,.06);">゛</button>' +
+          '<button onclick="window.__tkHandaku()" style="flex:1;max-width:56px;min-height:42px;border-radius:12px;background:#fff;font-size:20px;box-shadow:0 2px 0 rgba(0,0,0,.06);">゜</button>' +
+          '<button onclick="window.__tkSmall()" style="flex:1;max-width:56px;min-height:42px;border-radius:12px;background:#fff;font-size:16px;font-weight:700;box-shadow:0 2px 0 rgba(0,0,0,.06);">小</button>' +
+          '<button onclick="window.__tkChouon()" style="flex:1;max-width:56px;min-height:42px;border-radius:12px;background:#fff;font-size:20px;box-shadow:0 2px 0 rgba(0,0,0,.06);">ー</button>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:320px;margin:0 auto;">' + grid + '</div>' +
+      '</div>' +
+      '<div style="position:sticky;bottom:0;background:var(--bg);padding:16px 18px 28px;">' +
+        '<button onclick="window.__tkNext()" style="width:100%;min-height:78px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">' +
+          (canSubmit ? '✏️ これを かく（' + chars.length + 'もじ）' : 'もじを えらんでね') +
+        '</button>' +
       '</div>' +
     '</div>';
   }
@@ -823,7 +905,7 @@ export const clientApp = `
 
   window.__goTanken = function () {
     playSound('tap');
-    setState({ screen: 'tanken' });
+    setState({ screen: 'tanken', tankenChars: [], tankenMsg: null });
   };
 
   window.__goWriteWord = function (word, discovering, kind) {
@@ -1075,6 +1157,92 @@ export const clientApp = `
     playSound('tap');
     _canvasWired = null;
     setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke' });
+  };
+
+  window.__tkAdd = function(ch) {
+    if (state.tankenChars.length >= 6) return;
+    playSound('tap');
+    setState({ tankenChars: state.tankenChars.concat([ch]), tankenMsg: null });
+  };
+
+  window.__tkBack = function() {
+    if (state.tankenChars.length === 0) return;
+    playSound('cancel');
+    setState({ tankenChars: state.tankenChars.slice(0, -1), tankenMsg: null });
+  };
+
+  window.__tkClearAll = function() {
+    playSound('cancel');
+    setState({ tankenChars: [], tankenMsg: null });
+  };
+
+  window.__tkDaku = function() {
+    var chars = state.tankenChars;
+    if (chars.length === 0) return;
+    var last = chars[chars.length - 1];
+    if (DAKU[last]) {
+      playSound('tap');
+      setState({ tankenChars: chars.slice(0, -1).concat([DAKU[last]]), tankenMsg: null });
+    } else {
+      var rev = null;
+      for (var k in DAKU) { if (DAKU[k] === last) { rev = k; break; } }
+      if (rev) { playSound('tap'); setState({ tankenChars: chars.slice(0, -1).concat([rev]), tankenMsg: null }); }
+    }
+  };
+
+  window.__tkHandaku = function() {
+    var chars = state.tankenChars;
+    if (chars.length === 0) return;
+    var last = chars[chars.length - 1];
+    if (HANDAKU[last]) {
+      playSound('tap');
+      setState({ tankenChars: chars.slice(0, -1).concat([HANDAKU[last]]), tankenMsg: null });
+    } else {
+      var rev = null;
+      for (var k in HANDAKU) { if (HANDAKU[k] === last) { rev = k; break; } }
+      if (rev) { playSound('tap'); setState({ tankenChars: chars.slice(0, -1).concat([rev]), tankenMsg: null }); }
+    }
+  };
+
+  window.__tkSmall = function() {
+    var chars = state.tankenChars;
+    if (chars.length === 0) return;
+    var last = chars[chars.length - 1];
+    if (SMALL[last]) {
+      playSound('tap');
+      setState({ tankenChars: chars.slice(0, -1).concat([SMALL[last]]), tankenMsg: null });
+    } else {
+      var rev = null;
+      for (var k in SMALL) { if (SMALL[k] === last) { rev = k; break; } }
+      if (rev) { playSound('tap'); setState({ tankenChars: chars.slice(0, -1).concat([rev]), tankenMsg: null }); }
+    }
+  };
+
+  window.__tkChouon = function() {
+    if (state.tankenChars.length >= 6) return;
+    playSound('tap');
+    setState({ tankenChars: state.tankenChars.concat(['ー']), tankenMsg: null });
+  };
+
+  window.__tkNext = function() {
+    var word = state.tankenChars.join('');
+    if (word.length < 2) return;
+    var result = classifyTanken(word);
+    if (result === 'ng') {
+      setState({ tankenMsg: { type: 'ng', text: 'この ことばは つかえないよ' } });
+      return;
+    }
+    if (result === 'dup') {
+      setState({ tankenMsg: { type: 'dup', text: 'もう ずかんに あるよ' } });
+      return;
+    }
+    playSound('tap');
+    if (result === 'dict') {
+      window.__goWriteWord(word, false, 'tanken');
+    } else {
+      setState({ tankenMode: true });
+      window.__goWriteWord(word, true, 'tanken');
+    }
   };
 
   window.__startHakkenGen = function() {

@@ -10,23 +10,23 @@ test("ページが JS エラーなしに読み込める", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("「はじめる」→ なぞり書き画面が表示される", async ({ page }) => {
+test("「もじを かく」→ なぞり書き画面が表示される", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (err) => errors.push(err.message));
 
   await page.goto("/");
-  await page.getByText("はじめる").click();
+  await page.getByText("もじを かく").click();
   await expect(page.locator("canvas")).toBeVisible();
 
   expect(errors).toEqual([]);
 });
 
-test("「ずかんをみる」→ 図鑑画面が表示される", async ({ page }) => {
+test("「ずかんを みる」→ 図鑑画面が表示される", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (err) => errors.push(err.message));
 
   await page.goto("/");
-  await page.getByRole("button", { name: "ずかん" }).click();
+  await page.getByRole("button", { name: "ずかんを みる" }).click();
   await expect(page.getByText("けん")).toBeVisible();
 
   expect(errors).toEqual([]);

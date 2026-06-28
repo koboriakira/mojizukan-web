@@ -63,7 +63,8 @@ export const clientApp = `
     seeded: saved.seeded || [],
     discovering: false,
     prepInput: '',
-    prepSel: []
+    prepSel: [],
+    revealKind: 'normal'
   };
 
   var _lastPromptCount = 0;
@@ -122,6 +123,7 @@ export const clientApp = `
       case 'detail':    return renderDetail(s);
       case 'storyPick': return renderStoryPick(s);
       case 'parent':    return renderParent(s);
+      case 'mitsukeru': return renderMitsukeru(s);
       case 'prep':      return renderPrep(s);
       case 'hakkengen': return renderHakkenGen(s);
       case 'story':     return '<p>おはなしを よみこみちゅう…</p>';
@@ -146,15 +148,74 @@ export const clientApp = `
       '<div style="font-family:var(--fhead);font-weight:900;font-size:clamp(48px,15vw,72px);color:var(--ink);margin:18px 0 6px;letter-spacing:.02em;">もじずかん</div>' +
       '<div style="font-size:18px;color:var(--sub);font-weight:700;margin-bottom:44px;">もじを かいて あつめよう</div>' +
       '<div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:18px;">' +
-        '<button onclick="window.__goWrite()" style="min-height:84px;background:var(--accent);box-shadow:0 6px 0 var(--accentd);font-size:28px;font-weight:900;border-radius:22px;">✏️ もじを かく</button>' +
-        '<button onclick="window.__goZukan()" style="min-height:84px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:28px;font-weight:900;border-radius:22px;">📖 ずかんを みる</button>' +
-        (s.collected.length >= 3 ?
-          '<div style="position:relative;">' +
-            '<button onclick="window.__goStoryPick()" style="min-height:84px;width:100%;background:var(--accent3);box-shadow:0 6px 0 var(--accent3d);font-size:28px;font-weight:900;border-radius:22px;color:#fff;">📚 おはなしを つくる</button>' +
-            '<div style="position:absolute;top:-8px;right:8px;background:#fff;color:var(--accent3);font-size:11px;font-weight:900;padding:2px 8px;border-radius:4px;transform:rotate(6deg);font-family:var(--fhead);pointer-events:none;border:1.5px solid var(--accent3);">NEW</div>' +
-          '</div>'
-        : '') +
+        '<button onclick="window.__goMitsukeru()" style="min-height:90px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:28px;font-weight:900;border-radius:22px;">🔍 みつける</button>' +
+        '<div style="position:relative;">' +
+          '<button onclick="window.__goTanken()" style="min-height:90px;width:100%;background:var(--accent);box-shadow:0 6px 0 var(--accentd);font-size:28px;font-weight:900;border-radius:22px;">🧭 たんけんに でる</button>' +
+          '<div style="position:absolute;top:-8px;right:8px;background:#fff;color:var(--accent);font-size:11px;font-weight:900;padding:2px 8px;border-radius:4px;transform:rotate(6deg);font-family:var(--fhead);pointer-events:none;border:1.5px solid var(--accent);">NEW</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:14px;">' +
+          '<button onclick="window.__goZukan()" style="flex:1;min-height:72px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:22px;font-weight:900;border-radius:22px;">📖 ずかん</button>' +
+          (s.collected.length >= 3 ?
+            '<button onclick="window.__goStoryPick()" style="flex:1;min-height:72px;background:var(--accent3);box-shadow:0 6px 0 var(--accent3d);font-size:22px;font-weight:900;border-radius:22px;color:#fff;">📚 おはなし</button>'
+          : '') +
+        '</div>' +
         '<button onclick="window.__showParentGate()" style="min-height:60px;background:transparent;color:var(--sub);font-weight:700;font-size:18px;box-shadow:none;">🏠 おうちの ひとは こちら</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderMitsukeru(s) {
+    var secretSection = '';
+    if (s.seeded && s.seeded.length > 0) {
+      secretSection += '<div style="margin-bottom:24px;">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:#9c4d70;margin-bottom:12px;">⭐ ひみつの ことば</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;">';
+      for (var si = 0; si < s.seeded.length; si++) {
+        var sw = s.seeded[si];
+        secretSection += '<button onclick="window.__openSecret(\\'' + sw + '\\')" style="background:#fff;border:2px dashed #e3b8cd;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;cursor:pointer;">' +
+          '<span style="font-size:38px;font-weight:900;color:#c2698f;line-height:1;">?</span>' +
+          '<span style="font-size:11px;color:#c2698f;font-weight:700;">かいて みよう</span>' +
+        '</button>';
+      }
+      secretSection += '</div></div>';
+    }
+
+    var uncollected = [];
+    for (var w in PRESETS) {
+      if (s.collected.indexOf(w) === -1) uncollected.push(w);
+    }
+
+    var cardsSection = '';
+    if (uncollected.length > 0) {
+      cardsSection += '<div style="margin-bottom:24px;">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--ink);margin-bottom:12px;">✏️ かいて あつめよう</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;">';
+      for (var ui = 0; ui < uncollected.length; ui++) {
+        var uw = uncollected[ui];
+        var upreset = PRESETS[uw];
+        cardsSection += '<button onclick="window.__goWriteWord(\\'' + uw + '\\',false,\\'normal\\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
+          '<span style="font-size:40px;line-height:1;">' + upreset.emoji + '</span>' +
+          '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + uw + '</span>' +
+        '</button>';
+      }
+      cardsSection += '</div></div>';
+    } else {
+      cardsSection += '<div style="text-align:center;padding:32px 0;color:var(--sub);font-size:18px;font-weight:700;">' +
+        '<div style="font-size:48px;margin-bottom:12px;">🎉</div>' +
+        'ぜんぶ あつめたよ！' +
+      '</div>';
+    }
+
+    return '<div style="flex:1;padding:18px;">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">' +
+        '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:24px;color:var(--accent2);">🔍 みつける</div>' +
+        '<div style="width:56px;"></div>' +
+      '</div>' +
+      secretSection +
+      cardsSection +
+      '<div style="margin-top:8px;">' +
+        '<button onclick="window.__goWrite()" style="width:100%;min-height:72px;border-radius:22px;background:var(--accent);font-size:22px;font-weight:900;box-shadow:0 6px 0 var(--accentd);">🎲 おまかせで 1つ えらぶ</button>' +
       '</div>' +
     '</div>';
   }
@@ -205,7 +266,16 @@ export const clientApp = `
     var preset = PRESETS[word] || (window.__hakkenCache && window.__hakkenCache[word] ?
       { emoji: window.__hakkenCache[word].emoji, cat: 'はっけん', catIcon: '⭐', desc: window.__hakkenCache[word].desc } :
       { emoji: '📖', cat: '', catIcon: '', desc: '' });
-    var title = s.lastHakken ? 'はっけん！ ⭐' : 'ずかんに のったよ！🎉';
+    var kind = s.revealKind || 'normal';
+    var title;
+    if (s.lastHakken) {
+      title = kind === 'tanken' ? 'あたらしい ことば はっけん！⭐' : 'みつけた！⭐';
+    } else {
+      title = 'ずかんに のったよ！🎉';
+    }
+    var nextAction = kind === 'tanken'
+      ? '<button onclick="window.__goTanken()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🧭 たんけんに もどる</button>'
+      : '<button onclick="window.__goMitsukeru()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🔍 つぎも みつける</button>';
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
       '<div style="font-size:130px;line-height:1;margin:14px 0 4px;">' + preset.emoji + '</div>' +
@@ -213,7 +283,7 @@ export const clientApp = `
       (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
       '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;">' + preset.desc + '</div>' +
       '<div style="display:flex;gap:14px;margin-top:36px;width:100%;max-width:400px;">' +
-        '<button onclick="window.__goWrite()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">✏️ つぎも かく</button>' +
+        nextAction +
         '<button onclick="window.__goZukan()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent2);font-size:21px;box-shadow:0 6px 0 var(--accent2d);">📚 ずかんを みる</button>' +
       '</div>' +
     '</div>';
@@ -746,10 +816,26 @@ export const clientApp = `
     setState({ screen: 'home', sheet: null });
   };
 
+  window.__goMitsukeru = function () {
+    playSound('tap');
+    setState({ screen: 'mitsukeru' });
+  };
+
+  window.__goTanken = function () {
+    playSound('tap');
+    setState({ screen: 'tanken' });
+  };
+
+  window.__goWriteWord = function (word, discovering, kind) {
+    playSound('tap');
+    _canvasWired = null;
+    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal' });
+  };
+
   window.__goWrite = function () {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [] });
+    setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal' });
   };
 
   window.__goZukan = function () {
@@ -988,7 +1074,7 @@ export const clientApp = `
   window.__openSecret = function(word) {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true });
+    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke' });
   };
 
   window.__startHakkenGen = function() {

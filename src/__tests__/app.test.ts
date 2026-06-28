@@ -16,7 +16,7 @@ describe("clientApp", () => {
   });
 
   it("全画面の switch case が含まれる", () => {
-    const screens = ["home", "write", "reveal", "zukan", "detail"];
+    const screens = ["home", "write", "reveal", "zukan", "detail", "mitsukeru"];
     for (const s of screens) {
       expect(clientApp).toContain(`case '${s}'`);
     }
@@ -34,7 +34,8 @@ describe("clientApp", () => {
 
   it("ホーム画面がタイトルとボタンを含む", () => {
     expect(clientApp).toContain("もじずかん");
-    expect(clientApp).toContain("はじめる");
+    expect(clientApp).toContain("みつける");
+    expect(clientApp).toContain("たんけんに でる");
     expect(clientApp).toContain("ずかん");
   });
 
@@ -48,8 +49,23 @@ describe("clientApp", () => {
     expect(clientApp).toContain("ずかんに のったよ");
   });
 
+  it("revealKind state が定義されている", () => {
+    expect(clientApp).toContain("revealKind:");
+  });
+
+  it("revealKind によるリビールタイトル分岐がある", () => {
+    expect(clientApp).toContain("s.revealKind");
+    expect(clientApp).toContain("みつけた！");
+  });
+
+  it("みつける画面のレンダリングロジックが含まれる", () => {
+    expect(clientApp).toContain("renderMitsukeru");
+    expect(clientApp).toContain("おまかせで 1つ えらぶ");
+    expect(clientApp).toContain("かいて あつめよう");
+  });
+
   it("グローバル関数が定義されている", () => {
-    const funcs = ["__goHome", "__goWrite", "__goZukan", "__confirmChar", "__clearCanvas", "__undo"];
+    const funcs = ["__goHome", "__goWrite", "__goZukan", "__confirmChar", "__clearCanvas", "__undo", "__goMitsukeru", "__goTanken", "__goWriteWord"];
     for (const f of funcs) {
       expect(clientApp).toContain(`window.${f}`);
     }

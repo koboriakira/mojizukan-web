@@ -50,14 +50,33 @@ npm run dev
 git worktree remove ../mojizukan-web-feat-xxx
 ```
 
+## テスト方針
+
+トロフィー型（統合テスト重視）を採用する。
+
+| 層 | ツール | 方針 |
+|---|---|---|
+| 静的解析 | TypeScript | 型チェックで防げるものは型で防ぐ |
+| ユニット | Vitest | 純粋ロジックのみ。文字列containチェックでお茶を濁さない |
+| 統合 | vitest-pool-workers（D1導入後） | API + D1 を本番同等の workerd で実行。主軸 |
+| E2E | Playwright | 重要ユーザーフロー数本。クライアント JS は文字列埋め込みのため、ブラウザ実行でしか検出できないバグがある |
+
+- クライアント JS（`src/client/*.ts`）は TypeScript 文字列定数として定義されている。テンプレートリテラル内の構文エラーや未定義変数は TypeScript もユニットテストも検出できないため、E2E が最後の砦になる
+- E2E は `npm run test:e2e` で実行。`wrangler dev` を自動起動して Playwright でブラウザ操作する
+- E2E を増やしすぎない。フローの追加は3本を超えたら本当に必要か考える
+
 ## ディレクトリ構成
 
 ```
 src/
   index.ts          # エントリポイント、アプリ定義
+  client/           # クライアント JS/CSS（TypeScript 文字列定数）
   routes/           # ルートハンドラ
+  __tests__/        # Vitest ユニットテスト
+e2e/                # Playwright E2E テスト
 migrations/         # D1 マイグレーション（連番）
 bin/                # 開発スクリプト
+public/             # 静的アセット（音声ファイル等）
 ```
 
 ## マイグレーション

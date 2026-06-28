@@ -21,6 +21,55 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
 
+  preview:
+    needs: test
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - name: Deploy preview
+        id: preview
+        run: |
+          BRANCH_SLUG=$(echo "${{ github.head_ref }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-20)
+          PREVIEW_NAME="mojizukan-preview-${BRANCH_SLUG}"
+          npx wrangler deploy --name "${PREVIEW_NAME}" 2>&1 | tee /tmp/deploy.log
+          URL=$(grep -oP 'https://[^ ]+\.workers\.dev' /tmp/deploy.log | head -1)
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "name=${PREVIEW_NAME}" >> "$GITHUB_OUTPUT"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Comment preview URL
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const url = '${{ steps.preview.outputs.url }}';
+            const body = `🔗 **Preview**: ${url}`;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const existing = comments.find(c => c.body.includes('🔗 **Preview**'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: existing.id, body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: context.issue.number, body
+              });
+            }
+
   deploy:
     needs: test
     if: github.ref == 'refs/heads/main'

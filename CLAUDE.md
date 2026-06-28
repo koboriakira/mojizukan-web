@@ -101,6 +101,11 @@ npx wrangler d1 migrations apply mojizukan-db --remote
 
 新しいマイグレーションは `migrations/NNNN_名前.sql` として追加する。
 
+## Issue 実装フロー
+
+GitHub Issue の機能実装を開始するときは `/dev-pipeline start <Issue番号>` を実行する。
+PR 作成前に `/dev-pipeline finish <Issue番号>` を実行してスコープと受入条件を検証する。
+
 ## ブランチ運用
 
 - main への直接 push は禁止（GitHub リポジトリルールで強制）
@@ -116,4 +121,8 @@ main ブランチへのマージで GitHub Actions が自動デプロイする�
 
 - `CLOUDFLARE_API_TOKEN`: GitHub Actions 用（Secrets に設定）
 - `CLOUDFLARE_ACCOUNT_ID`: GitHub Actions 用（Secrets に設定）
-- `OPENAI_API_KEY`: Workers 用（`npx wrangler secret put OPENAI_API_KEY`）
+
+### AI バインディング
+
+Workers AI を使用（`wrangler.toml` の `[ai]` セクションで設定済み）。
+プレビュー・本番デプロイとも API キー不要で動作する。

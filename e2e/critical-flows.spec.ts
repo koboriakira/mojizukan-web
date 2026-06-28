@@ -53,9 +53,9 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   });
   await expect(page.getByText("がくしゅう きろく")).toBeVisible();
 
-  // はっけん準備カード
-  await expect(page.getByText("はっけん準備")).toBeVisible();
-  await expect(page.getByText("モード：おまかせ")).toBeVisible();
+  // みつける・たんけんカード
+  await expect(page.getByText("みつける と たんけん")).toBeVisible();
+  await expect(page.getByText("たんけん の 1にち かいすう")).toBeVisible();
 
   // 未登録 → signup シート
   await page.getByRole("button", { name: "ことばを 仕込む" }).click();

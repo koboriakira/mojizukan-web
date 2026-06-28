@@ -112,10 +112,14 @@ describe("clientApp", () => {
   });
 
   it("グローバル関数が定義されている", () => {
-    const funcs = ["__goHome", "__goWrite", "__goZukan", "__confirmChar", "__clearCanvas", "__undo", "__goMitsukeru", "__goTanken", "__goWriteWord"];
+    const funcs = ["__goHome", "__goWrite", "__goZukan", "__confirmChar", "__clearCanvas", "__undo", "__goMitsukeru", "__goTanken", "__goWriteWord", "__incDaily", "__decDaily"];
     for (const f of funcs) {
       expect(clientApp).toContain(`window.${f}`);
     }
+  });
+
+  it("保護者メニューにたんけん設定カードが含まれる", () => {
+    expect(clientApp).toContain("たんけん の 1にち かいすう");
   });
 
   it("PRESETS データが埋め込まれている", () => {

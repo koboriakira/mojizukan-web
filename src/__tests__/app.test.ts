@@ -58,6 +58,17 @@ describe("clientApp", () => {
     expect(clientApp).toContain("みつけた！");
   });
 
+  it("復習モード (revealKind='review') のタイトルとバナーがある", () => {
+    expect(clientApp).toContain("また かけたね");
+    expect(clientApp).toContain("この ことばは もう ずかんに いるよ");
+    expect(clientApp).toContain("ひみつの ことば");
+  });
+
+  it("goMitsukeru が pool=0 & collected あり で復習モードに遷移する", () => {
+    expect(clientApp).toContain("'review'");
+    expect(clientApp).toContain("reviewPick");
+  });
+
   it("みつける画面が完了通知として表示される", () => {
     expect(clientApp).toContain("renderMitsukeru");
     expect(clientApp).toContain("ぜんぶ みつけたよ");

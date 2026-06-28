@@ -331,7 +331,9 @@ export const clientApp = `
       { emoji: '📖', cat: '', catIcon: '', desc: '' });
     var kind = s.revealKind || 'normal';
     var title;
-    if (s.lastHakken) {
+    if (kind === 'review') {
+      title = 'また かけたね！😊';
+    } else if (s.lastHakken) {
       title = kind === 'tanken' ? 'あたらしい ことば はっけん！⭐' : 'みつけた！⭐';
     } else {
       title = 'ずかんに のったよ！🎉';
@@ -339,12 +341,23 @@ export const clientApp = `
     var nextAction = kind === 'tanken'
       ? '<button onclick="window.__goTanken()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🧭 たんけんに もどる</button>'
       : '<button onclick="window.__goMitsukeru()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🔍 つぎも みつける</button>';
+
+    var reviewBanner = '';
+    if (kind === 'review') {
+      reviewBanner = '<div style="background:linear-gradient(135deg,#fef9ef,#fdf3e0);border:2px solid var(--accent2);border-radius:18px;padding:16px;margin-top:20px;max-width:340px;text-align:left;">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent2);margin-bottom:8px;">この ことばは もう ずかんに いるよ！</div>' +
+        '<div style="font-size:14px;color:#5a5145;line-height:1.7;margin-bottom:10px;">なんども かけて すごい！<br>あたらしい ことばも かいて みたいね。</div>' +
+        '<div style="font-size:12px;color:var(--sub);line-height:1.6;border-top:1px solid rgba(0,0,0,.08);padding-top:8px;">おうちの方へ：あたらしい ことばを おぼえる チャンスです。「ひみつの ことば」を 図鑑に 追加して あげましょう。</div>' +
+      '</div>';
+    }
+
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
       '<div style="font-size:130px;line-height:1;margin:14px 0 4px;">' + preset.emoji + '</div>' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
       (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
       '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;">' + preset.desc + '</div>' +
+      reviewBanner +
       '<div style="display:flex;gap:14px;margin-top:36px;width:100%;max-width:400px;">' +
         nextAction +
         '<button onclick="window.__goZukan()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent2);font-size:21px;box-shadow:0 6px 0 var(--accent2d);">📚 ずかんを みる</button>' +
@@ -899,7 +912,8 @@ export const clientApp = `
         window.__goWriteWord(pick, false, 'mitsuke');
       }
     } else if (state.collected.length > 0) {
-      setState({ screen: 'mitsukeru' });
+      var reviewPick = state.collected[Math.floor(Math.random() * state.collected.length)];
+      window.__goWriteWord(reviewPick, false, 'review');
     } else {
       setState({ screen: 'mitsukeru' });
     }

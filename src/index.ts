@@ -6,6 +6,7 @@ import { entries } from "./routes/entries";
 import { presets } from "./routes/presets";
 import { styles } from "./routes/styles";
 import { story } from "./routes/story";
+import { hakken } from "./routes/hakken";
 import { buildShell } from "./client/shell";
 
 const app = new Hono<AppEnv>();
@@ -21,5 +22,6 @@ app.route("/api/entries", entries);
 app.route("/api/presets", presets);
 app.route("/api/styles", styles);
 app.route("/api/story", story);
+app.route("/api/hakken", hakken);
 
 export default app;

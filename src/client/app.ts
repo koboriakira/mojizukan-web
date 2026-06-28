@@ -570,11 +570,8 @@ export const clientApp = `
         catProgress +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
-          '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;">はっけん準備</div>' +
-          '<div style="background:#fbeaf1;color:#9c4d70;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:700;">モード：おまかせ</div>' +
-        '</div>' +
-        '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">お子さまに はっけんさせたい ことばを まとめて しこめます。チケットは 生成成功時に 消費します。</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:10px;">🔍🧭 みつける と たんけん</div>' +
+        '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">「みつける」は プリセット語を なぞって あつめるモード。「たんけん」は じぶんで ことばを つくって はっけんするモードです。</div>' +
         (s.seeded && s.seeded.length > 0 ?
           '<div style="background:#fff;border:1px solid var(--cbd);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
             '<span style="font-size:14px;color:var(--sub);font-weight:700;">⭐ 仕込み中の ひみつのことば</span>' +
@@ -582,19 +579,14 @@ export const clientApp = `
           '</div>'
         : '') +
         '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ ことばを 仕込む</button>' +
-        '<div style="display:flex;gap:8px;">' +
-          '<div style="flex:1;border:2px solid var(--accent3);background:#fbeaf1;border-radius:12px;padding:10px 8px;text-align:center;">' +
-            '<div style="font-size:12px;color:var(--sub);margin-bottom:4px;">✓</div>' +
-            '<div style="font-size:13px;font-weight:900;color:var(--accent3);">おまかせ</div>' +
+        '<div style="background:#f5f0e8;border-radius:14px;padding:14px 16px;margin-bottom:8px;">' +
+          '<div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">🧭 たんけん の 1にち かいすう</div>' +
+          '<div style="display:flex;align-items:center;justify-content:center;gap:16px;">' +
+            '<button onclick="window.__decDaily()" style="width:44px;height:44px;border-radius:50%;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 0 rgba(0,0,0,.06);color:var(--ink);">−</button>' +
+            '<div style="font-family:var(--fhead);font-weight:900;font-size:36px;color:var(--accent);min-width:48px;text-align:center;">' + (s.dailyHakkenMax || 3) + '</div>' +
+            '<button onclick="window.__incDaily()" style="width:44px;height:44px;border-radius:50%;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 0 rgba(0,0,0,.06);color:var(--ink);">＋</button>' +
           '</div>' +
-          '<div style="flex:1;border:2px solid var(--cbd);background:var(--locked);border-radius:12px;padding:10px 8px;text-align:center;opacity:.6;">' +
-            '<div style="font-size:12px;color:var(--sub);margin-bottom:4px;">近日</div>' +
-            '<div style="font-size:13px;font-weight:700;color:var(--sub);">いっしょに</div>' +
-          '</div>' +
-          '<div style="flex:1;border:2px solid var(--cbd);background:var(--locked);border-radius:12px;padding:10px 8px;text-align:center;opacity:.6;">' +
-            '<div style="font-size:12px;color:var(--sub);margin-bottom:4px;">近日</div>' +
-            '<div style="font-size:13px;font-weight:700;color:var(--sub);">じぶんで</div>' +
-          '</div>' +
+          '<div style="font-size:12px;color:var(--sub);text-align:center;margin-top:8px;">0 に すると たんけんを おやすみ できます</div>' +
         '</div>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
@@ -1091,6 +1083,16 @@ export const clientApp = `
   window.__goParent = function() {
     playSound('cancel');
     setState({ screen: 'parent', sheet: null });
+  };
+
+  window.__incDaily = function() {
+    playSound('tap');
+    setState({ dailyHakkenMax: Math.min(9, (state.dailyHakkenMax || 3) + 1) });
+  };
+
+  window.__decDaily = function() {
+    playSound('tap');
+    setState({ dailyHakkenMax: Math.max(0, (state.dailyHakkenMax || 3) - 1) });
   };
 
   window.__goPrep = function() {

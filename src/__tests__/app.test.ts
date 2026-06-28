@@ -300,4 +300,41 @@ describe("clientApp", () => {
     expect(clientApp).toContain("1200");
     expect(clientApp).toContain("requestAnimationFrame");
   });
+
+  it("絵本ビュー画面のレンダリングロジックが含まれる", () => {
+    expect(clientApp).toContain("function renderStory");
+    expect(clientApp).toContain("storyPages");
+    expect(clientApp).toContain("storyPage");
+  });
+
+  it("絵本のローディング表示が含まれる", () => {
+    expect(clientApp).toContain("AIが おはなしを かいているよ");
+    expect(clientApp).toContain("dotpulse");
+  });
+
+  it("絵本ページのトークン描画ロジックが含まれる", () => {
+    expect(clientApp).toContain("tok.t === 'word'");
+    expect(clientApp).toContain("tok.w");
+    expect(clientApp).toContain("tok.s");
+  });
+
+  it("手書き差し替えロジックが含まれる", () => {
+    expect(clientApp).toContain("s.handwriting && s.handwriting[tok.w]");
+  });
+
+  it("ページめくり操作関数が定義されている", () => {
+    expect(clientApp).toContain("window.__storyPrev");
+    expect(clientApp).toContain("window.__storyNext");
+    expect(clientApp).toContain("window.__storyRestart");
+  });
+
+  it("goStory が API を呼び出す", () => {
+    expect(clientApp).toContain("fetch('/api/story'");
+    expect(clientApp).toContain("storyLoading: true");
+  });
+
+  it("最終ページに もういちど と できた ボタンがある", () => {
+    expect(clientApp).toContain("もういちど");
+    expect(clientApp).toContain("できた！");
+  });
 });

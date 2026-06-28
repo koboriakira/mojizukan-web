@@ -1367,7 +1367,7 @@ export const clientApp = `
           setState({ authError: data.error || 'エラーが おきました' });
           return;
         }
-        setState({ authed: true, userId: data.id, tickets: 5, sheet: null, authMode: 'choose', authError: '' });
+        setState({ authed: true, userId: data.id, tickets: data.tickets || 0, sheet: null, authMode: 'choose', authError: '' });
       });
     }).catch(function () {
       setState({ authError: 'つうしん エラーです' });
@@ -1722,7 +1722,7 @@ export const clientApp = `
     return res.json();
   }).then(function (data) {
     if (data.authed) {
-      setState({ authed: true, userId: data.id });
+      setState({ authed: true, userId: data.id, tickets: data.tickets || 0 });
     }
   }).catch(function () {});
 

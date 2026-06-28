@@ -107,8 +107,9 @@ export const clientApp = `
       case 'write':  return renderWrite(s);
       case 'reveal': return renderReveal(s);
       case 'zukan':  return renderZukan(s);
-      case 'detail': return renderDetail(s);
-      default:       return '<p>不明な画面: ' + s.screen + '</p>';
+      case 'detail':     return renderDetail(s);
+      case 'storyPick':  return '<p>おはなしを つくる（準備中）</p>';
+      default:           return '<p>不明な画面: ' + s.screen + '</p>';
     }
   }
 
@@ -118,8 +119,14 @@ export const clientApp = `
       '<div style="font-family:var(--fhead);font-weight:900;font-size:clamp(48px,15vw,72px);color:var(--ink);margin:18px 0 6px;letter-spacing:.02em;">もじずかん</div>' +
       '<div style="font-size:18px;color:var(--sub);font-weight:700;margin-bottom:44px;">もじを かいて あつめよう</div>' +
       '<div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:18px;">' +
-        '<button onclick="window.__goWrite()" style="min-height:84px;background:var(--accent);box-shadow:0 6px 0 var(--accentd);font-size:28px;font-weight:900;border-radius:22px;">✏️ はじめる</button>' +
-        '<button onclick="window.__goZukan()" style="min-height:84px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:28px;font-weight:900;border-radius:22px;">📚 ずかん</button>' +
+        '<button onclick="window.__goWrite()" style="min-height:84px;background:var(--accent);box-shadow:0 6px 0 var(--accentd);font-size:28px;font-weight:900;border-radius:22px;">✏️ もじを かく</button>' +
+        '<button onclick="window.__goZukan()" style="min-height:84px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:28px;font-weight:900;border-radius:22px;">📖 ずかんを みる</button>' +
+        (s.collected.length >= 3 ?
+          '<div style="position:relative;">' +
+            '<button onclick="window.__goStoryPick()" style="min-height:84px;width:100%;background:var(--accent3);box-shadow:0 6px 0 var(--accent3d);font-size:28px;font-weight:900;border-radius:22px;color:#fff;">📚 おはなしを つくる</button>' +
+            '<div style="position:absolute;top:-8px;right:8px;background:#fff;color:var(--accent3);font-size:11px;font-weight:900;padding:2px 8px;border-radius:4px;transform:rotate(6deg);font-family:var(--fhead);pointer-events:none;border:1.5px solid var(--accent3);">NEW</div>' +
+          '</div>'
+        : '') +
         '<button onclick="window.__showParentGate()" style="min-height:60px;background:transparent;color:var(--sub);font-weight:700;font-size:18px;box-shadow:none;">🏠 おうちの ひとは こちら</button>' +
       '</div>' +
     '</div>';
@@ -390,6 +397,11 @@ export const clientApp = `
     playSound('tap');
     _canvasWired = null;
     setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [] });
+  };
+
+  window.__goStoryPick = function () {
+    playSound('tap');
+    setState({ screen: 'storyPick' });
   };
 
   window.__goZukan = function () {

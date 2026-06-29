@@ -1199,17 +1199,47 @@ export const clientApp = `
     if (words.length < 2) return;
     playSound('tap');
     setState({ screen: 'story', storyLoading: true, storyPages: null, storyPage: 0 });
-    fetch('/api/story', {
+    fetch('/api/story/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ words: words })
-    }).then(function(r) { return r.json(); })
-      .then(function(data) {
-        setState({ storyPages: data.pages, storyLoading: false });
-      })
-      .catch(function() {
-        setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
-      });
+    }).then(function(r) {
+      var reader = r.body.getReader();
+      var decoder = new TextDecoder();
+      var buf = '';
+      var pages = [];
+      function read() {
+        reader.read().then(function(result) {
+          if (result.done) {
+            if (pages.length === 0) {
+              setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
+            } else {
+              setState({ storyLoading: false });
+            }
+            return;
+          }
+          buf += decoder.decode(result.value, { stream: true });
+          var lines = buf.split('\\n');
+          buf = lines.pop() || '';
+          for (var i = 0; i < lines.length; i++) {
+            if (lines[i].indexOf('event: page') === 0) {
+              var dataLine = lines[i + 1];
+              if (dataLine && dataLine.indexOf('data: ') === 0) {
+                try {
+                  var page = JSON.parse(dataLine.slice(6));
+                  pages.push(page);
+                  setState({ storyPages: pages.slice(), storyLoading: false });
+                } catch(e) {}
+              }
+            }
+          }
+          read();
+        });
+      }
+      read();
+    }).catch(function() {
+      setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
+    });
   };
 
   window.__storyPrev = function () {

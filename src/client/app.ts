@@ -2054,6 +2054,13 @@ export const clientApp = `
   }).then(function (data) {
     if (data.authed) {
       setState({ authed: true, userId: data.id, tickets: data.tickets || 0 });
+      fetch('/api/hakken/entries').then(function(r) { return r.json(); }).then(function(entries) {
+        if (!window.__hakkenCache) window.__hakkenCache = {};
+        entries.forEach(function(e) {
+          window.__hakkenCache[e.word] = { emoji: e.emoji, desc: e.description, image_url: e.image_url };
+        });
+        render(state);
+      }).catch(function() {});
     }
   }).catch(function () {});
 

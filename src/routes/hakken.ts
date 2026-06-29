@@ -49,6 +49,14 @@ export function getRandomWords({ n, collected, seeded }: RandomInput): string[] 
   return shuffled.slice(0, n);
 }
 
+hakken.get("/entries", requireAuth, async (c) => {
+  const userId = c.var.userId!;
+  const results = await c.env.DB.prepare(
+    "SELECT word, emoji, description, image_url FROM hakken_entries WHERE user_id = ?"
+  ).bind(userId).all();
+  return c.json(results.results);
+});
+
 hakken.post("/classify", async (c) => {
   const body = await c.req.json<ClassifyRequest>();
   if (!body.word) {

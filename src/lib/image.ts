@@ -46,6 +46,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
       n: 1,
       size,
       quality,
+      output_format: "b64_json",
     }),
   });
 

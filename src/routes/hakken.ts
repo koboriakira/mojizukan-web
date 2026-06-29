@@ -98,9 +98,6 @@ hakken.post("/generate", requireAuth, async (c) => {
     generateImage({
       apiKey: c.env.OPENAI_API_KEY,
       word: body.word,
-    }).catch((err) => {
-      console.error("Image generation failed:", err);
-      return null;
     }),
   ]);
 

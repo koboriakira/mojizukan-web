@@ -69,7 +69,7 @@ export interface GenerateJsonOpenAIOptions {
 }
 
 export async function generateJsonOpenAI<T>(options: GenerateJsonOpenAIOptions): Promise<T> {
-  const { apiKey, prompt, model = "gpt-4o-mini", maxRetries = 1 } = options;
+  const { apiKey, prompt, model = "gpt-5.4-mini", maxRetries = 1 } = options;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const messages: Array<{ role: "user" | "assistant"; content: string }> = [

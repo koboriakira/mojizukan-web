@@ -78,6 +78,7 @@ export const clientApp = `
     stories: [],
     readingStoryId: null,
     authReason: null,
+    imgStyle: 'ehon',
     mode: 'omakase',
     seeded: saved.seeded || [],
     discovering: false,
@@ -103,6 +104,9 @@ export const clientApp = `
   var _raf = 0;
   var _actx = null;
   var _lastChime = 0;
+
+  window.__STYLE_LABELS = { honwaka: 'ほんわか', ehon: 'えほん', pop: 'ポップ', watercolor: 'やさしい水彩', zukan: 'ずかん' };
+  window.__STYLE_DESCS = { honwaka: 'パステルカラーでまるっとやさしい', ehon: '鉛筆と水彩のあたたかい絵本タッチ', pop: 'はっきりした線とカラフルなまんが風', watercolor: '透明感のあるにじみが美しい水彩画', zukan: 'リアルな図鑑イラスト風' };
 
   var _audioEnabled = false;
   var _audioCache = {};
@@ -652,6 +656,10 @@ export const clientApp = `
             (s.bgm ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
             (s.bgm ? 'ON' : 'OFF') + '</button>' +
         '</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
+          '<div><span style="font-size:16px;font-weight:700;">🖼️ イラストスタイル</span><div style="font-size:12px;color:var(--sub);margin-top:2px;">はっけん時の絵のタッチを選べます</div></div>' +
+          '<button onclick="window.__openStylePicker()" style="min-width:100px;min-height:40px;border-radius:20px;font-size:14px;font-weight:700;background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);">' + (window.__STYLE_LABELS && window.__STYLE_LABELS[s.imgStyle] || s.imgStyle) + ' ›</button>' +
+        '</div>' +
         '<div style="padding:12px 0 0;">' +
           '<div style="font-size:16px;font-weight:700;margin-bottom:10px;">🎨 配色テーマ</div>' +
           '<div style="display:flex;gap:10px;">' + themeButtons + '</div>' +
@@ -1140,6 +1148,33 @@ export const clientApp = `
             '<button onclick="window.__closeSheet()" style="flex:1;min-height:64px;border-radius:18px;background:var(--locked);color:var(--sub);font-size:18px;box-shadow:none;">やめる</button>' +
           '</div>' +
           '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:12px;line-height:1.5;">仕込み・支払いは保護者メニューの中だけ。お子さまは課金画面に触れません</div>' +
+        '</div>';
+    }
+    if (s.sheet === 'style') {
+      var styleKeys = ['honwaka', 'ehon', 'pop', 'watercolor', 'zukan'];
+      var styleCards = '';
+      for (var sti = 0; sti < styleKeys.length; sti++) {
+        var sk = styleKeys[sti];
+        var isActive = s.imgStyle === sk;
+        var stBorder = isActive ? '3px solid var(--accent)' : '2px solid var(--cbd)';
+        var stCheck = isActive ? '<div style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;">✓</div>' : '';
+        styleCards += '<button onclick="window.__selectStyle(\\'' + sk + '\\')" style="position:relative;width:100%;background:#fff;border:' + stBorder + ';border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:none;text-align:left;">' +
+          stCheck +
+          '<div style="flex:1;">' +
+            '<div style="font-family:var(--fhead);font-weight:900;font-size:17px;color:var(--ink);">' + window.__STYLE_LABELS[sk] + '</div>' +
+            '<div style="font-size:13px;color:var(--sub);margin-top:2px;">' + window.__STYLE_DESCS[sk] + '</div>' +
+          '</div>' +
+        '</button>';
+      }
+      return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
+        '<div class="sheet" onclick="event.stopPropagation()" style="max-height:80vh;overflow-y:auto;">' +
+          '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
+          '<div style="text-align:center;font-size:36px;">🖼️</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin:8px 0 4px;">イラストスタイル</div>' +
+          '<div style="text-align:center;font-size:13px;color:var(--sub);margin-bottom:16px;">はっけん時に生成される絵のタッチを選べます</div>' +
+          '<div style="display:flex;flex-direction:column;gap:10px;">' + styleCards + '</div>' +
+          '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:14px;line-height:1.5;">すでに生成した画像には影響しません</div>' +
+          '<button onclick="window.__closeSheet()" style="width:100%;min-height:52px;border-radius:18px;background:var(--locked);color:var(--sub);font-size:16px;font-weight:700;margin-top:14px;box-shadow:none;">とじる</button>' +
         '</div>';
     }
     if (s.sheet === 'parentGate') {
@@ -1730,6 +1765,21 @@ export const clientApp = `
     setState({ speak: !state.speak });
   };
 
+  window.__openStylePicker = function () {
+    playSound('tap');
+    setState({ sheet: 'style' });
+  };
+
+  window.__selectStyle = function (style) {
+    playSound('tap');
+    setState({ imgStyle: style, sheet: null });
+    fetch('/api/styles', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_style: style })
+    }).catch(function() {});
+  };
+
   window.__speakChar = function () {
     var word = state.word || '';
     var ch = word[state.charIndex || 0] || '';
@@ -2053,7 +2103,7 @@ export const clientApp = `
     return res.json();
   }).then(function (data) {
     if (data.authed) {
-      setState({ authed: true, userId: data.id, tickets: data.tickets || 0 });
+      setState({ authed: true, userId: data.id, tickets: data.tickets || 0, imgStyle: data.image_style || 'ehon' });
       fetch('/api/hakken/entries').then(function(r) { return r.json(); }).then(function(entries) {
         if (!window.__hakkenCache) window.__hakkenCache = {};
         entries.forEach(function(e) {

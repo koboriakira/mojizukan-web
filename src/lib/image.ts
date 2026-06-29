@@ -66,23 +66,16 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     throw new AppError(502, `画像生成に失敗しました (${res.status})`);
   }
 
-  const raw = await res.text();
-  console.log("Image API response length:", raw.length, "keys:", raw.slice(0, 200));
-
-  const data = JSON.parse(raw) as {
-    data: Array<Record<string, string>>;
+  const data = (await res.json()) as {
+    data: Array<{ b64_json?: string }>;
   };
 
-  const item = data.data?.[0];
-  if (!item) {
+  const b64 = data.data?.[0]?.b64_json;
+  if (!b64) {
+    console.error("Image response: no b64_json field");
     throw new AppError(502, "画像データが取得できませんでした");
   }
 
-  const b64 = item.b64_json ?? item.b64 ?? Object.values(item).find(v => typeof v === "string" && v.length > 1000);
-  if (!b64) {
-    console.error("Image item keys:", Object.keys(item));
-    throw new AppError(502, "画像データのフィールドが見つかりません");
-  }
-
+  console.log("Image API success, b64 length:", b64.length);
   return `data:image/png;base64,${b64}`;
 }

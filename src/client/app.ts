@@ -753,10 +753,11 @@ export const clientApp = `
       dots += '<div style="width:10px;height:10px;border-radius:50%;background:' + dotBg + ';"></div>';
     }
 
+    var isError = pages.length === 1 && page.hero.length === 0;
     var bottomButtons = isLast
       ? '<div style="display:flex;gap:14px;width:100%;max-width:400px;margin-top:16px;">' +
           '<button onclick="window.__storyRestart()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent3);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent3d);color:#fff;">🔄 もういちど</button>' +
-          '<button onclick="window.__goHome()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent2);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">できた！</button>' +
+          (isError ? '' : '<button onclick="window.__goHome()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent2);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">できた！</button>') +
         '</div>'
       : '';
 

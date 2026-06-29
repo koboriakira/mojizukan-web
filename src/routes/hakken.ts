@@ -98,6 +98,8 @@ hakken.post("/generate", requireAuth, async (c) => {
     generateImage({
       apiKey: c.env.OPENAI_API_KEY,
       word: body.word,
+      userId,
+      bucket: c.env.IMAGES,
     }),
   ]);
 

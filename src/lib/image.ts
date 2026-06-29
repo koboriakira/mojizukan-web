@@ -18,6 +18,8 @@ export function buildR2Key(userId: string, word: string): string {
 export interface GenerateImageOptions {
   apiKey: string;
   word: string;
+  userId: string;
+  bucket: R2Bucket;
   model?: string;
   size?: string;
   quality?: string;
@@ -27,13 +29,14 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
   const {
     apiKey,
     word,
+    userId,
+    bucket,
     model = "gpt-image-1-mini",
     size = "1024x1024",
     quality = "low",
   } = options;
 
   const prompt = buildImagePrompt(word);
-
   console.log("Image API request:", JSON.stringify({ model, size, quality }));
 
   let res: Response;
@@ -44,14 +47,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model,
-        prompt,
-        n: 1,
-        size,
-        quality,
-        output_format: "png",
-      }),
+      body: JSON.stringify({ model, prompt, n: 1, size, quality, output_format: "png" }),
     });
   } catch (fetchErr) {
     console.error("Image API fetch error:", String(fetchErr));
@@ -77,5 +73,14 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
   }
 
   console.log("Image API success, b64 length:", b64.length);
-  return `data:image/png;base64,${b64}`;
+
+  const binary = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const r2Key = buildR2Key(userId, word);
+
+  await bucket.put(r2Key, binary, {
+    httpMetadata: { contentType: "image/png" },
+  });
+
+  console.log("R2 upload success:", r2Key);
+  return `/api/images/${r2Key}`;
 }

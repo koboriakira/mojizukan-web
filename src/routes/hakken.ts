@@ -131,13 +131,20 @@ hakken.post("/generate", requireAuth, async (c) => {
     await setCache(c.env.DB, body.word, imageStyle, imageUrl, generated.description);
   }
 
+  const existing = await c.env.DB.prepare(
+    "SELECT word FROM hakken_entries WHERE user_id = ? AND word = ?"
+  ).bind(userId, body.word).first();
+  const isRediscovery = existing !== null;
+
   await c.env.DB.prepare(
     "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description, image_url) VALUES (?, ?, ?, ?, ?)"
   )
     .bind(userId, body.word, generated.emoji, generated.description, imageUrl)
     .run();
 
-  await addTicket(c.env.DB, userId, -1, `はっけん生成: ${body.word}`);
+  if (!isRediscovery) {
+    await addTicket(c.env.DB, userId, -1, `はっけん生成: ${body.word}`);
+  }
 
-  return c.json({ ...generated, image_url: imageUrl });
+  return c.json({ ...generated, image_url: imageUrl, cached: !!cached, rediscovery: isRediscovery });
 });

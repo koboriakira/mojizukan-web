@@ -91,7 +91,9 @@ export const clientApp = `
     dailyHakkenMax: saved.dailyHakkenMax || 3,
     dailyHakkenUsed: saved.dailyHakkenUsed || 0,
     limitWord: '',
-    drew: false
+    drew: false,
+    genCached: false,
+    genPhase: 1
   };
 
   var _lastPromptCount = 0;
@@ -1033,17 +1035,46 @@ export const clientApp = `
   }
 
   function renderHakkenGen(s) {
+    var dots = '<div style="display:flex;gap:8px;margin-top:16px;">' +
+      '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out infinite;"></div>' +
+      '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .2s infinite;"></div>' +
+      '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .4s infinite;"></div>' +
+    '</div>';
+    var styleLabel = (window.__STYLE_LABELS && window.__STYLE_LABELS[s.imgStyle]) || s.imgStyle || '';
+    var styleChip = styleLabel ? '<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.7);padding:4px 12px;border-radius:12px;font-size:13px;font-weight:700;color:var(--sub);margin-top:12px;">🎨 ' + styleLabel + ' スタイル</div>' : '';
+    var phase = s.genPhase || 1;
+
+    if (s.genCached) {
+      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;' +
+        'background:radial-gradient(circle,#d6f5e0 0%,#e8faf0 100%);">' +
+        '<div style="font-size:30px;margin-bottom:16px;">✨⭐✨</div>' +
+        '<div style="font-size:96px;line-height:1;background:#fff;border-radius:44px;width:140px;height:140px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.08);animation:pop .4s ease-out;">📖</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:24px;color:var(--ink);margin-top:24px;">ことばを よびだして いるよ</div>' +
+        dots + styleChip +
+        '<div style="font-size:14px;color:var(--sub);margin-top:12px;">ずかんから すぐに もってくるよ…</div>' +
+      '</div>';
+    }
+
+    var emoji, bg, anim, msg, footer;
+    if (phase === 1) {
+      emoji = '🔍'; bg = 'radial-gradient(circle,#ffe0f0 0%,#fbeaf1 100%)'; anim = 'bob 1.1s ease-in-out infinite';
+      msg = 'ことばを さがして いるよ';
+      footer = 'AIが えと せつめいを かいているよ…';
+    } else {
+      emoji = '🔎'; bg = 'radial-gradient(circle,#e8d8f8 0%,#f0eafa 100%)'; anim = 'bob .8s ease-in-out infinite';
+      msg = 'うーん、むずかしい ことば！<br>もっと しらべて いるよ';
+      footer = 'AIが えと せつめいを かいているよ…';
+    }
+
+    var badge = phase >= 2 ? '<div style="display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#fff3d6,#ffe8b8);padding:6px 14px;border-radius:14px;font-size:13px;font-weight:700;color:#b8860b;margin-top:12px;animation:rise .4s ease-out;">🌟 はじめての ことばを つくっているよ</div>' : '';
+
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;' +
-      'background:radial-gradient(circle,#fff3d6 0%,#fbeaf1 100%);">' +
+      'background:' + bg + ';">' +
       '<div style="font-size:30px;margin-bottom:16px;">✨⭐✨</div>' +
-      '<div style="font-size:96px;line-height:1;background:#fff;border-radius:44px;width:140px;height:140px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.08);animation:bob 2s ease-in-out infinite;">🔮</div>' +
-      '<div style="font-family:var(--fhead);font-weight:900;font-size:24px;color:var(--ink);margin-top:24px;">あたらしい ことばを つくっているよ</div>' +
-      '<div style="display:flex;gap:8px;margin-top:16px;">' +
-        '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out infinite;"></div>' +
-        '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .2s infinite;"></div>' +
-        '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .4s infinite;"></div>' +
-      '</div>' +
-      '<div style="font-size:16px;color:var(--sub);margin-top:12px;">AIが えと せつめいを かいているよ…</div>' +
+      '<div style="font-size:96px;line-height:1;background:#fff;border-radius:44px;width:140px;height:140px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.08);animation:' + anim + ';">' + emoji + '</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:24px;color:var(--ink);margin-top:24px;">' + msg + '</div>' +
+      dots + styleChip + badge +
+      '<div style="font-size:14px;color:var(--sub);margin-top:12px;">' + footer + '</div>' +
     '</div>';
   }
 
@@ -2047,6 +2078,12 @@ export const clientApp = `
 
   window.__startHakkenGen = function() {
     var word = state.word;
+    setState({ genCached: false, genPhase: 1 });
+    var phaseTimer = setTimeout(function() {
+      if (state.screen === 'hakkengen') {
+        setState({ genPhase: 2 });
+      }
+    }, 2700);
     fetch('/api/hakken/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2054,21 +2091,30 @@ export const clientApp = `
     })
     .then(function(res) {
       if (res.status === 401) {
-        return { emoji: '✨', description: 'あたらしく はっけんした ことばだよ！', image_url: null };
+        return { emoji: '✨', description: 'あたらしく はっけんした ことばだよ！', image_url: null, cached: false };
       }
       if (!res.ok) throw new Error('API error: ' + res.status);
       return res.json();
     })
     .then(function(data) {
-      window.__finishHakken(data.emoji || '✨', data.description || '', data.image_url || null);
+      clearTimeout(phaseTimer);
+      if (data.cached) {
+        setState({ genCached: true });
+        setTimeout(function() {
+          window.__finishHakken(data.emoji || '✨', data.description || '', data.image_url || null, !data.rediscovery);
+        }, 1200);
+      } else {
+        window.__finishHakken(data.emoji || '✨', data.description || '', data.image_url || null, !data.rediscovery);
+      }
     })
     .catch(function(err) {
+      clearTimeout(phaseTimer);
       console.error('hakken generate failed:', err);
       setState({ screen: 'hakkengenError' });
     });
   };
 
-  window.__finishHakken = function(emoji, desc, imageUrl) {
+  window.__finishHakken = function(emoji, desc, imageUrl, consumeTicket) {
     playSound('success');
     var word = state.word;
     var col = state.collected.indexOf(word) === -1
@@ -2078,7 +2124,7 @@ export const clientApp = `
       ? state.discovered.concat([word])
       : state.discovered;
     var newSeeded = state.seeded.filter(function(w) { return w !== word; });
-    var tickets = Math.max(0, (state.tickets || 0) - 1);
+    var tickets = consumeTicket !== false ? Math.max(0, (state.tickets || 0) - 1) : (state.tickets || 0);
 
     if (!window.__hakkenCache) window.__hakkenCache = {};
     window.__hakkenCache[word] = { emoji: emoji, desc: desc, image_url: imageUrl || null };

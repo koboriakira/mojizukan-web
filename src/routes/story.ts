@@ -69,7 +69,7 @@ story.post("/stream", async (c) => {
   const messages = [{ role: "user" as const, content: prompt }];
   const stream = await c.env.AI.run(
     STORY_MODEL as Parameters<Ai["run"]>[0],
-    { messages, stream: true },
+    { messages, stream: true, max_tokens: 2048 },
   );
 
   const { readable, writable } = new TransformStream();

@@ -732,8 +732,10 @@ export const clientApp = `
       var tok = page.tokens[ti];
       if (tok.t === 'word' && tok.w) {
         var hw = s.handwriting && s.handwriting[tok.w];
-        if (hw) {
-          body += '<img src="' + hw + '" style="height:34px;vertical-align:middle;display:inline-block;margin:0 2px;" />';
+        if (hw && hw.length) {
+          for (var hwi = 0; hwi < hw.length; hwi++) {
+            body += '<img src="' + hw[hwi] + '" style="height:34px;vertical-align:middle;display:inline-block;margin:0 2px;" />';
+          }
         } else {
           body += '<span style="color:var(--accent3);font-weight:900;">' + tok.w + '</span>';
         }

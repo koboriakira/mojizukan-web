@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { AppEnv, ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenGenerateRequest, HakkenGenerateResponse } from "../types";
+import type { AppEnv, ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenGenerateRequest, HakkenGenerateResponse, ImageStyle } from "../types";
 import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../lib/ng-words";
@@ -98,6 +98,11 @@ hakken.post("/generate", requireAuth, async (c) => {
 出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
 {"emoji":"絵文字1つ","description":"説明文（2文）"}`;
 
+  const settings = await c.env.DB.prepare(
+    "SELECT image_style FROM user_settings WHERE id = ?"
+  ).bind(userId).first<{ image_style: string }>();
+  const imageStyle = (settings?.image_style || "ehon") as ImageStyle;
+
   const [generated, imageUrl] = await Promise.all([
     generateJsonOpenAI<HakkenGenerateResponse>({
       apiKey: c.env.OPENAI_API_KEY,
@@ -109,6 +114,7 @@ hakken.post("/generate", requireAuth, async (c) => {
       word: body.word,
       userId,
       bucket: c.env.IMAGES,
+      style: imageStyle,
     }),
   ]);
 

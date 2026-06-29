@@ -1,15 +1,6 @@
 import { AppError } from "../middleware/error-handler";
-
-export function buildImagePrompt(word: string): string {
-  return `子ども向け図鑑のイラスト: 「${word}」
-
-スタイル:
-- やさしい水彩画風
-- 明るくカラフルな色使い
-- シンプルで親しみやすいデザイン
-- 白い背景
-- 1つの対象物を中央に大きく描く`;
-}
+import type { ImageStyle } from "../types";
+import { buildImagePrompt } from "./image-styles";
 
 export function buildR2Key(userId: string, word: string): string {
   return `hakken/${userId}/${word}.webp`;
@@ -20,6 +11,7 @@ export interface GenerateImageOptions {
   word: string;
   userId: string;
   bucket: R2Bucket;
+  style?: ImageStyle;
   model?: string;
   size?: string;
   quality?: string;
@@ -31,12 +23,13 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     word,
     userId,
     bucket,
+    style = "ehon",
     model = "gpt-image-1-mini",
     size = "1024x1024",
     quality = "low",
   } = options;
 
-  const prompt = buildImagePrompt(word);
+  const prompt = buildImagePrompt(style, word);
   console.log("Image API request:", JSON.stringify({ model, size, quality }));
 
   let res: Response;

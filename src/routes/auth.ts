@@ -110,7 +110,10 @@ auth.get("/me", async (c) => {
     return c.json({ authed: false });
   }
   const tickets = await getTicketBalance(c.env.DB, user.id);
-  return c.json({ authed: true, id: user.id, email: user.email, tickets });
+  const settings = await c.env.DB.prepare(
+    "SELECT image_style FROM user_settings WHERE id = ?"
+  ).bind(user.id).first<{ image_style: string }>();
+  return c.json({ authed: true, id: user.id, email: user.email, tickets, image_style: settings?.image_style || "ehon" });
 });
 
 // --- Google OAuth ---

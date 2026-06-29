@@ -1,17 +1,46 @@
 import { describe, it, expect } from "vitest";
-import { buildImagePrompt, buildR2Key } from "../lib/image";
+import { buildR2Key } from "../lib/image";
+import { buildImagePrompt, getStyleConfig, getAllStyles } from "../lib/image-styles";
 
 describe("みつける・たんけんの画像生成", () => {
   describe("buildImagePrompt", () => {
     it("単語を含むプロンプトを生成する", () => {
-      const prompt = buildImagePrompt("らいおん");
+      const prompt = buildImagePrompt("ehon", "らいおん");
       expect(prompt).toContain("らいおん");
     });
 
-    it("子ども向けスタイルの指定を含む", () => {
-      const prompt = buildImagePrompt("りんご");
-      expect(prompt).toContain("水彩画");
-      expect(prompt).toContain("子ども");
+    it("スタイルごとに異なるプロンプトを返す", () => {
+      const ehon = buildImagePrompt("ehon", "りんご");
+      const pop = buildImagePrompt("pop", "りんご");
+      expect(ehon).not.toBe(pop);
+      expect(ehon).toContain("watercolor");
+      expect(pop).toContain("cartoon");
+    });
+
+    it("全スタイルで単語が埋め込まれる", () => {
+      const styles = ["honwaka", "ehon", "pop", "watercolor", "zukan"] as const;
+      for (const style of styles) {
+        const prompt = buildImagePrompt(style, "ねこ");
+        expect(prompt).toContain("ねこ");
+      }
+    });
+  });
+
+  describe("getStyleConfig", () => {
+    it("各スタイルのラベルを返す", () => {
+      expect(getStyleConfig("honwaka").label).toBe("ほんわか");
+      expect(getStyleConfig("ehon").label).toBe("えほん");
+      expect(getStyleConfig("pop").label).toBe("ポップ");
+      expect(getStyleConfig("watercolor").label).toBe("やさしい水彩");
+      expect(getStyleConfig("zukan").label).toBe("ずかん");
+    });
+  });
+
+  describe("getAllStyles", () => {
+    it("5つのスタイルを返す", () => {
+      const styles = getAllStyles();
+      expect(styles).toHaveLength(5);
+      expect(styles.map(s => s.key)).toEqual(["honwaka", "ehon", "pop", "watercolor", "zukan"]);
     });
   });
 

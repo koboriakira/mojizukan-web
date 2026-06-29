@@ -7,6 +7,7 @@ import { PRESET_WORDS } from "../lib/preset-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
 import { addTicket } from "../lib/tickets";
 import { generateJson } from "../lib/ai";
+import { getCache, setCache } from "../lib/shared-cache";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -78,7 +79,24 @@ hakken.post("/generate", requireAuth, async (c) => {
     throw new AppError(400, "word は必須です");
   }
 
-  const prompt = `「${body.word}」についての子ども向け図鑑エントリを作ってください。
+  const style = body.style ?? "ehon";
+  const cached = await getCache(c.env.DB, body.word, style);
+
+  let generated: HakkenGenerateResponse;
+  if (cached) {
+    // Cache hit: use cached description, look up existing emoji from user's entries
+    const existingEntry = await c.env.DB.prepare(
+      "SELECT emoji FROM hakken_entries WHERE user_id = ? AND word = ?"
+    )
+      .bind(userId, body.word)
+      .first<{ emoji: string }>();
+    generated = {
+      emoji: existingEntry?.emoji ?? "📖",
+      description: cached.description,
+    };
+  } else {
+    // Cache miss: generate with AI
+    const prompt = `「${body.word}」についての子ども向け図鑑エントリを作ってください。
 
 ルール:
 - 3〜4歳の子どもが理解できるやさしい言葉で説明する
@@ -89,10 +107,15 @@ hakken.post("/generate", requireAuth, async (c) => {
 出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
 {"emoji":"絵文字1つ","description":"説明文（2文）"}`;
 
-  const generated = await generateJson<HakkenGenerateResponse>({
-    ai: c.env.AI,
-    prompt,
-  });
+    generated = await generateJson<HakkenGenerateResponse>({
+      ai: c.env.AI,
+      prompt,
+    });
+
+    // Store description in shared cache
+    const imageUrl = `shared/${style}/${body.word}.png`;
+    await setCache(c.env.DB, body.word, style, imageUrl, generated.description);
+  }
 
   await c.env.DB.prepare(
     "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description) VALUES (?, ?, ?, ?)"

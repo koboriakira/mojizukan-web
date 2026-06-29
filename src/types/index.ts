@@ -123,6 +123,7 @@ export interface ClassifyResponse {
 export interface HakkenGenerateRequest {
   word: string;
   userId: string;
+  style?: string;
 }
 
 export interface HakkenGenerateResponse {

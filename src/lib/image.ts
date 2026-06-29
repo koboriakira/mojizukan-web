@@ -28,7 +28,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     apiKey,
     word,
     model = "gpt-image-1-mini",
-    size = "512x512",
+    size = "1024x1024",
     quality = "low",
   } = options;
 

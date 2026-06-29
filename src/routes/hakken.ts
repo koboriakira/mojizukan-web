@@ -7,6 +7,7 @@ import { PRESET_WORDS } from "../lib/preset-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
 import { addTicket } from "../lib/tickets";
 import { generateJson } from "../lib/ai";
+import { generateImage } from "../lib/image";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -89,18 +90,27 @@ hakken.post("/generate", requireAuth, async (c) => {
 出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
 {"emoji":"絵文字1つ","description":"説明文（2文）"}`;
 
-  const generated = await generateJson<HakkenGenerateResponse>({
-    ai: c.env.AI,
-    prompt,
-  });
+  const [generated, imageUrl] = await Promise.all([
+    generateJson<HakkenGenerateResponse>({
+      ai: c.env.AI,
+      prompt,
+    }),
+    generateImage({
+      apiKey: c.env.OPENAI_API_KEY,
+      word: body.word,
+    }).catch((err) => {
+      console.error("Image generation failed:", err);
+      return null;
+    }),
+  ]);
 
   await c.env.DB.prepare(
-    "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description) VALUES (?, ?, ?, ?)"
+    "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description, image_url) VALUES (?, ?, ?, ?, ?)"
   )
-    .bind(userId, body.word, generated.emoji, generated.description)
+    .bind(userId, body.word, generated.emoji, generated.description, imageUrl)
     .run();
 
   await addTicket(c.env.DB, userId, -1, `はっけん生成: ${body.word}`);
 
-  return c.json(generated);
+  return c.json({ ...generated, image_url: imageUrl });
 });

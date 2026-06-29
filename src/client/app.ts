@@ -111,6 +111,17 @@ export const clientApp = `
   var _pgStart = null;
   var _pgRaf = null;
 
+  function renderEmojiOrImage(emoji, imageUrl, size) {
+    if (imageUrl) {
+      return '<img src="' + imageUrl + '" alt="" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;border-radius:12px;">';
+    }
+    return '<span style="font-size:' + size + 'px;line-height:1;">' + emoji + '</span>';
+  }
+
+  function getHakkenImageUrl(word) {
+    return (window.__hakkenCache && window.__hakkenCache[word] && window.__hakkenCache[word].image_url) || null;
+  }
+
   function playSound(name) {
     if (!_audioEnabled) return;
     try {
@@ -384,8 +395,8 @@ export const clientApp = `
   function renderReveal(s) {
     var word = s.word || '';
     var preset = PRESETS[word] || (window.__hakkenCache && window.__hakkenCache[word] ?
-      { emoji: window.__hakkenCache[word].emoji, cat: 'はっけん', catIcon: '⭐', desc: window.__hakkenCache[word].desc } :
-      { emoji: '📖', cat: '', catIcon: '', desc: '' });
+      { emoji: window.__hakkenCache[word].emoji, cat: 'はっけん', catIcon: '⭐', desc: window.__hakkenCache[word].desc, image_url: window.__hakkenCache[word].image_url } :
+      { emoji: '📖', cat: '', catIcon: '', desc: '', image_url: null });
     var kind = s.revealKind || 'normal';
     var title;
     if (kind === 'review') {
@@ -410,7 +421,7 @@ export const clientApp = `
 
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
-      '<div style="font-size:130px;line-height:1;margin:14px 0 4px;">' + preset.emoji + '</div>' +
+      '<div style="margin:14px 0 4px;">' + renderEmojiOrImage(preset.emoji, preset.image_url || getHakkenImageUrl(word), 130) + '</div>' +
       '<div style="display:flex;align-items:center;justify-content:center;gap:8px;">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
         '<button onclick="window.__speakWord()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
@@ -495,7 +506,7 @@ export const clientApp = `
         var preset = PRESETS[cw];
         if (s.collected.indexOf(cw) !== -1) {
           sections += '<button onclick="window.__openDetail(\\'' + cw + '\\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
-            '<span style="font-size:40px;line-height:1;">' + preset.emoji + '</span>' +
+            renderEmojiOrImage(preset.emoji, getHakkenImageUrl(cw), 40) +
             '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + cw + '</span>' +
           '</button>';
         } else {
@@ -515,8 +526,9 @@ export const clientApp = `
       for (var di = 0; di < s.discovered.length; di++) {
         var dw = s.discovered[di];
         var dEmoji = (window.__hakkenCache && window.__hakkenCache[dw]) ? window.__hakkenCache[dw].emoji : '✨';
+        var dImageUrl = getHakkenImageUrl(dw);
         sections += '<button onclick="window.__openDetail(\\'' + dw + '\\')" style="background:var(--card);border:3px solid #f3dd9a;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
-          '<span style="font-size:40px;line-height:1;">' + dEmoji + '</span>' +
+          renderEmojiOrImage(dEmoji, dImageUrl, 40) +
           '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + dw + '</span>' +
           '<span style="font-size:10px;color:var(--accent3);font-weight:700;">はっけん</span>' +
         '</button>';
@@ -543,7 +555,7 @@ export const clientApp = `
         '<button onclick="window.__goZukan()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
       '</div>' +
       '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">' +
-        '<div style="width:220px;height:220px;border-radius:36px;background:var(--card);border:4px solid var(--cbd);display:flex;align-items:center;justify-content:center;font-size:130px;">' + preset.emoji + '</div>' +
+        '<div style="width:220px;height:220px;border-radius:36px;background:var(--card);border:4px solid var(--cbd);display:flex;align-items:center;justify-content:center;">' + renderEmojiOrImage(preset.emoji, getHakkenImageUrl(word), 130) + '</div>' +
         '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;">' +
           '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;">' + word + '</div>' +
           '<button onclick="window.__speakWord()" style="width:50px;height:50px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
@@ -686,7 +698,7 @@ export const clientApp = `
         var coverEmojis = '';
         for (var ei = 0; ei < Math.min(2, (st.words || []).length); ei++) {
           var ep = PRESETS[(st.words || [])[ei]] || { emoji: '📖' };
-          coverEmojis += '<span style="font-size:28px;">' + ep.emoji + '</span>';
+          coverEmojis += renderEmojiOrImage(ep.emoji, getHakkenImageUrl((st.words || [])[ei]), 28);
         }
         var dateStr = st.created_at ? st.created_at.slice(0, 10).replace(/-/g, '/') : '';
         var sub = isDone
@@ -743,10 +755,10 @@ export const clientApp = `
     var fadeStyle = s.storyFade ? 'animation:fade .28s ease;' : '';
 
     var heroEmojis = '';
-    var heroSize = page.hero.length > 1 ? '78px' : '104px';
+    var heroSizePx = page.hero.length > 1 ? 78 : 104;
     for (var hi = 0; hi < page.hero.length; hi++) {
       var hp = PRESETS[page.hero[hi]];
-      heroEmojis += '<span style="font-size:' + heroSize + ';line-height:1;">' + (hp ? hp.emoji : '📖') + '</span>';
+      heroEmojis += renderEmojiOrImage(hp ? hp.emoji : '📖', getHakkenImageUrl(page.hero[hi]), heroSizePx);
     }
     var heroLabels = '';
     for (var hli = 0; hli < page.hero.length; hli++) {
@@ -830,7 +842,7 @@ export const clientApp = `
       cells +=
         '<button onclick="window.__toggleStorySel(\\'' + w + '\\')" style="position:relative;background:#fff;border:' + border + ';border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:none;padding:0;">' +
           badge +
-          '<span style="font-size:34px;line-height:1;">' + preset.emoji + '</span>' +
+          renderEmojiOrImage(preset.emoji, getHakkenImageUrl(w), 34) +
           '<span style="font-family:var(--fhead);font-weight:900;font-size:14px;color:var(--ink);">' + w + '</span>' +
           hwLabel +
         '</button>';
@@ -886,7 +898,7 @@ export const clientApp = `
     var heroEmojis = '';
     for (var hi = 0; hi < page.hero.length; hi++) {
       var hp = PRESETS[page.hero[hi]];
-      heroEmojis += '<span style="font-size:72px;line-height:1;">' + (hp ? hp.emoji : '📖') + '</span>';
+      heroEmojis += renderEmojiOrImage(hp ? hp.emoji : '📖', getHakkenImageUrl(page.hero[hi]), 72);
     }
 
     var body = '';
@@ -978,7 +990,7 @@ export const clientApp = `
       cards += '<div onclick="window.__togglePrepSel(\\'' + item.w + '\\')" style="position:relative;background:#fff;border:2px solid var(--cbd);border-radius:16px;padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;min-height:100px;">' +
         checkEl +
         removeEl +
-        '<div style="font-size:32px;line-height:1;">' + emoji + '</div>' +
+        '<div style="line-height:1;">' + renderEmojiOrImage(emoji, getHakkenImageUrl(item.w), 32) + '</div>' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);margin-top:4px;">' + item.w + '</div>' +
         badgeEl +
       '</div>';
@@ -1043,7 +1055,7 @@ export const clientApp = `
       return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
         '<div class="sheet">' +
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
-          '<div style="text-align:center;font-size:80px;">' + hpreset.emoji + '</div>' +
+          '<div style="text-align:center;">' + renderEmojiOrImage(hpreset.emoji, getHakkenImageUrl(hw), 80) + '</div>' +
           '<div style="display:flex;justify-content:center;gap:8px;margin:16px 0;">' + charBoxes + '</div>' +
           '<div style="font-size:16px;color:#7a7060;text-align:center;margin:12px 0 20px;">' + hintText + '</div>' +
           '<button onclick="window.__closeSheet()" style="width:100%;min-height:64px;border-radius:18px;background:var(--accent2);font-size:20px;box-shadow:0 6px 0 var(--accent2d);">わかった！</button>' +
@@ -1981,14 +1993,14 @@ export const clientApp = `
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
-      window.__finishHakken(data.emoji || '✨', data.description || '');
+      window.__finishHakken(data.emoji || '✨', data.description || '', data.image_url || null);
     })
     .catch(function() {
-      window.__finishHakken('✨', 'あたらしく はっけんした ことばだよ！');
+      window.__finishHakken('✨', 'あたらしく はっけんした ことばだよ！', null);
     });
   };
 
-  window.__finishHakken = function(emoji, desc) {
+  window.__finishHakken = function(emoji, desc, imageUrl) {
     playSound('success');
     var word = state.word;
     var col = state.collected.indexOf(word) === -1
@@ -2001,7 +2013,7 @@ export const clientApp = `
     var tickets = Math.max(0, (state.tickets || 0) - 1);
 
     if (!window.__hakkenCache) window.__hakkenCache = {};
-    window.__hakkenCache[word] = { emoji: emoji, desc: desc };
+    window.__hakkenCache[word] = { emoji: emoji, desc: desc, image_url: imageUrl || null };
 
     var used = state.dailyHakkenUsed;
     if (state.tankenMode) { used = used + 1; }

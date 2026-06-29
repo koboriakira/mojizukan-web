@@ -363,7 +363,7 @@ describe("clientApp", () => {
   });
 
   it("goStory が API を呼び出す", () => {
-    expect(clientApp).toContain("fetch('/api/story'");
+    expect(clientApp).toContain("fetch('/api/story/stream'");
     expect(clientApp).toContain("storyLoading: true");
   });
 

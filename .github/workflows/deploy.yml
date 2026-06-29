@@ -55,7 +55,8 @@ jobs:
         with:
           script: |
             const url = '${{ steps.preview.outputs.url }}';
-            const body = `🔗 **Preview**: ${url}`;
+            const name = '${{ steps.preview.outputs.name }}';
+            const body = `🔗 **Preview**: ${url}\n\n📋 **ログ監視**: \`npx wrangler tail ${name}\``;
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner, repo: context.repo.repo,
               issue_number: context.issue.number

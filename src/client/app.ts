@@ -732,8 +732,10 @@ export const clientApp = `
       var tok = page.tokens[ti];
       if (tok.t === 'word' && tok.w) {
         var hw = s.handwriting && s.handwriting[tok.w];
-        if (hw) {
-          body += '<img src="' + hw + '" style="height:34px;vertical-align:middle;display:inline-block;margin:0 2px;" />';
+        if (hw && hw.length) {
+          for (var hwi = 0; hwi < hw.length; hwi++) {
+            body += '<img src="' + hw[hwi] + '" style="height:34px;vertical-align:middle;display:inline-block;margin:0 2px;" />';
+          }
         } else {
           body += '<span style="color:var(--accent3);font-weight:900;">' + tok.w + '</span>';
         }
@@ -753,10 +755,11 @@ export const clientApp = `
       dots += '<div style="width:10px;height:10px;border-radius:50%;background:' + dotBg + ';"></div>';
     }
 
+    var isError = pages.length === 1 && page.hero.length === 0;
     var bottomButtons = isLast
       ? '<div style="display:flex;gap:14px;width:100%;max-width:400px;margin-top:16px;">' +
           '<button onclick="window.__storyRestart()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent3);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent3d);color:#fff;">🔄 もういちど</button>' +
-          '<button onclick="window.__goHome()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent2);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">できた！</button>' +
+          (isError ? '' : '<button onclick="window.__goHome()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent2);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">できた！</button>') +
         '</div>'
       : '';
 
@@ -1199,17 +1202,65 @@ export const clientApp = `
     if (words.length < 2) return;
     playSound('tap');
     setState({ screen: 'story', storyLoading: true, storyPages: null, storyPage: 0 });
-    fetch('/api/story', {
+
+    function fallbackFetch() {
+      fetch('/api/story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ words: words })
+      }).then(function(r) { return r.json(); })
+        .then(function(data) {
+          setState({ storyPages: data.pages, storyLoading: false });
+        })
+        .catch(function() {
+          setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
+        });
+    }
+
+    fetch('/api/story/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ words: words })
-    }).then(function(r) { return r.json(); })
-      .then(function(data) {
-        setState({ storyPages: data.pages, storyLoading: false });
-      })
-      .catch(function() {
-        setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
-      });
+    }).then(function(r) {
+      if (!r.body || !r.body.getReader) { fallbackFetch(); return; }
+      var reader = r.body.getReader();
+      var decoder = new TextDecoder();
+      var buf = '';
+      var pages = [];
+      function read() {
+        reader.read().then(function(result) {
+          if (result.done) {
+            if (pages.length === 0) fallbackFetch();
+            else setState({ storyLoading: false });
+            return;
+          }
+          buf += decoder.decode(result.value, { stream: true });
+          var events = buf.split('\\n\\n');
+          buf = events.pop() || '';
+          for (var i = 0; i < events.length; i++) {
+            var lines = events[i].split('\\n');
+            var eventType = '';
+            var data = '';
+            for (var j = 0; j < lines.length; j++) {
+              if (lines[j].indexOf('event: ') === 0) eventType = lines[j].slice(7);
+              if (lines[j].indexOf('data: ') === 0) data = lines[j].slice(6);
+            }
+            if (eventType === 'page' && data) {
+              try {
+                var page = JSON.parse(data);
+                pages.push(page);
+                setState({ storyPages: pages.slice(), storyLoading: false });
+              } catch(e) {}
+            }
+          }
+          read();
+        }).catch(function() {
+          if (pages.length === 0) fallbackFetch();
+          else setState({ storyLoading: false });
+        });
+      }
+      read();
+    }).catch(function() { fallbackFetch(); });
   };
 
   window.__storyPrev = function () {

@@ -47,7 +47,7 @@ export async function generateJson<T>(options: GenerateJsonOptions): Promise<T> 
       );
     }
 
-    const result = await ai.run(model as Parameters<Ai["run"]>[0], { messages });
+    const result = await ai.run(model as Parameters<Ai["run"]>[0], { messages, max_tokens: 2048 });
     const response = (result as { response?: string }).response;
     if (!response) continue;
 

@@ -90,18 +90,19 @@ hakken.post("/generate", requireAuth, async (c) => {
 出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
 {"emoji":"絵文字1つ","description":"説明文（2文）"}`;
 
-  const [generated, imageUrl] = await Promise.all([
-    generateJson<HakkenGenerateResponse>({
-      ai: c.env.AI,
-      prompt,
-    }),
-    generateImage({
-      apiKey: c.env.OPENAI_API_KEY,
-      word: body.word,
-      userId,
-      bucket: c.env.IMAGES,
-    }),
-  ]);
+  console.log("[hakken] start text generation");
+  const generated = await generateJson<HakkenGenerateResponse>({
+    ai: c.env.AI,
+    prompt,
+  });
+  console.log("[hakken] text done, start image generation");
+  const imageUrl = await generateImage({
+    apiKey: c.env.OPENAI_API_KEY,
+    word: body.word,
+    userId,
+    bucket: c.env.IMAGES,
+  });
+  console.log("[hakken] image done:", imageUrl);
 
   await c.env.DB.prepare(
     "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description, image_url) VALUES (?, ?, ?, ?, ?)"

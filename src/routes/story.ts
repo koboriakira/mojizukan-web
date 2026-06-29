@@ -5,7 +5,7 @@ import { generateJson, extractJson } from "../lib/ai";
 
 export const story = new Hono<AppEnv>();
 
-const STORY_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
+const STORY_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
 export function buildStoryPrompt(words: string[]): string {
   const wordList = words.join("、");

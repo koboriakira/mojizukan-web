@@ -1200,11 +1200,27 @@ export const clientApp = `
     if (words.length < 2) return;
     playSound('tap');
     setState({ screen: 'story', storyLoading: true, storyPages: null, storyPage: 0 });
+
+    function fallbackFetch() {
+      fetch('/api/story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ words: words })
+      }).then(function(r) { return r.json(); })
+        .then(function(data) {
+          setState({ storyPages: data.pages, storyLoading: false });
+        })
+        .catch(function() {
+          setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
+        });
+    }
+
     fetch('/api/story/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ words: words })
     }).then(function(r) {
+      if (!r.body || !r.body.getReader) { fallbackFetch(); return; }
       var reader = r.body.getReader();
       var decoder = new TextDecoder();
       var buf = '';
@@ -1212,15 +1228,11 @@ export const clientApp = `
       function read() {
         reader.read().then(function(result) {
           if (result.done) {
-            if (pages.length === 0) {
-              setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
-            } else {
-              setState({ storyLoading: false });
-            }
+            if (pages.length === 0) fallbackFetch();
+            else setState({ storyLoading: false });
             return;
           }
           buf += decoder.decode(result.value, { stream: true });
-          // SSEイベントは空行（\\n\\n）で区切られる
           var events = buf.split('\\n\\n');
           buf = events.pop() || '';
           for (var i = 0; i < events.length; i++) {
@@ -1240,12 +1252,13 @@ export const clientApp = `
             }
           }
           read();
+        }).catch(function() {
+          if (pages.length === 0) fallbackFetch();
+          else setState({ storyLoading: false });
         });
       }
       read();
-    }).catch(function() {
-      setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
-    });
+    }).catch(function() { fallbackFetch(); });
   };
 
   window.__storyPrev = function () {

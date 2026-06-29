@@ -28,7 +28,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     apiKey,
     word,
     model = "gpt-image-1-mini",
-    size = "1024x1024",
+    size = "512x512",
     quality = "low",
   } = options;
 
@@ -36,21 +36,29 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
 
   console.log("Image API request:", JSON.stringify({ model, size, quality }));
 
-  const res = await fetch("https://api.openai.com/v1/images/generations", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      prompt,
-      n: 1,
-      size,
-      quality,
-      output_format: "png",
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        prompt,
+        n: 1,
+        size,
+        quality,
+        output_format: "png",
+      }),
+    });
+  } catch (fetchErr) {
+    console.error("Image API fetch error:", String(fetchErr));
+    throw new AppError(502, `画像API接続エラー: ${String(fetchErr)}`);
+  }
+
+  console.log("Image API status:", res.status);
 
   if (!res.ok) {
     const errBody = await res.text().catch(() => "");
@@ -59,7 +67,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
   }
 
   const raw = await res.text();
-  console.log("Image API response keys:", raw.slice(0, 300));
+  console.log("Image API response length:", raw.length, "keys:", raw.slice(0, 200));
 
   const data = JSON.parse(raw) as {
     data: Array<Record<string, string>>;

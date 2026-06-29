@@ -73,7 +73,7 @@ story.post("/stream", async (c) => {
     body: JSON.stringify({
       model: "gpt-5.4-mini",
       messages,
-      max_tokens: 2048,
+      max_completion_tokens: 2048,
       stream: true,
       response_format: { type: "json_object" },
     }),

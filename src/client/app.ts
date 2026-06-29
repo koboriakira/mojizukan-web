@@ -257,6 +257,7 @@ export const clientApp = `
           '</div>' +
         '</div>' +
         '<button onclick="window.__showParentGate()" style="min-height:60px;background:transparent;color:var(--sub);font-weight:700;font-size:18px;box-shadow:none;">🏠 おうちの ひとは こちら</button>' +
+        (!s.authed ? '<button onclick="window.__showLogin()" style="min-height:44px;background:transparent;color:var(--accent);font-weight:700;font-size:15px;box-shadow:none;">🔑 まえの つづきから あそぶ</button>' : '') +
       '</div>' +
     '</div>';
   }
@@ -1684,6 +1685,10 @@ export const clientApp = `
 
   window.__showSignup = function () {
     setState({ sheet: 'signup' });
+  };
+
+  window.__showLogin = function () {
+    setState({ sheet: 'signup', authMode: 'email-login' });
   };
 
   window.__showParentGate = function () {

@@ -44,12 +44,14 @@ jobs:
           BRANCH_SLUG=$(echo "${{ github.head_ref }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-20)
           PREVIEW_NAME="mojizukan-preview-${BRANCH_SLUG}"
           npx wrangler deploy --name "${PREVIEW_NAME}" --var DEV_LOGIN:true 2>&1 | tee /tmp/deploy.log
+          echo "$OPENAI_API_KEY" | npx wrangler secret put OPENAI_API_KEY --name "${PREVIEW_NAME}"
           URL=$(grep -oP 'https://[^ ]+\.workers\.dev' /tmp/deploy.log | head -1)
           echo "url=${URL}" >> "$GITHUB_OUTPUT"
           echo "name=${PREVIEW_NAME}" >> "$GITHUB_OUTPUT"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - name: Comment preview URL
         uses: actions/github-script@v8
         with:

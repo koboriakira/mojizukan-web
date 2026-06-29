@@ -1147,7 +1147,7 @@ export const clientApp = `
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
           '<div style="text-align:center;font-size:46px;">🔑📚</div>' +
           '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:24px;margin-top:8px;">' + (s.authReason ? 'とうろくして つづきを あそぼう' : 'じぶんの 図鑑を とっておこう') + '</div>' +
-          '<div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">' + (s.authReason ? 'おはなしづくり と たんけんが あそべます。<br><b style="color:var(--accent);">チケットも 5まい</b> プレゼント🎁' : 'いま集めた <b style="color:var(--accent);">' + collectedCount + 'けん</b> をそのまま引き継ぎ。<br>登録すると <b style="color:var(--accent);">はっけんチケット 5まい</b> プレゼント🎁') + '</div>' +
+          '<div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">' + (s.authReason ? 'おはなしづくり と たんけんが あそべます。<br><b style="color:var(--accent);">チケットも 50まい</b> プレゼント🎁' : 'いま集めた <b style="color:var(--accent);">' + collectedCount + 'けん</b> をそのまま引き継ぎ。<br>登録すると <b style="color:var(--accent);">はっけんチケット 50まい</b> プレゼント🎁') + '</div>' +
           formHtml +
           '<div style="text-align:center;font-size:11.5px;color:#b6ab9a;margin-top:10px;line-height:1.5;">🔒 登録は保護者のためのものです。お子さまの個人情報は集めません。</div>' +
         '</div>';
@@ -2067,7 +2067,11 @@ export const clientApp = `
     if (result === 'dict') {
       window.__goWriteWord(word, false, 'tanken');
     } else {
-      if (state.dailyHakkenUsed >= state.dailyHakkenMax || (state.tickets || 0) <= 0) {
+      if (!state.authed && (state.discovered || []).length >= 10) {
+        setState({ sheet: 'signup', authReason: 'tanken' });
+        return;
+      }
+      if (state.authed && (state.dailyHakkenUsed >= state.dailyHakkenMax || (state.tickets || 0) <= 0)) {
         setState({ screen: 'tankenlimit', limitWord: word });
         return;
       }

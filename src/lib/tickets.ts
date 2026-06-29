@@ -1,4 +1,5 @@
-const FREE_DISCOVER_LIMIT = 10;
+export const FREE_DISCOVER_LIMIT = 10;
+export const SIGNUP_BONUS_TICKETS = 50;
 
 export async function getTicketBalance(db: D1Database, userId: string): Promise<number> {
   const result = await db

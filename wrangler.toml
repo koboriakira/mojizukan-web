@@ -17,7 +17,7 @@ database_id = "14e6c603-1287-4301-aa78-40e1b527985c"
 [ai]
 binding = "AI"
 
-# GOOGLE_CLIENT_ID と GOOGLE_CLIENT_SECRET は wrangler secret put で設定
+# GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, OPENAI_API_KEY は wrangler secret put で設定
 
 # [[r2_buckets]]
 # binding = "IMAGES"

@@ -1,11 +1,9 @@
 import { Hono } from "hono";
 import type { AppEnv, StoryRequest, StoryResponse, StoryPage } from "../types";
 import { AppError } from "../middleware/error-handler";
-import { generateJson, extractJson } from "../lib/ai";
+import { generateJsonOpenAI, extractJson } from "../lib/ai";
 
 export const story = new Hono<AppEnv>();
-
-const STORY_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
 export function buildStoryPrompt(words: string[]): string {
   const wordList = words.join("、");
@@ -48,10 +46,9 @@ story.post("/", async (c) => {
   const prompt = buildStoryPrompt(body.words) +
     "\n\nJSONのみを出力してください。コードブロックや説明文は不要です。";
 
-  const result = await generateJson<StoryResponse>({
-    ai: c.env.AI,
+  const result = await generateJsonOpenAI<StoryResponse>({
+    apiKey: c.env.OPENAI_API_KEY,
     prompt,
-    model: STORY_MODEL,
   });
   return c.json(result);
 });
@@ -67,10 +64,26 @@ story.post("/stream", async (c) => {
     "\n\nJSONのみを出力してください。コードブロックや説明文は不要です。";
 
   const messages = [{ role: "user" as const, content: prompt }];
-  const stream = await c.env.AI.run(
-    STORY_MODEL as Parameters<Ai["run"]>[0],
-    { messages, stream: true, max_tokens: 2048 },
-  );
+  const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${c.env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-5.4",
+      messages,
+      max_completion_tokens: 2048,
+      stream: true,
+      response_format: { type: "json_object" },
+    }),
+  });
+
+  if (!openaiRes.ok || !openaiRes.body) {
+    const errBody = await openaiRes.text().catch(() => "");
+    console.error(`OpenAI API error (${openaiRes.status}):`, errBody);
+    throw new AppError(502, "OpenAI APIへの接続に失敗しました");
+  }
 
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
@@ -83,7 +96,7 @@ story.post("/stream", async (c) => {
     let sseBuf = "";
     let responseBuf = "";
     let sentPages = 0;
-    const reader = (stream as unknown as ReadableStream).getReader();
+    const reader = openaiRes.body!.getReader();
     const decoder = new TextDecoder();
 
     try {
@@ -93,7 +106,6 @@ story.post("/stream", async (c) => {
         const chunk = typeof value === "string" ? value : decoder.decode(value, { stream: true });
         sseBuf += chunk;
 
-        // Workers AI SSE形式: "data: {\"response\":\"...\"}\n\n"
         const lines = sseBuf.split("\n");
         sseBuf = lines.pop() || "";
         for (const line of lines) {
@@ -102,8 +114,9 @@ story.post("/stream", async (c) => {
           if (payload === "[DONE]") continue;
           try {
             const parsed = JSON.parse(payload);
-            if (parsed.response) {
-              responseBuf += parsed.response;
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              responseBuf += delta;
             }
           } catch { /* incomplete SSE line */ }
         }

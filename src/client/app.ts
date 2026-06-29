@@ -1203,17 +1203,22 @@ export const clientApp = `
     playSound('tap');
     setState({ screen: 'story', storyLoading: true, storyPages: null, storyPage: 0 });
 
+    var errorPages = [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }];
     function fallbackFetch() {
       fetch('/api/story', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ words: words })
-      }).then(function(r) { return r.json(); })
+      }).then(function(r) {
+          if (!r.ok) throw new Error('API error');
+          return r.json();
+        })
         .then(function(data) {
+          if (!data.pages || !data.pages.length) throw new Error('No pages');
           setState({ storyPages: data.pages, storyLoading: false });
         })
         .catch(function() {
-          setState({ storyLoading: false, storyPages: [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }] });
+          setState({ storyLoading: false, storyPages: errorPages });
         });
     }
 
@@ -1222,7 +1227,7 @@ export const clientApp = `
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ words: words })
     }).then(function(r) {
-      if (!r.body || !r.body.getReader) { fallbackFetch(); return; }
+      if (!r.ok || !r.body || !r.body.getReader) { fallbackFetch(); return; }
       var reader = r.body.getReader();
       var decoder = new TextDecoder();
       var buf = '';
@@ -1251,6 +1256,9 @@ export const clientApp = `
                 pages.push(page);
                 setState({ storyPages: pages.slice(), storyLoading: false });
               } catch(e) {}
+            } else if (eventType === 'error') {
+              setState({ storyLoading: false, storyPages: errorPages });
+              return;
             }
           }
           read();

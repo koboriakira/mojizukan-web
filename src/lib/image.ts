@@ -12,7 +12,7 @@ export function buildImagePrompt(word: string): string {
 }
 
 export function buildR2Key(userId: string, word: string): string {
-  return `hakken/${userId}/${encodeURIComponent(word)}.webp`;
+  return `hakken/${userId}/${word}.webp`;
 }
 
 export interface GenerateImageOptions {

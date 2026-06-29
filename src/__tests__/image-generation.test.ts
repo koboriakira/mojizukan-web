@@ -18,7 +18,7 @@ describe("みつける・たんけんの画像生成", () => {
   describe("buildR2Key", () => {
     it("ユーザーIDと単語からキーを生成する", () => {
       const key = buildR2Key("user-123", "らいおん");
-      expect(key).toBe("hakken/user-123/%E3%82%89%E3%81%84%E3%81%8A%E3%82%93.webp");
+      expect(key).toBe("hakken/user-123/らいおん.webp");
     });
 
     it("異なるユーザーで異なるキーになる", () => {

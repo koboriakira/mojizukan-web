@@ -6,7 +6,7 @@ import { isNgWord } from "../lib/ng-words";
 import { PRESET_WORDS } from "../lib/preset-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
 import { addTicket } from "../lib/tickets";
-import { generateJson } from "../lib/ai";
+import { generateJsonOpenAI } from "../lib/ai";
 import { generateImage } from "../lib/image";
 
 export const hakken = new Hono<AppEnv>();
@@ -90,19 +90,19 @@ hakken.post("/generate", requireAuth, async (c) => {
 出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
 {"emoji":"絵文字1つ","description":"説明文（2文）"}`;
 
-  console.log("[hakken] start text generation");
-  const generated = await generateJson<HakkenGenerateResponse>({
-    ai: c.env.AI,
-    prompt,
-  });
-  console.log("[hakken] text done, start image generation");
-  const imageUrl = await generateImage({
-    apiKey: c.env.OPENAI_API_KEY,
-    word: body.word,
-    userId,
-    bucket: c.env.IMAGES,
-  });
-  console.log("[hakken] image done:", imageUrl);
+  const [generated, imageUrl] = await Promise.all([
+    generateJsonOpenAI<HakkenGenerateResponse>({
+      apiKey: c.env.OPENAI_API_KEY,
+      prompt,
+      model: "gpt-4o-mini",
+    }),
+    generateImage({
+      apiKey: c.env.OPENAI_API_KEY,
+      word: body.word,
+      userId,
+      bucket: c.env.IMAGES,
+    }),
+  ]);
 
   await c.env.DB.prepare(
     "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description, image_url) VALUES (?, ?, ?, ?, ?)"

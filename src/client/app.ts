@@ -2003,6 +2003,9 @@ export const clientApp = `
       body: JSON.stringify({ word: word })
     })
     .then(function(res) {
+      if (res.status === 401) {
+        return { emoji: '✨', description: 'あたらしく はっけんした ことばだよ！', image_url: null };
+      }
       if (!res.ok) throw new Error('API error: ' + res.status);
       return res.json();
     })

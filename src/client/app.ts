@@ -75,6 +75,9 @@ export const clientApp = `
     storyPage: 0,
     storyLoading: false,
     storyFade: '',
+    stories: [],
+    readingStoryId: null,
+    authReason: null,
     mode: 'omakase',
     seeded: saved.seeded || [],
     discovering: false,
@@ -182,6 +185,8 @@ export const clientApp = `
       case 'zukan':     return renderZukan(s);
       case 'detail':    return renderDetail(s);
       case 'storyPick': return renderStoryPick(s);
+      case 'storyhome': return renderStoryHome(s);
+      case 'storyread': return renderStoryRead(s);
       case 'parent':    return renderParent(s);
       case 'mitsukeru': return renderMitsukeru(s);
       case 'tanken':      return renderTanken(s);
@@ -228,9 +233,10 @@ export const clientApp = `
         '</div>' +
         '<div style="display:flex;gap:14px;">' +
           '<button onclick="window.__goZukan()" style="flex:1;min-height:72px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:22px;font-weight:900;border-radius:22px;">📖 ずかん</button>' +
-          (s.collected.length >= 3 ?
-            '<button onclick="window.__goStoryPick()" style="flex:1;min-height:72px;background:var(--accent3);box-shadow:0 6px 0 var(--accent3d);font-size:22px;font-weight:900;border-radius:22px;color:#fff;">📚 おはなし</button>'
-          : '') +
+          '<div style="position:relative;flex:1;">' +
+            '<button onclick="window.__goStoryHome()" style="width:100%;min-height:72px;background:var(--accent3);box-shadow:0 6px 0 var(--accent3d);font-size:22px;font-weight:900;border-radius:22px;color:#fff;">📚 おはなし</button>' +
+            (!s.authed ? '<div style="position:absolute;top:-6px;right:6px;font-size:16px;pointer-events:none;">🔒</div>' : '') +
+          '</div>' +
         '</div>' +
         '<button onclick="window.__showParentGate()" style="min-height:60px;background:transparent;color:var(--sub);font-weight:700;font-size:18px;box-shadow:none;">🏠 おうちの ひとは こちら</button>' +
       '</div>' +
@@ -646,6 +652,162 @@ export const clientApp = `
     '</div>';
   }
 
+  function renderStoryHome(s) {
+    var storyList = s.stories || [];
+    var anyWriting = storyList.some(function(st) { return st.status === 'writing'; });
+
+    var writingBanner = '';
+    if (anyWriting) {
+      writingBanner =
+        '<div style="background:linear-gradient(135deg,#fbeaf1,#fff3d6);border:2px solid #e3b8cd;border-radius:20px;padding:18px;margin-bottom:18px;text-align:center;">' +
+          '<div style="font-size:28px;animation:bob 2s ease-in-out infinite;">✏️</div>' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);margin:8px 0 4px;">おはなしを かいているよ（1ぷんくらい）</div>' +
+          '<div style="font-size:13px;color:var(--sub);margin-bottom:12px;">まっている あいだに あたらしい ことばを みつけに いこう！</div>' +
+          '<div style="display:flex;gap:10px;justify-content:center;">' +
+            '<button onclick="window.__goMitsukeru()" style="min-height:44px;padding:0 18px;border-radius:14px;background:var(--accent2);box-shadow:0 3px 0 var(--accent2d);font-size:15px;font-weight:900;color:#fff;">🔍 みつける</button>' +
+            '<button onclick="window.__goTanken()" style="min-height:44px;padding:0 18px;border-radius:14px;background:var(--accent);box-shadow:0 3px 0 var(--accentd);font-size:15px;font-weight:900;color:#fff;">🧭 たんけん</button>' +
+          '</div>' +
+        '</div>';
+    }
+
+    var listHtml = '';
+    if (storyList.length === 0) {
+      listHtml =
+        '<div style="border:3px dashed var(--cbd);border-radius:20px;padding:32px;text-align:center;color:var(--sub);">' +
+          '<div style="font-size:15px;font-weight:700;line-height:1.8;">まだ おはなしが ないよ。<br>「つくる」を おして、はじめての えほんを つくろう！</div>' +
+        '</div>';
+    } else {
+      for (var si = 0; si < storyList.length; si++) {
+        var st = storyList[si];
+        var isDone = st.status === 'done';
+        var wordsLabel = (st.words || []).join('・');
+        var tints = ['#fbe7d8', '#e3f0e6', '#e9ebfa'];
+        var coverTint = tints[si % tints.length];
+        var coverEmojis = '';
+        for (var ei = 0; ei < Math.min(2, (st.words || []).length); ei++) {
+          var ep = PRESETS[(st.words || [])[ei]] || { emoji: '📖' };
+          coverEmojis += '<span style="font-size:28px;">' + ep.emoji + '</span>';
+        }
+        var dateStr = st.created_at ? st.created_at.slice(0, 10).replace(/-/g, '/') : '';
+        var sub = isDone
+          ? '<div style="font-size:13px;color:var(--sub);">' + dateStr + ' に できた ・ よむ ›</div>'
+          : '<div style="font-size:13px;color:var(--accent3);font-weight:900;">かいているよ…<span style="display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out infinite;"></span><span style="width:5px;height:5px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .2s infinite;"></span><span style="width:5px;height:5px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .4s infinite;"></span></span></div>';
+        var onclick = isDone ? 'onclick="window.__goStoryRead(\\'' + st.id + '\\')"' : '';
+        var cursor = isDone ? 'cursor:pointer;' : 'opacity:0.8;';
+        listHtml +=
+          '<div ' + onclick + ' style="display:flex;align-items:center;gap:14px;background:#fff;border:2px solid var(--cbd);border-radius:20px;padding:12px;box-shadow:0 3px 0 rgba(0,0,0,.04);' + cursor + '">' +
+            '<div style="width:64px;height:64px;border-radius:16px;background:' + coverTint + ';display:flex;align-items:center;justify-content:center;gap:4px;flex-shrink:0;">' + coverEmojis + '</div>' +
+            '<div style="flex:1;min-width:0;">' +
+              '<div style="font-family:var(--fhead);font-weight:900;font-size:17px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + wordsLabel + '</div>' +
+              sub +
+            '</div>' +
+            (isDone ? '<div style="font-size:20px;color:var(--sub);">›</div>' : '') +
+          '</div>';
+      }
+    }
+
+    return '<div style="display:flex;flex-direction:column;min-height:100vh;">' +
+      '<div style="padding:18px 18px 0;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">' +
+          '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--accent3);">📚 おはなし</div>' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent);">🎟️ ' + (s.tickets || 0) + '</div>' +
+        '</div>' +
+        '<button onclick="window.__goStoryPick()" style="width:100%;min-height:86px;border-radius:22px;background:var(--accent3);box-shadow:0 6px 0 var(--accent3d);font-size:23px;font-weight:900;color:#fff;margin-bottom:18px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
+          '<span style="font-size:28px;">✏️</span> あたらしい おはなしを つくる' +
+        '</button>' +
+        '<div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:14px;">ことばを えらんで AIが えほんに ・ 🎟️1まい</div>' +
+        writingBanner +
+        '<div style="font-size:16px;font-weight:900;color:var(--sub);margin-bottom:12px;">つくった おはなし</div>' +
+      '</div>' +
+      '<div style="flex:1;padding:0 18px 28px;display:flex;flex-direction:column;gap:12px;">' +
+        listHtml +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderStoryRead(s) {
+    var story = null;
+    for (var i = 0; i < (s.stories || []).length; i++) {
+      if (s.stories[i].id === s.readingStoryId) { story = s.stories[i]; break; }
+    }
+    if (!story || !story.pages) {
+      return '<div style="flex:1;display:flex;align-items:center;justify-content:center;"><div style="color:var(--sub);">おはなしが みつかりません</div></div>';
+    }
+
+    var pages = story.pages;
+    var idx = s.storyPage || 0;
+    var page = pages[idx] || { hero: [], tokens: [] };
+    var tints = ['#fbe7d8', '#e3f0e6', '#e9ebfa'];
+    var tint = tints[idx % tints.length];
+    var fadeStyle = s.storyFade ? 'animation:fade .28s ease;' : '';
+
+    var heroEmojis = '';
+    var heroSize = page.hero.length > 1 ? '78px' : '104px';
+    for (var hi = 0; hi < page.hero.length; hi++) {
+      var hp = PRESETS[page.hero[hi]];
+      heroEmojis += '<span style="font-size:' + heroSize + ';line-height:1;">' + (hp ? hp.emoji : '📖') + '</span>';
+    }
+    var heroLabels = '';
+    for (var hli = 0; hli < page.hero.length; hli++) {
+      heroLabels += '<span style="background:rgba(255,255,255,.7);padding:4px 12px;border-radius:12px;font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + page.hero[hli] + '</span>';
+    }
+
+    var body = '';
+    for (var ti = 0; ti < page.tokens.length; ti++) {
+      var tok = page.tokens[ti];
+      if (tok.t === 'word' && tok.w) {
+        var hw = s.handwriting && s.handwriting[tok.w];
+        if (hw && hw.length) {
+          for (var hwi = 0; hwi < hw.length; hwi++) {
+            body += '<img src="' + hw[hwi] + '" style="height:34px;width:34px;object-fit:contain;vertical-align:middle;display:inline-block;margin:0 2px;background:#fff;border:2px solid var(--cbd);border-radius:8px;padding:2px;" />';
+          }
+        } else {
+          body += '<span style="font-family:var(--fhead);font-weight:900;font-size:26px;color:var(--accent);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px;">' + tok.w + '</span>';
+        }
+      } else {
+        body += '<span>' + (tok.s || '') + '</span>';
+      }
+    }
+
+    var isFirst = idx === 0;
+    var isLast = idx === pages.length - 1;
+
+    var dots = '';
+    for (var di = 0; di < pages.length; di++) {
+      var dotW = di === idx ? '26px' : '10px';
+      var dotBg = di === idx ? 'var(--accent3)' : '#e2d6c6';
+      dots += '<div style="width:' + dotW + ';height:10px;border-radius:5px;background:' + dotBg + ';transition:width .2s;"></div>';
+    }
+
+    var bottomBtn = isLast
+      ? '<button onclick="window.__goStoryHome()" style="width:100%;max-width:400px;min-height:64px;border-radius:20px;background:var(--accent3);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent3d);color:#fff;margin-top:16px;">📚 ほんだなに もどる</button>'
+      : '';
+
+    return '<div style="flex:1;display:flex;flex-direction:column;padding:18px;">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">' +
+        '<button onclick="window.__goStoryHome()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">←</button>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--accent3);">📖 おはなし</div>' +
+        '<div style="width:48px;"></div>' +
+      '</div>' +
+      '<div style="flex:1;display:flex;flex-direction:column;background:#fffdf7;border:2px solid var(--cbd);border-radius:28px;box-shadow:0 6px 20px rgba(0,0,0,.08);overflow:hidden;' + fadeStyle + '">' +
+        '<div style="min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:' + tint + ';padding:30px 20px;gap:12px;">' +
+          '<div style="display:flex;gap:8px;">' + heroEmojis + '</div>' +
+          '<div style="display:flex;gap:8px;">' + heroLabels + '</div>' +
+        '</div>' +
+        '<div style="padding:20px 22px;font-size:24px;line-height:2;font-weight:500;color:#3a332a;display:flex;flex-wrap:wrap;align-items:flex-end;">' +
+          body +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:18px;">' +
+        '<button onclick="window.__storyReadPrev()" style="width:54px;height:54px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;color:var(--accent3);opacity:' + (isFirst ? '.3' : '1') + ';">‹</button>' +
+        '<div style="display:flex;gap:6px;align-items:center;">' + dots + '</div>' +
+        '<button onclick="window.__storyReadNext()" style="width:54px;height:54px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;color:var(--accent3);opacity:' + (isLast ? '.3' : '1') + ';">›</button>' +
+      '</div>' +
+      '<div style="text-align:center;">' + bottomBtn + '</div>' +
+    '</div>';
+  }
+
   function renderStoryPick(s) {
     var sel = s.storySel || [];
     var collected = s.collected || [];
@@ -681,12 +843,12 @@ export const clientApp = `
     return '<div style="display:flex;flex-direction:column;min-height:100vh;">' +
       '<div style="padding:18px 18px 0;">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
-          '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
+          '<button onclick="window.__goStoryHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
           '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--ink);">おはなしを つくる</div>' +
-          '<div style="width:56px;"></div>' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent);">🎟️ ' + (s.tickets || 0) + '</div>' +
         '</div>' +
         '<div style="text-align:center;color:var(--sub);font-size:15px;font-weight:700;margin-bottom:4px;">つかう ことばを えらんでね</div>' +
-        '<div style="text-align:center;color:var(--sub);font-size:13px;margin-bottom:18px;">2〜5こ ・ むりょうで なんかいでも</div>' +
+        '<div style="text-align:center;color:var(--sub);font-size:13px;margin-bottom:18px;">2〜5こ ・ おはなし1つに 🎟️1まい</div>' +
       '</div>' +
       '<div style="flex:1;padding:0 18px;">' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;">' +
@@ -694,8 +856,8 @@ export const clientApp = `
         '</div>' +
       '</div>' +
       '<div style="position:sticky;bottom:0;background:var(--bg);padding:16px 18px 28px;">' +
-        '<button onclick="window.__goStory()" style="width:100%;min-height:80px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">' +
-          '📖 おはなしを つくる（' + selCount + '/5）' +
+        '<button onclick="window.__makeStory()" style="width:100%;min-height:80px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">' +
+          '📖 つくる（' + selCount + '/5 ・ 🎟️1）' +
         '</button>' +
       '</div>' +
     '</div>';
@@ -922,8 +1084,8 @@ export const clientApp = `
         '<div class="sheet" onclick="event.stopPropagation()">' +
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
           '<div style="text-align:center;font-size:46px;">🔑📚</div>' +
-          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:24px;margin-top:8px;">じぶんの 図鑑を とっておこう</div>' +
-          '<div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">いま集めた <b style="color:var(--accent);">' + collectedCount + 'けん</b> をそのまま引き継ぎ。<br>登録すると <b style="color:var(--accent);">はっけんチケット 5まい</b> プレゼント🎁</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:24px;margin-top:8px;">' + (s.authReason ? 'とうろくして つづきを あそぼう' : 'じぶんの 図鑑を とっておこう') + '</div>' +
+          '<div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">' + (s.authReason ? 'おはなしづくり と たんけんが あそべます。<br><b style="color:var(--accent);">チケットも 5まい</b> プレゼント🎁' : 'いま集めた <b style="color:var(--accent);">' + collectedCount + 'けん</b> をそのまま引き継ぎ。<br>登録すると <b style="color:var(--accent);">はっけんチケット 5まい</b> プレゼント🎁') + '</div>' +
           formHtml +
           '<div style="text-align:center;font-size:11.5px;color:#b6ab9a;margin-top:10px;line-height:1.5;">🔒 登録は保護者のためのものです。お子さまの個人情報は集めません。</div>' +
         '</div>';
@@ -1180,6 +1342,16 @@ export const clientApp = `
 
   window.__setState = setState;
 
+  window.__goStoryHome = function () {
+    playSound('tap');
+    if (!state.authed) {
+      setState({ sheet: 'signup', authReason: 'story' });
+      return;
+    }
+    setState({ screen: 'storyhome' });
+    fetchStories();
+  };
+
   window.__goStoryPick = function () {
     playSound('tap');
     var defaultSel = state.collected.slice(0, 3);
@@ -1293,6 +1465,72 @@ export const clientApp = `
   window.__storyRestart = function () {
     playSound('tap');
     setState({ storyPage: 0, storyFade: '' });
+  };
+
+  function fetchStories() {
+    fetch('/api/stories').then(function(r) {
+      if (!r.ok) return;
+      return r.json();
+    }).then(function(data) {
+      if (data && data.stories) {
+        setState({ stories: data.stories });
+        var hasWriting = data.stories.some(function(s) { return s.status === 'writing'; });
+        if (hasWriting && state.screen === 'storyhome') {
+          setTimeout(fetchStories, 10000);
+        }
+      }
+    }).catch(function() {});
+  }
+
+  window.__goStoryRead = function (id) {
+    playSound('tap');
+    setState({ screen: 'storyread', readingStoryId: id, storyPage: 0, storyFade: '' });
+  };
+
+  window.__makeStory = function () {
+    var words = state.storySel || [];
+    if (words.length < 2) return;
+    if (state.tickets <= 0) {
+      setState({ sheet: 'tickets' });
+      return;
+    }
+    playSound('tap');
+    fetch('/api/stories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ words: words })
+    }).then(function(r) {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    }).then(function(data) {
+      setState({ tickets: state.tickets - 1, screen: 'storyhome' });
+      fetchStories();
+    }).catch(function() {
+      setState({ screen: 'storyhome' });
+    });
+  };
+
+  window.__storyReadPrev = function () {
+    var idx = state.storyPage || 0;
+    if (idx > 0) {
+      playSound('tap');
+      setState({ storyPage: idx - 1, storyFade: 'prev' });
+      setTimeout(function() { setState({ storyFade: '' }); }, 300);
+    }
+  };
+
+  window.__storyReadNext = function () {
+    var idx = state.storyPage || 0;
+    var story = null;
+    for (var i = 0; i < state.stories.length; i++) {
+      if (state.stories[i].id === state.readingStoryId) { story = state.stories[i]; break; }
+    }
+    if (!story || !story.pages) return;
+    if (idx < story.pages.length - 1) {
+      playSound('tap');
+      setState({ storyPage: idx + 1, storyFade: 'next' });
+      setTimeout(function() { setState({ storyFade: '' }); }, 300);
+    }
   };
 
   window.__closeSheet = function () {
@@ -1426,7 +1664,11 @@ export const clientApp = `
           setState({ authError: data.error || 'エラーが おきました' });
           return;
         }
-        setState({ authed: true, userId: data.id, tickets: data.tickets || 0, sheet: null, authMode: 'choose', authError: '' });
+        var afterScreen = state.authReason === 'story' ? 'storyhome' : (state.authReason === 'tanken' ? 'tanken' : null);
+        var newState = { authed: true, userId: data.id, tickets: data.tickets || 0, sheet: null, authMode: 'choose', authError: '', authReason: null };
+        if (afterScreen) newState.screen = afterScreen;
+        setState(newState);
+        if (afterScreen === 'storyhome') { fetchStories(); }
       });
     }).catch(function () {
       setState({ authError: 'つうしん エラーです' });

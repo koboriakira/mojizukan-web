@@ -78,6 +78,7 @@ export const clientApp = `
     stories: [],
     readingStoryId: null,
     authReason: null,
+    imgStyle: 'ehon',
     mode: 'omakase',
     seeded: saved.seeded || [],
     discovering: false,
@@ -104,12 +105,26 @@ export const clientApp = `
   var _actx = null;
   var _lastChime = 0;
 
+  window.__STYLE_LABELS = { honwaka: 'ほんわか', ehon: 'えほん', pop: 'ポップ', watercolor: 'やさしい水彩', zukan: 'ずかん' };
+  window.__STYLE_DESCS = { honwaka: 'パステルカラーでまるっとやさしい', ehon: '鉛筆と水彩のあたたかい絵本タッチ', pop: 'はっきりした線とカラフルなまんが風', watercolor: '透明感のあるにじみが美しい水彩画', zukan: 'リアルな図鑑イラスト風' };
+
   var _audioEnabled = false;
   var _audioCache = {};
 
   var _pgTimer = null;
   var _pgStart = null;
   var _pgRaf = null;
+
+  function renderEmojiOrImage(emoji, imageUrl, size) {
+    if (imageUrl) {
+      return '<img src="' + imageUrl + '" alt="" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;border-radius:12px;">';
+    }
+    return '<span style="font-size:' + size + 'px;line-height:1;">' + emoji + '</span>';
+  }
+
+  function getHakkenImageUrl(word) {
+    return (window.__hakkenCache && window.__hakkenCache[word] && window.__hakkenCache[word].image_url) || null;
+  }
 
   function playSound(name) {
     if (!_audioEnabled) return;
@@ -193,6 +208,7 @@ export const clientApp = `
       case 'tankenlimit': return renderTankenlimit(s);
       case 'prep':        return renderPrep(s);
       case 'hakkengen': return renderHakkenGen(s);
+      case 'hakkengenError': return renderHakkenGenError(s);
       case 'story':     return renderStory(s);
       default:          return '<p>不明な画面: ' + s.screen + '</p>';
     }
@@ -384,8 +400,8 @@ export const clientApp = `
   function renderReveal(s) {
     var word = s.word || '';
     var preset = PRESETS[word] || (window.__hakkenCache && window.__hakkenCache[word] ?
-      { emoji: window.__hakkenCache[word].emoji, cat: 'はっけん', catIcon: '⭐', desc: window.__hakkenCache[word].desc } :
-      { emoji: '📖', cat: '', catIcon: '', desc: '' });
+      { emoji: window.__hakkenCache[word].emoji, cat: 'はっけん', catIcon: '⭐', desc: window.__hakkenCache[word].desc, image_url: window.__hakkenCache[word].image_url } :
+      { emoji: '📖', cat: '', catIcon: '', desc: '', image_url: null });
     var kind = s.revealKind || 'normal';
     var title;
     if (kind === 'review') {
@@ -410,7 +426,7 @@ export const clientApp = `
 
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
-      '<div style="font-size:130px;line-height:1;margin:14px 0 4px;">' + preset.emoji + '</div>' +
+      '<div style="margin:14px 0 4px;">' + renderEmojiOrImage(preset.emoji, preset.image_url || getHakkenImageUrl(word), 130) + '</div>' +
       '<div style="display:flex;align-items:center;justify-content:center;gap:8px;">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
         '<button onclick="window.__speakWord()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
@@ -495,7 +511,7 @@ export const clientApp = `
         var preset = PRESETS[cw];
         if (s.collected.indexOf(cw) !== -1) {
           sections += '<button onclick="window.__openDetail(\\'' + cw + '\\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
-            '<span style="font-size:40px;line-height:1;">' + preset.emoji + '</span>' +
+            renderEmojiOrImage(preset.emoji, getHakkenImageUrl(cw), 40) +
             '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + cw + '</span>' +
           '</button>';
         } else {
@@ -515,8 +531,9 @@ export const clientApp = `
       for (var di = 0; di < s.discovered.length; di++) {
         var dw = s.discovered[di];
         var dEmoji = (window.__hakkenCache && window.__hakkenCache[dw]) ? window.__hakkenCache[dw].emoji : '✨';
+        var dImageUrl = getHakkenImageUrl(dw);
         sections += '<button onclick="window.__openDetail(\\'' + dw + '\\')" style="background:var(--card);border:3px solid #f3dd9a;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
-          '<span style="font-size:40px;line-height:1;">' + dEmoji + '</span>' +
+          renderEmojiOrImage(dEmoji, dImageUrl, 40) +
           '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + dw + '</span>' +
           '<span style="font-size:10px;color:var(--accent3);font-weight:700;">はっけん</span>' +
         '</button>';
@@ -543,7 +560,7 @@ export const clientApp = `
         '<button onclick="window.__goZukan()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
       '</div>' +
       '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">' +
-        '<div style="width:220px;height:220px;border-radius:36px;background:var(--card);border:4px solid var(--cbd);display:flex;align-items:center;justify-content:center;font-size:130px;">' + preset.emoji + '</div>' +
+        '<div style="width:220px;height:220px;border-radius:36px;background:var(--card);border:4px solid var(--cbd);display:flex;align-items:center;justify-content:center;">' + renderEmojiOrImage(preset.emoji, getHakkenImageUrl(word), 130) + '</div>' +
         '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;">' +
           '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;">' + word + '</div>' +
           '<button onclick="window.__speakWord()" style="width:50px;height:50px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
@@ -639,6 +656,10 @@ export const clientApp = `
             (s.bgm ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
             (s.bgm ? 'ON' : 'OFF') + '</button>' +
         '</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
+          '<div><span style="font-size:16px;font-weight:700;">🖼️ イラストスタイル</span><div style="font-size:12px;color:var(--sub);margin-top:2px;">はっけん時の絵のタッチを選べます</div></div>' +
+          '<button onclick="window.__openStylePicker()" style="min-width:100px;min-height:40px;border-radius:20px;font-size:14px;font-weight:700;background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);">' + (window.__STYLE_LABELS && window.__STYLE_LABELS[s.imgStyle] || s.imgStyle) + ' ›</button>' +
+        '</div>' +
         '<div style="padding:12px 0 0;">' +
           '<div style="font-size:16px;font-weight:700;margin-bottom:10px;">🎨 配色テーマ</div>' +
           '<div style="display:flex;gap:10px;">' + themeButtons + '</div>' +
@@ -686,7 +707,7 @@ export const clientApp = `
         var coverEmojis = '';
         for (var ei = 0; ei < Math.min(2, (st.words || []).length); ei++) {
           var ep = PRESETS[(st.words || [])[ei]] || { emoji: '📖' };
-          coverEmojis += '<span style="font-size:28px;">' + ep.emoji + '</span>';
+          coverEmojis += renderEmojiOrImage(ep.emoji, getHakkenImageUrl((st.words || [])[ei]), 28);
         }
         var dateStr = st.created_at ? st.created_at.slice(0, 10).replace(/-/g, '/') : '';
         var sub = isDone
@@ -743,10 +764,10 @@ export const clientApp = `
     var fadeStyle = s.storyFade ? 'animation:fade .28s ease;' : '';
 
     var heroEmojis = '';
-    var heroSize = page.hero.length > 1 ? '78px' : '104px';
+    var heroSizePx = page.hero.length > 1 ? 78 : 104;
     for (var hi = 0; hi < page.hero.length; hi++) {
       var hp = PRESETS[page.hero[hi]];
-      heroEmojis += '<span style="font-size:' + heroSize + ';line-height:1;">' + (hp ? hp.emoji : '📖') + '</span>';
+      heroEmojis += renderEmojiOrImage(hp ? hp.emoji : '📖', getHakkenImageUrl(page.hero[hi]), heroSizePx);
     }
     var heroLabels = '';
     for (var hli = 0; hli < page.hero.length; hli++) {
@@ -830,7 +851,7 @@ export const clientApp = `
       cells +=
         '<button onclick="window.__toggleStorySel(\\'' + w + '\\')" style="position:relative;background:#fff;border:' + border + ';border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:none;padding:0;">' +
           badge +
-          '<span style="font-size:34px;line-height:1;">' + preset.emoji + '</span>' +
+          renderEmojiOrImage(preset.emoji, getHakkenImageUrl(w), 34) +
           '<span style="font-family:var(--fhead);font-weight:900;font-size:14px;color:var(--ink);">' + w + '</span>' +
           hwLabel +
         '</button>';
@@ -886,7 +907,7 @@ export const clientApp = `
     var heroEmojis = '';
     for (var hi = 0; hi < page.hero.length; hi++) {
       var hp = PRESETS[page.hero[hi]];
-      heroEmojis += '<span style="font-size:72px;line-height:1;">' + (hp ? hp.emoji : '📖') + '</span>';
+      heroEmojis += renderEmojiOrImage(hp ? hp.emoji : '📖', getHakkenImageUrl(page.hero[hi]), 72);
     }
 
     var body = '';
@@ -978,7 +999,7 @@ export const clientApp = `
       cards += '<div onclick="window.__togglePrepSel(\\'' + item.w + '\\')" style="position:relative;background:#fff;border:2px solid var(--cbd);border-radius:16px;padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;min-height:100px;">' +
         checkEl +
         removeEl +
-        '<div style="font-size:32px;line-height:1;">' + emoji + '</div>' +
+        '<div style="line-height:1;">' + renderEmojiOrImage(emoji, getHakkenImageUrl(item.w), 32) + '</div>' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);margin-top:4px;">' + item.w + '</div>' +
         badgeEl +
       '</div>';
@@ -1026,6 +1047,16 @@ export const clientApp = `
     '</div>';
   }
 
+  function renderHakkenGenError(s) {
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
+      '<div style="font-size:64px;margin-bottom:16px;">😢</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--ink);margin-bottom:12px;">つくれなかったよ</div>' +
+      '<div style="font-size:16px;color:var(--sub);margin-bottom:32px;">もう いちど ためしてね</div>' +
+      '<button onclick="window.__startHakkenGen()" style="min-height:64px;padding:0 32px;border-radius:18px;background:var(--accent);font-size:20px;box-shadow:0 6px 0 var(--accentd);">もう いちど</button>' +
+      '<button onclick="window.__goHome()" style="min-height:48px;padding:0 24px;border-radius:14px;background:transparent;font-size:16px;color:var(--sub);margin-top:16px;">ホームに もどる</button>' +
+    '</div>';
+  }
+
   function renderSheet(s) {
     if (s.sheet === 'hint') {
       var hw = s.hintWord || '';
@@ -1043,7 +1074,7 @@ export const clientApp = `
       return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
         '<div class="sheet">' +
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
-          '<div style="text-align:center;font-size:80px;">' + hpreset.emoji + '</div>' +
+          '<div style="text-align:center;">' + renderEmojiOrImage(hpreset.emoji, getHakkenImageUrl(hw), 80) + '</div>' +
           '<div style="display:flex;justify-content:center;gap:8px;margin:16px 0;">' + charBoxes + '</div>' +
           '<div style="font-size:16px;color:#7a7060;text-align:center;margin:12px 0 20px;">' + hintText + '</div>' +
           '<button onclick="window.__closeSheet()" style="width:100%;min-height:64px;border-radius:18px;background:var(--accent2);font-size:20px;box-shadow:0 6px 0 var(--accent2d);">わかった！</button>' +
@@ -1117,6 +1148,33 @@ export const clientApp = `
             '<button onclick="window.__closeSheet()" style="flex:1;min-height:64px;border-radius:18px;background:var(--locked);color:var(--sub);font-size:18px;box-shadow:none;">やめる</button>' +
           '</div>' +
           '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:12px;line-height:1.5;">仕込み・支払いは保護者メニューの中だけ。お子さまは課金画面に触れません</div>' +
+        '</div>';
+    }
+    if (s.sheet === 'style') {
+      var styleKeys = ['honwaka', 'ehon', 'pop', 'watercolor', 'zukan'];
+      var styleCards = '';
+      for (var sti = 0; sti < styleKeys.length; sti++) {
+        var sk = styleKeys[sti];
+        var isActive = s.imgStyle === sk;
+        var stBorder = isActive ? '3px solid var(--accent)' : '2px solid var(--cbd)';
+        var stCheck = isActive ? '<div style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;">✓</div>' : '';
+        styleCards += '<button onclick="window.__selectStyle(\\'' + sk + '\\')" style="position:relative;width:100%;background:#fff;border:' + stBorder + ';border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:none;text-align:left;">' +
+          stCheck +
+          '<div style="flex:1;">' +
+            '<div style="font-family:var(--fhead);font-weight:900;font-size:17px;color:var(--ink);">' + window.__STYLE_LABELS[sk] + '</div>' +
+            '<div style="font-size:13px;color:var(--sub);margin-top:2px;">' + window.__STYLE_DESCS[sk] + '</div>' +
+          '</div>' +
+        '</button>';
+      }
+      return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
+        '<div class="sheet" onclick="event.stopPropagation()" style="max-height:80vh;overflow-y:auto;">' +
+          '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
+          '<div style="text-align:center;font-size:36px;">🖼️</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin:8px 0 4px;">イラストスタイル</div>' +
+          '<div style="text-align:center;font-size:13px;color:var(--sub);margin-bottom:16px;">はっけん時に生成される絵のタッチを選べます</div>' +
+          '<div style="display:flex;flex-direction:column;gap:10px;">' + styleCards + '</div>' +
+          '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:14px;line-height:1.5;">すでに生成した画像には影響しません</div>' +
+          '<button onclick="window.__closeSheet()" style="width:100%;min-height:52px;border-radius:18px;background:var(--locked);color:var(--sub);font-size:16px;font-weight:700;margin-top:14px;box-shadow:none;">とじる</button>' +
         '</div>';
     }
     if (s.sheet === 'parentGate') {
@@ -1707,6 +1765,21 @@ export const clientApp = `
     setState({ speak: !state.speak });
   };
 
+  window.__openStylePicker = function () {
+    playSound('tap');
+    setState({ sheet: 'style' });
+  };
+
+  window.__selectStyle = function (style) {
+    playSound('tap');
+    setState({ imgStyle: style, sheet: null });
+    fetch('/api/styles', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_style: style })
+    }).catch(function() {});
+  };
+
   window.__speakChar = function () {
     var word = state.word || '';
     var ch = word[state.charIndex || 0] || '';
@@ -1979,16 +2052,23 @@ export const clientApp = `
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ word: word })
     })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      window.__finishHakken(data.emoji || '✨', data.description || '');
+    .then(function(res) {
+      if (res.status === 401) {
+        return { emoji: '✨', description: 'あたらしく はっけんした ことばだよ！', image_url: null };
+      }
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
     })
-    .catch(function() {
-      window.__finishHakken('✨', 'あたらしく はっけんした ことばだよ！');
+    .then(function(data) {
+      window.__finishHakken(data.emoji || '✨', data.description || '', data.image_url || null);
+    })
+    .catch(function(err) {
+      console.error('hakken generate failed:', err);
+      setState({ screen: 'hakkengenError' });
     });
   };
 
-  window.__finishHakken = function(emoji, desc) {
+  window.__finishHakken = function(emoji, desc, imageUrl) {
     playSound('success');
     var word = state.word;
     var col = state.collected.indexOf(word) === -1
@@ -2001,7 +2081,7 @@ export const clientApp = `
     var tickets = Math.max(0, (state.tickets || 0) - 1);
 
     if (!window.__hakkenCache) window.__hakkenCache = {};
-    window.__hakkenCache[word] = { emoji: emoji, desc: desc };
+    window.__hakkenCache[word] = { emoji: emoji, desc: desc, image_url: imageUrl || null };
 
     var used = state.dailyHakkenUsed;
     if (state.tankenMode) { used = used + 1; }
@@ -2023,7 +2103,14 @@ export const clientApp = `
     return res.json();
   }).then(function (data) {
     if (data.authed) {
-      setState({ authed: true, userId: data.id, tickets: data.tickets || 0 });
+      setState({ authed: true, userId: data.id, tickets: data.tickets || 0, imgStyle: data.image_style || 'ehon' });
+      fetch('/api/hakken/entries').then(function(r) { return r.json(); }).then(function(entries) {
+        if (!window.__hakkenCache) window.__hakkenCache = {};
+        entries.forEach(function(e) {
+          window.__hakkenCache[e.word] = { emoji: e.emoji, desc: e.description, image_url: e.image_url };
+        });
+        render(state);
+      }).catch(function() {});
     }
   }).catch(function () {});
 

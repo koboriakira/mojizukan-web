@@ -19,6 +19,6 @@ binding = "AI"
 
 # GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, OPENAI_API_KEY は wrangler secret put で設定
 
-# [[r2_buckets]]
-# binding = "IMAGES"
-# bucket_name = "mojizukan-images"
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "mojizukan-images"

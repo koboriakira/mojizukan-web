@@ -26,13 +26,20 @@ dev.get("/auto-login", async (c) => {
   if (!user) {
     const id = crypto.randomUUID();
     const passwordHash = await hashPassword(TEST_PASSWORD);
-    await c.env.DB.prepare(
-      "INSERT INTO auth_users (id, email, password_hash) VALUES (?, ?, ?)"
-    )
-      .bind(id, TEST_EMAIL, passwordHash)
-      .run();
+    await c.env.DB.batch([
+      c.env.DB.prepare(
+        "INSERT INTO auth_users (id, email, password_hash) VALUES (?, ?, ?)"
+      ).bind(id, TEST_EMAIL, passwordHash),
+      c.env.DB.prepare(
+        "INSERT OR IGNORE INTO user_settings (id) VALUES (?)"
+      ).bind(id),
+    ]);
     user = { id };
   }
+
+  await c.env.DB.prepare(
+    "INSERT OR IGNORE INTO user_settings (id) VALUES (?)"
+  ).bind(user.id).run();
 
   const balance = await getTicketBalance(c.env.DB, user.id);
   if (balance < ticketCount) {

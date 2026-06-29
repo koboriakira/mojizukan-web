@@ -1,12 +1,13 @@
 import { Hono } from "hono";
-import type { AppEnv, ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenGenerateRequest, HakkenGenerateResponse } from "../types";
+import type { AppEnv, ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenGenerateRequest, HakkenGenerateResponse, ImageStyle } from "../types";
 import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../lib/ng-words";
 import { PRESET_WORDS } from "../lib/preset-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
 import { addTicket } from "../lib/tickets";
-import { generateJson } from "../lib/ai";
+import { generateJsonOpenAI } from "../lib/ai";
+import { generateImage } from "../lib/image";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -47,6 +48,14 @@ export function getRandomWords({ n, collected, seeded }: RandomInput): string[] 
   const shuffled = available.sort(() => Math.random() - 0.5);
   return shuffled.slice(0, n);
 }
+
+hakken.get("/entries", requireAuth, async (c) => {
+  const userId = c.var.userId!;
+  const results = await c.env.DB.prepare(
+    "SELECT word, emoji, description, image_url FROM hakken_entries WHERE user_id = ?"
+  ).bind(userId).all();
+  return c.json(results.results);
+});
 
 hakken.post("/classify", async (c) => {
   const body = await c.req.json<ClassifyRequest>();
@@ -89,18 +98,33 @@ hakken.post("/generate", requireAuth, async (c) => {
 出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
 {"emoji":"絵文字1つ","description":"説明文（2文）"}`;
 
-  const generated = await generateJson<HakkenGenerateResponse>({
-    ai: c.env.AI,
-    prompt,
-  });
+  const settings = await c.env.DB.prepare(
+    "SELECT image_style FROM user_settings WHERE id = ?"
+  ).bind(userId).first<{ image_style: string }>();
+  const imageStyle = (settings?.image_style || "ehon") as ImageStyle;
+
+  const [generated, imageUrl] = await Promise.all([
+    generateJsonOpenAI<HakkenGenerateResponse>({
+      apiKey: c.env.OPENAI_API_KEY,
+      prompt,
+      model: "gpt-5.4",
+    }),
+    generateImage({
+      apiKey: c.env.OPENAI_API_KEY,
+      word: body.word,
+      userId,
+      bucket: c.env.IMAGES,
+      style: imageStyle,
+    }),
+  ]);
 
   await c.env.DB.prepare(
-    "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description) VALUES (?, ?, ?, ?)"
+    "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description, image_url) VALUES (?, ?, ?, ?, ?)"
   )
-    .bind(userId, body.word, generated.emoji, generated.description)
+    .bind(userId, body.word, generated.emoji, generated.description, imageUrl)
     .run();
 
   await addTicket(c.env.DB, userId, -1, `はっけん生成: ${body.word}`);
 
-  return c.json(generated);
+  return c.json({ ...generated, image_url: imageUrl });
 });

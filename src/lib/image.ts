@@ -12,7 +12,7 @@ export function buildImagePrompt(word: string): string {
 }
 
 export function buildR2Key(userId: string, word: string): string {
-  return `hakken/${userId}/${encodeURIComponent(word)}.png`;
+  return `hakken/${userId}/${encodeURIComponent(word)}.webp`;
 }
 
 export interface GenerateImageOptions {
@@ -47,7 +47,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ model, prompt, n: 1, size, quality, output_format: "png" }),
+      body: JSON.stringify({ model, prompt, n: 1, size, quality, output_format: "webp" }),
     });
   } catch (fetchErr) {
     console.error("Image API fetch error:", String(fetchErr));
@@ -62,7 +62,27 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     throw new AppError(502, `画像生成に失敗しました (${res.status})`);
   }
 
-  const data = (await res.json()) as {
+  const reader = res.body!.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalLength = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    totalLength += value.length;
+  }
+
+  console.log("Image response body read, total bytes:", totalLength);
+
+  const combined = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  const text = new TextDecoder().decode(combined);
+  const data = JSON.parse(text) as {
     data: Array<{ b64_json?: string }>;
   };
 
@@ -74,11 +94,15 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
 
   console.log("Image API success, b64 length:", b64.length);
 
-  const binary = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const binaryStr = atob(b64);
+  const binary = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    binary[i] = binaryStr.charCodeAt(i);
+  }
   const r2Key = buildR2Key(userId, word);
 
   await bucket.put(r2Key, binary, {
-    httpMetadata: { contentType: "image/png" },
+    httpMetadata: { contentType: "image/webp" },
   });
 
   console.log("R2 upload success:", r2Key);

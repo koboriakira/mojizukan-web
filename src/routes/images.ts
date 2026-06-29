@@ -15,7 +15,7 @@ images.get("/*", async (c) => {
   }
 
   const headers = new Headers();
-  headers.set("Content-Type", object.httpMetadata?.contentType ?? "image/png");
+  headers.set("Content-Type", object.httpMetadata?.contentType ?? "image/webp");
   headers.set("Cache-Control", "public, max-age=31536000, immutable");
 
   return new Response(object.body, { headers });

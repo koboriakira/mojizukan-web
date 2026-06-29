@@ -94,7 +94,7 @@ hakken.post("/generate", requireAuth, async (c) => {
     generateJsonOpenAI<HakkenGenerateResponse>({
       apiKey: c.env.OPENAI_API_KEY,
       prompt,
-      model: "gpt-4o-mini",
+      model: "gpt-5.4",
     }),
     generateImage({
       apiKey: c.env.OPENAI_API_KEY,

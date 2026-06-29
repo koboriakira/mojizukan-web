@@ -37,6 +37,10 @@ dev.get("/auto-login", async (c) => {
     user = { id };
   }
 
+  await c.env.DB.prepare(
+    "INSERT OR IGNORE INTO user_settings (id) VALUES (?)"
+  ).bind(user.id).run();
+
   const balance = await getTicketBalance(c.env.DB, user.id);
   if (balance < ticketCount) {
     await addTicket(c.env.DB, user.id, ticketCount - balance, "dev-auto-login");

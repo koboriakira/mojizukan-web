@@ -1220,18 +1220,23 @@ export const clientApp = `
             return;
           }
           buf += decoder.decode(result.value, { stream: true });
-          var lines = buf.split('\\n');
-          buf = lines.pop() || '';
-          for (var i = 0; i < lines.length; i++) {
-            if (lines[i].indexOf('event: page') === 0) {
-              var dataLine = lines[i + 1];
-              if (dataLine && dataLine.indexOf('data: ') === 0) {
-                try {
-                  var page = JSON.parse(dataLine.slice(6));
-                  pages.push(page);
-                  setState({ storyPages: pages.slice(), storyLoading: false });
-                } catch(e) {}
-              }
+          // SSEイベントは空行（\\n\\n）で区切られる
+          var events = buf.split('\\n\\n');
+          buf = events.pop() || '';
+          for (var i = 0; i < events.length; i++) {
+            var lines = events[i].split('\\n');
+            var eventType = '';
+            var data = '';
+            for (var j = 0; j < lines.length; j++) {
+              if (lines[j].indexOf('event: ') === 0) eventType = lines[j].slice(7);
+              if (lines[j].indexOf('data: ') === 0) data = lines[j].slice(6);
+            }
+            if (eventType === 'page' && data) {
+              try {
+                var page = JSON.parse(data);
+                pages.push(page);
+                setState({ storyPages: pages.slice(), storyLoading: false });
+              } catch(e) {}
             }
           }
           read();

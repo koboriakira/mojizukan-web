@@ -80,7 +80,8 @@ story.post("/stream", async (c) => {
     writer.write(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
 
   (async () => {
-    let buf = "";
+    let sseBuf = "";
+    let responseBuf = "";
     let sentPages = 0;
     const reader = (stream as unknown as ReadableStream).getReader();
     const decoder = new TextDecoder();
@@ -90,11 +91,11 @@ story.post("/stream", async (c) => {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = typeof value === "string" ? value : decoder.decode(value, { stream: true });
-        buf += chunk;
+        sseBuf += chunk;
 
-        // SSE形式のストリームからレスポンステキストを抽出
-        const lines = buf.split("\n");
-        buf = lines.pop() || "";
+        // Workers AI SSE形式: "data: {\"response\":\"...\"}\n\n"
+        const lines = sseBuf.split("\n");
+        sseBuf = lines.pop() || "";
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           const payload = line.slice(6).trim();
@@ -102,24 +103,22 @@ story.post("/stream", async (c) => {
           try {
             const parsed = JSON.parse(payload);
             if (parsed.response) {
-              buf += parsed.response;
+              responseBuf += parsed.response;
             }
-          } catch { /* partial JSON, skip */ }
+          } catch { /* incomplete SSE line */ }
         }
 
-        // ページオブジェクトを順次抽出して送信
         while (sentPages < 3) {
-          const page = tryExtractPage(buf, sentPages);
+          const page = tryExtractPage(responseBuf, sentPages);
           if (!page) break;
           await sendEvent("page", page);
           sentPages++;
         }
       }
 
-      // 全ストリーム完了後、まだ送信していないページがあれば全体をパースして送信
       if (sentPages < 3) {
         try {
-          const full = extractJson<StoryResponse>(buf);
+          const full = extractJson<StoryResponse>(responseBuf);
           for (let i = sentPages; i < full.pages.length; i++) {
             await sendEvent("page", full.pages[i]);
           }

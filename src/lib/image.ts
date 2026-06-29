@@ -34,6 +34,8 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
 
   const prompt = buildImagePrompt(word);
 
+  console.log("Image API request:", JSON.stringify({ model, size, quality }));
+
   const res = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: {
@@ -53,18 +55,25 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
   if (!res.ok) {
     const errBody = await res.text().catch(() => "");
     console.error(`Image API error (${res.status}):`, errBody);
-    throw new AppError(502, "画像生成に失敗しました");
+    throw new AppError(502, `画像生成に失敗しました (${res.status})`);
   }
 
-  const data = (await res.json()) as {
-    data: Array<{ b64_json?: string; url?: string }>;
+  const raw = await res.text();
+  console.log("Image API response keys:", raw.slice(0, 300));
+
+  const data = JSON.parse(raw) as {
+    data: Array<Record<string, string>>;
   };
 
   const item = data.data?.[0];
-  const b64 = item?.b64_json;
-  if (!b64) {
-    console.error("Image API response:", JSON.stringify(data).slice(0, 200));
+  if (!item) {
     throw new AppError(502, "画像データが取得できませんでした");
+  }
+
+  const b64 = item.b64_json ?? item.b64 ?? Object.values(item).find(v => typeof v === "string" && v.length > 1000);
+  if (!b64) {
+    console.error("Image item keys:", Object.keys(item));
+    throw new AppError(502, "画像データのフィールドが見つかりません");
   }
 
   return `data:image/png;base64,${b64}`;

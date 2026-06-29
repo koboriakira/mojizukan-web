@@ -204,6 +204,7 @@ export const clientApp = `
       case 'tankenlimit': return renderTankenlimit(s);
       case 'prep':        return renderPrep(s);
       case 'hakkengen': return renderHakkenGen(s);
+      case 'hakkengenError': return renderHakkenGenError(s);
       case 'story':     return renderStory(s);
       default:          return '<p>不明な画面: ' + s.screen + '</p>';
     }
@@ -1035,6 +1036,16 @@ export const clientApp = `
         '<div style="width:12px;height:12px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .4s infinite;"></div>' +
       '</div>' +
       '<div style="font-size:16px;color:var(--sub);margin-top:12px;">AIが えと せつめいを かいているよ…</div>' +
+    '</div>';
+  }
+
+  function renderHakkenGenError(s) {
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
+      '<div style="font-size:64px;margin-bottom:16px;">😢</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--ink);margin-bottom:12px;">つくれなかったよ</div>' +
+      '<div style="font-size:16px;color:var(--sub);margin-bottom:32px;">もう いちど ためしてね</div>' +
+      '<button onclick="window.__startHakkenGen()" style="min-height:64px;padding:0 32px;border-radius:18px;background:var(--accent);font-size:20px;box-shadow:0 6px 0 var(--accentd);">もう いちど</button>' +
+      '<button onclick="window.__goHome()" style="min-height:48px;padding:0 24px;border-radius:14px;background:transparent;font-size:16px;color:var(--sub);margin-top:16px;">ホームに もどる</button>' +
     '</div>';
   }
 
@@ -1991,12 +2002,16 @@ export const clientApp = `
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ word: word })
     })
-    .then(function(res) { return res.json(); })
+    .then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    })
     .then(function(data) {
       window.__finishHakken(data.emoji || '✨', data.description || '', data.image_url || null);
     })
-    .catch(function() {
-      window.__finishHakken('✨', 'あたらしく はっけんした ことばだよ！', null);
+    .catch(function(err) {
+      console.error('hakken generate failed:', err);
+      setState({ screen: 'hakkengenError' });
     });
   };
 

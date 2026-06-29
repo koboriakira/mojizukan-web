@@ -140,7 +140,7 @@ describe("clientApp", () => {
   });
 
   it("保護者メニューにたんけん設定カードが含まれる", () => {
-    expect(clientApp).toContain("たんけん の 1にち かいすう");
+    expect(clientApp).toContain("たんけんの1日の回数");
   });
 
   it("PRESETS データが埋め込まれている", () => {
@@ -237,7 +237,7 @@ describe("clientApp", () => {
 
   it("speak 設定トグルが保護者メニューに含まれる", () => {
     expect(clientApp).toContain("__toggleSpeak");
-    expect(clientApp).toContain("よみあげ");
+    expect(clientApp).toContain("読み上げ");
   });
 
   it("setState で saveState が呼ばれる", () => {
@@ -320,7 +320,7 @@ describe("clientApp", () => {
 
   it("保護者ゲートシートのレンダリングロジックが含まれる", () => {
     expect(clientApp).toContain("s.sheet === 'parentGate'");
-    expect(clientApp).toContain("ながおし で はいる");
+    expect(clientApp).toContain("長押しで入る");
     expect(clientApp).toContain("pg-bar");
   });
 

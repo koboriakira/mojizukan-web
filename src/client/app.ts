@@ -581,7 +581,7 @@ export const clientApp = `
     return '<div style="flex:1;padding:18px;overflow-y:auto;">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">' +
         '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;">おうちの ひと メニュー</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;">おうちの方メニュー</div>' +
         '<div style="width:56px;"></div>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-between;">' +
@@ -589,8 +589,8 @@ export const clientApp = `
         '<div style="font-family:var(--fhead);font-weight:900;font-size:26px;color:var(--accent);">🎟️ ' + (s.tickets || 0) + '</div>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:12px;">📖 がくしゅう きろく</div>' +
-        '<div style="font-size:16px;color:var(--sub);font-weight:700;margin-bottom:12px;">とりあつかい: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + s.collected.length + '</span> こ</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:12px;">📖 学習の記録</div>' +
+        '<div style="font-size:16px;color:var(--sub);font-weight:700;margin-bottom:12px;">習得数: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + s.collected.length + '</span> 個</div>' +
         catProgress +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
@@ -598,31 +598,31 @@ export const clientApp = `
         '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">「みつける」は プリセット語を なぞって あつめるモード。「たんけん」は じぶんで ことばを つくって はっけんするモードです。</div>' +
         (s.seeded && s.seeded.length > 0 ?
           '<div style="background:#fff;border:1px solid var(--cbd);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
-            '<span style="font-size:14px;color:var(--sub);font-weight:700;">⭐ 仕込み中の ひみつのことば</span>' +
+            '<span style="font-size:14px;color:var(--sub);font-weight:700;">⭐ 仕込み中の秘密のことば</span>' +
             '<span style="font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent3);">' + (s.seeded ? s.seeded.length : 0) + '</span>' +
           '</div>'
         : '') +
-        '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ ことばを 仕込む</button>' +
+        '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ 言葉を仕込む</button>' +
         '<div style="background:#f5f0e8;border-radius:14px;padding:14px 16px;margin-bottom:8px;">' +
-          '<div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">🧭 たんけん の 1にち かいすう</div>' +
+          '<div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">🧭 たんけんの1日の回数</div>' +
           '<div style="display:flex;align-items:center;justify-content:center;gap:16px;">' +
             '<button onclick="window.__decDaily()" style="width:44px;height:44px;border-radius:50%;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 0 rgba(0,0,0,.06);color:var(--ink);">−</button>' +
             '<div style="font-family:var(--fhead);font-weight:900;font-size:36px;color:var(--accent);min-width:48px;text-align:center;">' + (s.dailyHakkenMax || 3) + '</div>' +
             '<button onclick="window.__incDaily()" style="width:44px;height:44px;border-radius:50%;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 0 rgba(0,0,0,.06);color:var(--ink);">＋</button>' +
           '</div>' +
-          '<div style="font-size:12px;color:var(--sub);text-align:center;margin-top:8px;">0 に すると たんけんを おやすみ できます</div>' +
+          '<div style="font-size:12px;color:var(--sub);text-align:center;margin-top:8px;">0にするとたんけんをお休みできます</div>' +
         '</div>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ せってい</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ 設定</div>' +
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
-          '<div><span style="font-size:16px;font-weight:700;">🗣️ よみあげ</span><div style="font-size:12px;color:var(--sub);margin-top:2px;">まだ じが よめない おこさま むけ</div></div>' +
+          '<div><span style="font-size:16px;font-weight:700;">🗣️ 読み上げ</span><div style="font-size:12px;color:var(--sub);margin-top:2px;">まだ字が読めないお子さま向け</div></div>' +
           '<button onclick="window.__toggleSpeak()" style="min-width:72px;min-height:40px;border-radius:20px;font-size:15px;font-weight:700;' +
             (s.speak !== false ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
             (s.speak !== false ? 'ON' : 'OFF') + '</button>' +
         '</div>' +
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
-          '<span style="font-size:16px;font-weight:700;">🔊 こうかおん</span>' +
+          '<span style="font-size:16px;font-weight:700;">🔊 効果音</span>' +
           '<button onclick="window.__toggleSfx()" style="min-width:72px;min-height:40px;border-radius:20px;font-size:15px;font-weight:700;' +
             (s.sfx !== false ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
             (s.sfx !== false ? 'ON' : 'OFF') + '</button>' +
@@ -634,7 +634,7 @@ export const clientApp = `
             (s.bgm ? 'ON' : 'OFF') + '</button>' +
         '</div>' +
         '<div style="padding:12px 0 0;">' +
-          '<div style="font-size:16px;font-weight:700;margin-bottom:10px;">🎨 はいしょくテーマ</div>' +
+          '<div style="font-size:16px;font-weight:700;margin-bottom:10px;">🎨 配色テーマ</div>' +
           '<div style="display:flex;gap:10px;">' + themeButtons + '</div>' +
         '</div>' +
         (s.authed ?
@@ -793,11 +793,11 @@ export const clientApp = `
     var btnShadow = (okCount > 0 && (s.tickets || 0) >= okCount) ? '0 6px 0 var(--accent3d)' : '0 6px 0 #bfb6a6';
 
     var statusMeta = {
-      ok:     { text: 'はっけんOK',              tc: '#9c4d70', bg: '#fbeaf1' },
-      dup:    { text: 'もう ずかんに あるよ',    tc: '#c95835', bg: '#fff0e6' },
-      seeded: { text: 'もう しこみずみ',         tc: '#8a6d1e', bg: '#fdf3d6' },
-      dict:   { text: 'じしょに あり・むりょう', tc: '#3f7a52', bg: '#e6f1e9' },
-      ng:     { text: 'この ことばは つかえないよ', tc: '#b03a3a', bg: '#fbe6e6' }
+      ok:     { text: '発見OK',              tc: '#9c4d70', bg: '#fbeaf1' },
+      dup:    { text: 'すでに図鑑にあります', tc: '#c95835', bg: '#fff0e6' },
+      seeded: { text: '仕込み済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
+      dict:   { text: '辞書にあり・無料',    tc: '#3f7a52', bg: '#e6f1e9' },
+      ng:     { text: 'この言葉は使えません', tc: '#b03a3a', bg: '#fbe6e6' }
     };
 
     var cards = '';
@@ -826,13 +826,13 @@ export const clientApp = `
           '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--accent3);">はっけん準備</div>' +
           '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;">🎟️ ' + (s.tickets || 0) + '</div>' +
         '</div>' +
-        '<div style="font-size:14px;color:var(--sub);text-align:center;margin-bottom:4px;">お子さまが なぞって はっけんする ことばを えらんでね</div>' +
-        '<div style="font-size:12px;color:var(--sub);text-align:center;margin-bottom:16px;">プリセットに ない ことば ＝ 🎟️1まい</div>' +
+        '<div style="font-size:14px;color:var(--sub);text-align:center;margin-bottom:4px;">お子さまがなぞって発見する言葉を選んでください</div>' +
+        '<div style="font-size:12px;color:var(--sub);text-align:center;margin-bottom:16px;">プリセットにない言葉 ＝ 🎟️1枚</div>' +
         '<div style="display:flex;gap:10px;margin-bottom:12px;">' +
-          '<input id="prep-input" type="text" value="' + (s.prepInput || '') + '" oninput="window.__updatePrepInput(this)" placeholder="ことばを にゅうりょく" style="flex:1;min-height:54px;border-radius:16px;border:2px solid var(--cbd);padding:0 16px;font-size:18px;font-family:var(--fhead);background:#fff;color:var(--ink);outline:none;" />' +
+          '<input id="prep-input" type="text" value="' + (s.prepInput || '') + '" oninput="window.__updatePrepInput(this)" placeholder="ことばを入力" style="flex:1;min-height:54px;border-radius:16px;border:2px solid var(--cbd);padding:0 16px;font-size:18px;font-family:var(--fhead);background:#fff;color:var(--ink);outline:none;" />' +
           '<button onclick="window.__addPrepWord()" style="width:54px;height:54px;border-radius:16px;background:var(--accent3);color:#fff;font-size:26px;font-weight:900;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:none;">＋</button>' +
         '</div>' +
-        '<button onclick="window.__rollRandom()" style="width:100%;min-height:48px;border-radius:16px;background:#fff;border:2px dashed var(--accent3);color:var(--accent3);font-size:16px;font-weight:700;margin-bottom:16px;box-shadow:none;">🎲 ランダム候補を 3つ だす</button>' +
+        '<button onclick="window.__rollRandom()" style="width:100%;min-height:48px;border-radius:16px;background:#fff;border:2px dashed var(--accent3);color:var(--accent3);font-size:16px;font-weight:700;margin-bottom:16px;box-shadow:none;">🎲 ランダム候補を3つ出す</button>' +
       '</div>' +
       '<div style="flex:1;padding:0 18px;">' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">' +
@@ -840,7 +840,7 @@ export const clientApp = `
         '</div>' +
       '</div>' +
       '<div style="position:sticky;bottom:0;background:var(--bg);padding:16px 18px 8px;">' +
-        '<button onclick="window.__openSeedConfirm()" style="width:100%;min-height:78px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">⭐ ' + okCount + ' こ 仕込む</button>' +
+        '<button onclick="window.__openSeedConfirm()" style="width:100%;min-height:78px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">⭐ ' + okCount + '個 仕込む</button>' +
         '<div style="text-align:center;font-size:12px;color:var(--sub);margin-top:8px;padding-bottom:12px;">仕込んだ言葉は ずかんに『?』で ならびます</div>' +
       '</div>' +
     '</div>';
@@ -943,7 +943,7 @@ export const clientApp = `
         '<div class="sheet" onclick="event.stopPropagation()">' +
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
           '<div style="text-align:center;font-size:36px;">⭐🎟️</div>' +
-          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-top:8px;">' + selWords.length + ' こ 仕込む？</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-top:8px;">' + selWords.length + '個 仕込みますか？</div>' +
           '<div style="display:flex;flex-wrap:wrap;justify-content:center;margin:16px 0;">' + wList + '</div>' +
           '<div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:8px;">チケットは…図鑑にできた時（生成成功時）に 1枚ずつ</div>' +
           '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent);margin-bottom:16px;">いま 🎟️ ' + (s.tickets || 0) + '</div>' +
@@ -959,13 +959,13 @@ export const clientApp = `
         '<div class="sheet" onclick="event.stopPropagation()" style="border-radius:28px 28px 0 0;">' +
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
           '<div style="text-align:center;font-size:40px;margin-bottom:8px;">🏠</div>' +
-          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-bottom:8px;">おうちの ひと メニュー</div>' +
-          '<div style="text-align:center;font-size:14px;color:var(--sub);margin-bottom:24px;">ボタンを 1.2秒 長押しで はいれます</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-bottom:8px;">おうちの方メニュー</div>' +
+          '<div style="text-align:center;font-size:14px;color:var(--sub);margin-bottom:24px;">ボタンを1.2秒長押しで入れます</div>' +
           '<button onpointerdown="window.__pgDown(event)" onpointerup="window.__pgUp()" onpointerleave="window.__pgUp()" onpointercancel="window.__pgUp()" style="width:100%;min-height:80px;border-radius:20px;background:var(--ink);color:#fff;font-size:18px;position:relative;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.3);touch-action:none;user-select:none;">' +
             '<div id="pg-bar" style="position:absolute;top:0;left:0;bottom:0;width:0%;background:var(--accent);opacity:0.35;pointer-events:none;"></div>' +
-            '<span style="position:relative;z-index:1;">ながおし で はいる</span>' +
+            '<span style="position:relative;z-index:1;">長押しで入る</span>' +
           '</button>' +
-          '<button onclick="window.__closeSheet()" style="width:100%;min-height:48px;background:transparent;color:var(--sub);font-size:15px;box-shadow:none;margin-top:10px;">とじる</button>' +
+          '<button onclick="window.__closeSheet()" style="width:100%;min-height:48px;background:transparent;color:var(--sub);font-size:15px;box-shadow:none;margin-top:10px;">閉じる</button>' +
         '</div>';
     }
     return '';

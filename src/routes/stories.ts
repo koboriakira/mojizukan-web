@@ -1,7 +1,9 @@
 import { Hono } from "hono";
-import type { AppEnv, StoryPage, StoryRecord } from "../types";
+import type { AppEnv, StoryPage, StoryRecord, StoryResponse } from "../types";
 import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
+import { generateJsonOpenAI } from "../lib/ai";
+import { buildStoryPrompt } from "./story";
 
 export const stories = new Hono<AppEnv>();
 stories.use("/*", requireAuth);
@@ -56,8 +58,34 @@ stories.post("/", async (c) => {
   )
     .bind(id, userId, JSON.stringify(body.words))
     .run();
+
+  c.executionCtx.waitUntil(
+    generateStoryBackground(c.env.DB, c.env.OPENAI_API_KEY, id, body.words)
+  );
+
   return c.json({ id, words: body.words, status: "writing", created_at: new Date().toISOString() }, 201);
 });
+
+async function generateStoryBackground(
+  db: D1Database,
+  apiKey: string,
+  storyId: string,
+  words: string[]
+): Promise<void> {
+  try {
+    const prompt = buildStoryPrompt(words) +
+      "\n\nJSONのみを出力してください。コードブロックや説明文は不要です。";
+    const result = await generateJsonOpenAI<StoryResponse>({ apiKey, prompt });
+    await db.prepare(
+      "UPDATE stories SET pages = ?, status = 'done' WHERE id = ?"
+    ).bind(JSON.stringify(result.pages), storyId).run();
+  } catch (e) {
+    console.error("Story generation failed:", e);
+    await db.prepare(
+      "UPDATE stories SET status = 'error' WHERE id = ?"
+    ).bind(storyId).run();
+  }
+}
 
 stories.patch("/:id", async (c) => {
   const userId = c.get("userId")!;

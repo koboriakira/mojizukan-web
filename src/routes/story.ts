@@ -80,6 +80,8 @@ story.post("/stream", async (c) => {
   });
 
   if (!openaiRes.ok || !openaiRes.body) {
+    const errBody = await openaiRes.text().catch(() => "");
+    console.error(`OpenAI API error (${openaiRes.status}):`, errBody);
     throw new AppError(502, "OpenAI APIへの接続に失敗しました");
   }
 

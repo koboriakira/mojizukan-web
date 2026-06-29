@@ -98,6 +98,8 @@ export async function generateJsonOpenAI<T>(options: GenerateJsonOpenAIOptions):
     });
 
     if (!res.ok) {
+      const errBody = await res.text().catch(() => "");
+      console.error(`OpenAI API error (${res.status}):`, errBody);
       if (attempt === maxRetries) break;
       continue;
     }

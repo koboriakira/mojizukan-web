@@ -46,7 +46,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
       n: 1,
       size,
       quality,
-      output_format: "b64_json",
+      output_format: "png",
     }),
   });
 
@@ -60,8 +60,10 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     data: Array<{ b64_json?: string; url?: string }>;
   };
 
-  const b64 = data.data?.[0]?.b64_json;
+  const item = data.data?.[0];
+  const b64 = item?.b64_json;
   if (!b64) {
+    console.error("Image API response:", JSON.stringify(data).slice(0, 200));
     throw new AppError(502, "画像データが取得できませんでした");
   }
 

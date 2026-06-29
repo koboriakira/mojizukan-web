@@ -97,6 +97,7 @@ export interface Bindings {
   GOOGLE_CLIENT_SECRET: string;
   SENTRY_DSN: string;
   OPENAI_API_KEY: string;
+  DEV_LOGIN?: string;
 }
 
 export interface AppEnv {

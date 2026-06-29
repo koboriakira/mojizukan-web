@@ -43,7 +43,7 @@ jobs:
         run: |
           BRANCH_SLUG=$(echo "${{ github.head_ref }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-20)
           PREVIEW_NAME="mojizukan-preview-${BRANCH_SLUG}"
-          npx wrangler deploy --name "${PREVIEW_NAME}" 2>&1 | tee /tmp/deploy.log
+          npx wrangler deploy --name "${PREVIEW_NAME}" --var DEV_LOGIN:true 2>&1 | tee /tmp/deploy.log
           URL=$(grep -oP 'https://[^ ]+\.workers\.dev' /tmp/deploy.log | head -1)
           echo "url=${URL}" >> "$GITHUB_OUTPUT"
           echo "name=${PREVIEW_NAME}" >> "$GITHUB_OUTPUT"
@@ -56,7 +56,7 @@ jobs:
           script: |
             const url = '${{ steps.preview.outputs.url }}';
             const name = '${{ steps.preview.outputs.name }}';
-            const body = `🔗 **Preview**: ${url}\n\n📋 **ログ監視**: \`npx wrangler tail ${name}\``;
+            const body = `🔗 **Preview**: ${url}\n\n🔑 **テスト用ログイン**: [認証済み状態](${url}/api/dev/auto-login) ・ [ログアウト](${url}/api/dev/auto-logout) ・ [チケット10枚](${url}/api/dev/auto-login?tickets=10)\n\n📋 **ログ監視**: \`npx wrangler tail ${name}\``;
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner, repo: context.repo.repo,
               issue_number: context.issue.number

@@ -9,6 +9,7 @@ import { presets } from "./routes/presets";
 import { styles } from "./routes/styles";
 import { story } from "./routes/story";
 import { hakken } from "./routes/hakken";
+import { stories } from "./routes/stories";
 import auth from "./routes/auth";
 import { buildShell } from "./client/shell";
 
@@ -28,6 +29,7 @@ app.route("/api/presets", presets);
 app.route("/api/styles", styles);
 app.route("/api/story", story);
 app.route("/api/hakken", hakken);
+app.route("/api/stories", stories);
 
 export { app };
 

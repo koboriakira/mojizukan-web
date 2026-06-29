@@ -128,3 +128,12 @@ export interface HakkenGenerateResponse {
   emoji: string;
   description: string;
 }
+
+export interface StoryRecord {
+  id: string;
+  user_id: string;
+  words: string;
+  pages: string | null;
+  status: string;
+  created_at: string;
+}

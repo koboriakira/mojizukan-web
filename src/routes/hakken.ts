@@ -43,13 +43,15 @@ export function classifyWord({ word, collected, prepared, ngList }: ClassifyInpu
   return { status: 'ok', message: 'はっけんOK' };
 }
 
-export function getRandomWords({ n, collected, prepared }: RandomInput): string[] {
+export type RandomMode = "normal" | "review" | "exhausted";
+
+export function getRandomWords({ n, collected, prepared }: RandomInput): { words: string[]; mode: RandomMode } {
   const collectedSet = new Set(collected);
   const uncollectedPrepared = prepared.filter(w => !collectedSet.has(w));
   const shuffledPrepared = [...uncollectedPrepared].sort(() => Math.random() - 0.5);
 
   if (shuffledPrepared.length >= n) {
-    return shuffledPrepared.slice(0, n);
+    return { words: shuffledPrepared.slice(0, n), mode: "normal" };
   }
 
   const result = shuffledPrepared.slice();
@@ -57,7 +59,17 @@ export function getRandomWords({ n, collected, prepared }: RandomInput): string[
   const available = HAKKEN_WORDS.filter(w => !excluded.has(w));
   const shuffledAvailable = available.sort(() => Math.random() - 0.5);
   result.push(...shuffledAvailable.slice(0, n - result.length));
-  return result;
+
+  if (result.length > 0) {
+    return { words: result, mode: "normal" };
+  }
+
+  if (collected.length > 0) {
+    const reviewPool = [...collected].sort(() => Math.random() - 0.5);
+    return { words: reviewPool.slice(0, n), mode: "review" };
+  }
+
+  return { words: [], mode: "exhausted" };
 }
 
 hakken.get("/entries", requireAuth, async (c) => {
@@ -87,8 +99,8 @@ hakken.get("/random", async (c) => {
   const preparedParam = c.req.query("prepared") ?? "";
   const collected = collectedParam ? collectedParam.split(",") : [];
   const prepared = preparedParam ? preparedParam.split(",") : [];
-  const words = getRandomWords({ n, collected, prepared });
-  return c.json({ words });
+  const result = getRandomWords({ n, collected, prepared });
+  return c.json(result);
 });
 
 hakken.post("/generate", requireAuth, async (c) => {

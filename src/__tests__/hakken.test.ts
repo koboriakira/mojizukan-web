@@ -55,29 +55,49 @@ describe("classifyWord", () => {
 
 describe("getRandomWords", () => {
   it("指定した数のワードを返す", () => {
-    const words = getRandomWords({ n: 3, collected: [], prepared: [] });
-    expect(words).toHaveLength(3);
+    const result = getRandomWords({ n: 3, collected: [], prepared: [] });
+    expect(result.words).toHaveLength(3);
   });
 
   it("返すワードは収集済みリストに含まれない", () => {
     const collected = HAKKEN_WORDS.slice(0, 30);
-    const words = getRandomWords({ n: 3, collected, prepared: [] });
-    for (const word of words) {
+    const result = getRandomWords({ n: 3, collected, prepared: [] });
+    for (const word of result.words) {
       expect(collected).not.toContain(word);
     }
   });
 
   it("仕込み済みワードを優先的に返す", () => {
     const prepared = HAKKEN_WORDS.slice(0, 30);
-    const words = getRandomWords({ n: 3, collected: [], prepared });
-    for (const word of words) {
+    const result = getRandomWords({ n: 3, collected: [], prepared });
+    for (const word of result.words) {
       expect(prepared).toContain(word);
     }
   });
 
   it("利用可能なワードが足りない場合は最大数まで返す", () => {
     const collected = HAKKEN_WORDS.slice(0, 33);
-    const words = getRandomWords({ n: 5, collected, prepared: [] });
-    expect(words.length).toBeLessThanOrEqual(5);
+    const result = getRandomWords({ n: 5, collected, prepared: [] });
+    expect(result.words.length).toBeLessThanOrEqual(5);
+  });
+
+  it("新規ワードがある場合は mode: normal", () => {
+    const result = getRandomWords({ n: 3, collected: [], prepared: [] });
+    expect(result.mode).toBe("normal");
+  });
+
+  it("全ワード収集済みで collected がある場合は mode: review", () => {
+    const result = getRandomWords({ n: 3, collected: HAKKEN_WORDS, prepared: [] });
+    expect(result.mode).toBe("review");
+    expect(result.words.length).toBeGreaterThan(0);
+    for (const w of result.words) {
+      expect(HAKKEN_WORDS).toContain(w);
+    }
+  });
+
+  it("prepared が全ワードでも未収集なら mode: normal", () => {
+    const result = getRandomWords({ n: 3, collected: [], prepared: HAKKEN_WORDS });
+    expect(result.mode).toBe("normal");
+    expect(result.words).toHaveLength(3);
   });
 });

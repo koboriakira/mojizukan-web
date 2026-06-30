@@ -20,8 +20,8 @@ export const clientApp = `
   function saveState() {
     if (!_hasStorage) return;
     try {
-      localStorage.setItem('mojizukan_entries', JSON.stringify(state.collected));
-      localStorage.setItem('mojizukan_discovered', JSON.stringify(state.discovered));
+      localStorage.setItem('mojizukan_entries', JSON.stringify(state.zukanWords));
+      localStorage.setItem('mojizukan_discovered', JSON.stringify(state.hakkenWords));
       localStorage.setItem('mojizukan_handwriting', JSON.stringify(state.handwriting));
       localStorage.setItem('mojizukan_seeded', JSON.stringify(state.seeded));
       localStorage.setItem('mojizukan_hakken_max', String(state.dailyHakkenMax));
@@ -42,7 +42,7 @@ export const clientApp = `
       var hakkenDate = localStorage.getItem('mojizukan_hakken_date') || '';
       var today = new Date().toISOString().slice(0,10);
       if (hakkenDate !== today) { hakkenUsed = 0; }
-      return { collected: entries, discovered: discovered, handwriting: handwriting, seeded: seeded, dailyHakkenMax: hakkenMax, dailyHakkenUsed: hakkenUsed };
+      return { zukanWords: entries, hakkenWords: discovered, handwriting: handwriting, seeded: seeded, dailyHakkenMax: hakkenMax, dailyHakkenUsed: hakkenUsed };
     } catch(e) {
       return {};
     }
@@ -55,8 +55,8 @@ export const clientApp = `
     charIndex: 0,
     confirmed: [],
     detailWord: null,
-    collected: saved.collected || [],
-    discovered: saved.discovered || [],
+    zukanWords: saved.zukanWords || [],
+    hakkenWords: saved.hakkenWords || [],
     handwriting: saved.handwriting || {},
     authed: false,
     userId: null,
@@ -189,7 +189,7 @@ export const clientApp = `
     if (s.screen === 'reveal' || s.screen === 'detail') {
       speakText(s.word || s.detailWord || '');
     }
-    if (s.screen === 'write') {
+    if (s.screen === 'trace') {
       setTimeout(setupCanvas, 0);
     }
   }
@@ -197,7 +197,7 @@ export const clientApp = `
   function renderScreen(s) {
     switch (s.screen) {
       case 'home':      return renderHome(s);
-      case 'write':     return renderWrite(s);
+      case 'trace':     return renderWrite(s);
       case 'reveal':    return renderReveal(s);
       case 'zukan':     return renderZukan(s);
       case 'detail':    return renderDetail(s);
@@ -222,7 +222,7 @@ export const clientApp = `
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
     if (PRESETS[word]) return 'dict';
-    if (state.collected.indexOf(word) !== -1) return 'dup';
+    if (state.zukanWords.indexOf(word) !== -1) return 'dup';
     if (state.seeded.indexOf(word) !== -1) return 'seeded';
     return 'ok';
   }
@@ -233,7 +233,7 @@ export const clientApp = `
     for (var i = 0; i < ngWords.length; i++) {
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
-    if (state.collected.indexOf(word) !== -1 || state.discovered.indexOf(word) !== -1) return 'dup';
+    if (state.zukanWords.indexOf(word) !== -1 || state.hakkenWords.indexOf(word) !== -1) return 'dup';
     if (PRESETS[word]) return 'dict';
     return 'hakken';
   }
@@ -445,7 +445,7 @@ export const clientApp = `
   }
 
   function renderZukan(s) {
-    var count = s.collected.length;
+    var count = s.zukanWords.length;
 
     var header = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
       '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
@@ -497,7 +497,7 @@ export const clientApp = `
 
       var gotCount = 0;
       for (var j = 0; j < catWords.length; j++) {
-        if (s.collected.indexOf(catWords[j]) !== -1) gotCount++;
+        if (s.zukanWords.indexOf(catWords[j]) !== -1) gotCount++;
       }
 
       if (gotCount === 0) continue;
@@ -512,7 +512,7 @@ export const clientApp = `
       for (var k = 0; k < catWords.length; k++) {
         var cw = catWords[k];
         var preset = PRESETS[cw];
-        if (s.collected.indexOf(cw) !== -1) {
+        if (s.zukanWords.indexOf(cw) !== -1) {
           sections += '<button onclick="window.__openDetail(\\'' + cw + '\\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
             renderEmojiOrImage(preset.emoji, getHakkenImageUrl(cw), 40) +
             '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + cw + '</span>' +
@@ -524,15 +524,15 @@ export const clientApp = `
       sections += '</div>';
     }
 
-    if (s.discovered && s.discovered.length > 0) {
+    if (s.hakkenWords && s.hakkenWords.length > 0) {
       sections += '<div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">' +
         '<span style="font-size:22px;">⭐</span>' +
         '<span style="font-family:var(--fhead);font-weight:900;font-size:20px;">はっけん</span>' +
-        '<span style="font-size:14px;color:var(--sub);font-weight:700;">' + s.discovered.length + 'こ</span>' +
+        '<span style="font-size:14px;color:var(--sub);font-weight:700;">' + s.hakkenWords.length + 'こ</span>' +
       '</div>';
       sections += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:26px;">';
-      for (var di = 0; di < s.discovered.length; di++) {
-        var dw = s.discovered[di];
+      for (var di = 0; di < s.hakkenWords.length; di++) {
+        var dw = s.hakkenWords[di];
         var dEmoji = (window.__hakkenCache && window.__hakkenCache[dw]) ? window.__hakkenCache[dw].emoji : '✨';
         var dImageUrl = getHakkenImageUrl(dw);
         sections += '<button onclick="window.__openDetail(\\'' + dw + '\\')" style="background:var(--card);border:3px solid #f3dd9a;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
@@ -585,7 +585,7 @@ export const clientApp = `
       if (catWords.length === 0) continue;
       var gotCount = 0;
       for (var j = 0; j < catWords.length; j++) {
-        if (s.collected.indexOf(catWords[j]) !== -1) gotCount++;
+        if (s.zukanWords.indexOf(catWords[j]) !== -1) gotCount++;
       }
       catProgress += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cbd);">' +
         '<span style="font-size:15px;">' + cat.icon + ' ' + cat.name + '</span>' +
@@ -616,7 +616,7 @@ export const clientApp = `
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:12px;">📖 学習の記録</div>' +
-        '<div style="font-size:16px;color:var(--sub);font-weight:700;margin-bottom:12px;">習得数: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + s.collected.length + '</span> 個</div>' +
+        '<div style="font-size:16px;color:var(--sub);font-weight:700;margin-bottom:12px;">習得数: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + s.zukanWords.length + '</span> 個</div>' +
         catProgress +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
@@ -834,11 +834,11 @@ export const clientApp = `
 
   function renderStoryPick(s) {
     var sel = s.storySel || [];
-    var collected = s.collected || [];
+    var zukanList = s.zukanWords || [];
 
     var cells = '';
-    for (var i = 0; i < collected.length; i++) {
-      var w = collected[i];
+    for (var i = 0; i < zukanList.length; i++) {
+      var w = zukanList[i];
       var preset = PRESETS[w] || { emoji: '📖' };
       var isSelected = sel.indexOf(w) !== -1;
       var border = isSelected ? '3px solid var(--accent3)' : '3px solid var(--cbd)';
@@ -1113,7 +1113,7 @@ export const clientApp = `
         '</div>';
     }
     if (s.sheet === 'signup') {
-      var collectedCount = s.collected ? s.collected.length : 0;
+      var zukanCount = s.zukanWords ? s.zukanWords.length : 0;
       var authMode = s.authMode || 'choose';
       var authError = s.authError || '';
       var errorHtml = authError ? '<div style="color:#c44;font-size:13px;text-align:center;margin-bottom:8px;">' + authError + '</div>' : '';
@@ -1148,7 +1148,7 @@ export const clientApp = `
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
           '<div style="text-align:center;font-size:46px;">🔑📚</div>' +
           '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:24px;margin-top:8px;">' + (s.authReason ? 'とうろくして つづきを あそぼう' : 'じぶんの 図鑑を とっておこう') + '</div>' +
-          '<div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">' + (s.authReason ? 'おはなしづくり と たんけんが あそべます。<br><b style="color:var(--accent);">チケットも 50まい</b> プレゼント🎁' : 'いま集めた <b style="color:var(--accent);">' + collectedCount + 'けん</b> をそのまま引き継ぎ。<br>登録すると <b style="color:var(--accent);">はっけんチケット 50まい</b> プレゼント🎁') + '</div>' +
+          '<div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">' + (s.authReason ? 'おはなしづくり と たんけんが あそべます。<br><b style="color:var(--accent);">チケットも 50まい</b> プレゼント🎁' : 'いま集めた <b style="color:var(--accent);">' + zukanCount + 'けん</b> をそのまま引き継ぎ。<br>登録すると <b style="color:var(--accent);">はっけんチケット 50まい</b> プレゼント🎁') + '</div>' +
           formHtml +
           '<div style="text-align:center;font-size:11.5px;color:#b6ab9a;margin-top:10px;line-height:1.5;">🔒 登録は保護者のためのものです。お子さまの個人情報は集めません。</div>' +
         '</div>';
@@ -1228,7 +1228,7 @@ export const clientApp = `
 
   function nextWord() {
     for (var i = 0; i < WORDPOOL.length; i++) {
-      if (state.collected.indexOf(WORDPOOL[i]) === -1) return WORDPOOL[i];
+      if (state.zukanWords.indexOf(WORDPOOL[i]) === -1) return WORDPOOL[i];
     }
     return WORDPOOL[0];
   }
@@ -1239,7 +1239,7 @@ export const clientApp = `
       pool.push(s.seeded[i]);
     }
     for (var w in PRESETS) {
-      if (s.collected.indexOf(w) === -1 && pool.indexOf(w) === -1) {
+      if (s.zukanWords.indexOf(w) === -1 && pool.indexOf(w) === -1) {
         pool.push(w);
       }
     }
@@ -1444,7 +1444,7 @@ export const clientApp = `
 
   window.__goStoryPick = function () {
     playSound('tap');
-    var defaultSel = state.collected.slice(0, 3);
+    var defaultSel = state.zukanWords.slice(0, 3);
     setState({ screen: 'storyPick', storySel: defaultSel });
   };
 
@@ -1644,8 +1644,8 @@ export const clientApp = `
       } else {
         window.__goWriteWord(pick, false, 'mitsuke');
       }
-    } else if (state.collected.length > 0) {
-      var reviewPick = state.collected[Math.floor(Math.random() * state.collected.length)];
+    } else if (state.zukanWords.length > 0) {
+      var reviewPick = state.zukanWords[Math.floor(Math.random() * state.zukanWords.length)];
       window.__goWriteWord(reviewPick, false, 'review');
     } else {
       setState({ screen: 'mitsukeru' });
@@ -1660,18 +1660,18 @@ export const clientApp = `
   window.__goWriteWord = function (word, discovering, kind) {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal', drew: false });
+    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal', drew: false });
   };
 
   window.__goWrite = function () {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal', drew: false });
+    setState({ screen: 'trace', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal', drew: false });
   };
 
   window.__goZukan = function () {
     playSound('tap');
-    var c = state.collected.length;
+    var c = state.zukanWords.length;
     var sheet = null;
     if (!state.authed) {
       var due = (c === 3 || c === 5 || c === 10 || c > 10);
@@ -1848,9 +1848,9 @@ export const clientApp = `
         setState({ confirmed: nc, charIndex: idx + 1, screen: 'hakkengen', handwriting: hw });
         window.__startHakkenGen();
       } else {
-        var col = state.collected.indexOf(word) === -1
-          ? state.collected.concat([word])
-          : state.collected;
+        var col = state.zukanWords.indexOf(word) === -1
+          ? state.zukanWords.concat([word])
+          : state.zukanWords;
         if (state.authed) {
           fetch('/api/entries', {
             method: 'POST',
@@ -1858,7 +1858,7 @@ export const clientApp = `
             body: JSON.stringify({ word: word })
           });
         }
-        setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', collected: col, lastHakken: false, handwriting: hw });
+        setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', zukanWords: col, lastHakken: false, handwriting: hw });
       }
     } else {
       playSound('confirm');
@@ -1922,7 +1922,7 @@ export const clientApp = `
     var available = [];
     for (var i = 0; i < HAKKEN_WORDS.length; i++) {
       var w = HAKKEN_WORDS[i];
-      if (state.collected.indexOf(w) === -1 && state.seeded.indexOf(w) === -1) {
+      if (state.zukanWords.indexOf(w) === -1 && state.seeded.indexOf(w) === -1) {
         var alreadyInSel = false;
         for (var j = 0; j < state.prepSel.length; j++) {
           if (state.prepSel[j].w === w) { alreadyInSel = true; break; }
@@ -1985,7 +1985,7 @@ export const clientApp = `
   };
 
   window.__openSecret = function(word) {
-    if (!state.authed && (state.discovered || []).length >= 10) {
+    if (!state.authed && (state.hakkenWords || []).length >= 10) {
       setState({ sheet: 'signup', authReason: 'mitsuke' });
       return;
     }
@@ -1995,7 +1995,7 @@ export const clientApp = `
     }
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false });
+    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false });
   };
 
   window.__tkAdd = function(ch) {
@@ -2080,7 +2080,7 @@ export const clientApp = `
     if (result === 'dict') {
       window.__goWriteWord(word, false, 'tanken');
     } else {
-      if (!state.authed && (state.discovered || []).length >= 10) {
+      if (!state.authed && (state.hakkenWords || []).length >= 10) {
         setState({ sheet: 'signup', authReason: 'tanken' });
         return;
       }
@@ -2134,12 +2134,12 @@ export const clientApp = `
   window.__finishHakken = function(emoji, desc, imageUrl, consumeTicket) {
     playSound('success');
     var word = state.word;
-    var col = state.collected.indexOf(word) === -1
-      ? state.collected.concat([word])
-      : state.collected;
-    var disc = state.discovered.indexOf(word) === -1
-      ? state.discovered.concat([word])
-      : state.discovered;
+    var col = state.zukanWords.indexOf(word) === -1
+      ? state.zukanWords.concat([word])
+      : state.zukanWords;
+    var disc = state.hakkenWords.indexOf(word) === -1
+      ? state.hakkenWords.concat([word])
+      : state.hakkenWords;
     var newSeeded = state.seeded.filter(function(w) { return w !== word; });
     var tickets = consumeTicket !== false ? Math.max(0, (state.tickets || 0) - 1) : (state.tickets || 0);
 
@@ -2151,8 +2151,8 @@ export const clientApp = `
 
     setState({
       screen: 'reveal',
-      collected: col,
-      discovered: disc,
+      zukanWords: col,
+      hakkenWords: disc,
       seeded: newSeeded,
       tickets: tickets,
       lastHakken: true,

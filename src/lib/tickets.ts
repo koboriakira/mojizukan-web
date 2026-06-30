@@ -17,7 +17,7 @@ export async function getDiscoverCount(db: D1Database, userId: string): Promise<
   return result?.count ?? 0;
 }
 
-export async function addTicket(
+async function insertTicket(
   db: D1Database,
   userId: string,
   amount: number,
@@ -28,6 +28,23 @@ export async function addTicket(
     .prepare("INSERT INTO tickets (id, user_id, amount, reason) VALUES (?, ?, ?, ?)")
     .bind(id, userId, amount, reason)
     .run();
+}
+
+export async function grantTicket(
+  db: D1Database,
+  userId: string,
+  amount: number,
+  reason: string,
+): Promise<void> {
+  await insertTicket(db, userId, amount, reason);
+}
+
+export async function spendTicket(
+  db: D1Database,
+  userId: string,
+  reason: string,
+): Promise<void> {
+  await insertTicket(db, userId, -1, reason);
 }
 
 export function canSpendTicket(balance: number): boolean {

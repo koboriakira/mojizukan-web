@@ -92,7 +92,7 @@ test.describe("ステージング認証済みフロー", () => {
     expect(meAfterLogout.authed).toBe(false);
   });
 
-  test("はっけんフロー: 保護者メニュー → prep確認 → mitsuke write → Workers AI 生成", async ({
+  test("はっけんフロー: 保護者メニュー → prep確認 → mitsuke trace → Workers AI 生成", async ({
     page,
   }) => {
     await page.goto("/");
@@ -119,7 +119,7 @@ test.describe("ステージング認証済みフロー", () => {
         .first()
     ).toBeVisible({ timeout: 5_000 });
 
-    // 2. ずかん → mitsuke write → hakkengen（実 AI）
+    // 2. ずかん → mitsuke trace → hakkengen（実 AI）
     await page.evaluate(() => {
       (window as any).__setState({
         screen: "home",

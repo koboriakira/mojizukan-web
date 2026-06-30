@@ -3,7 +3,7 @@ import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import type { AppEnv } from "../types";
 import { hashPassword, verifyPassword } from "../lib/password";
 import { createSession, deleteSession, SESSION_MAX_AGE_SEC } from "../lib/session";
-import { getTicketBalance, addTicket, SIGNUP_BONUS_TICKETS } from "../lib/tickets";
+import { getTicketBalance, grantTicket, SIGNUP_BONUS_TICKETS } from "../lib/tickets";
 
 const auth = new Hono<AppEnv>();
 
@@ -46,7 +46,7 @@ auth.post("/signup", async (c) => {
     .bind(id, email.toLowerCase(), passwordHash)
     .run();
 
-  await addTicket(c.env.DB, id, SIGNUP_BONUS_TICKETS, "登録ボーナス");
+  await grantTicket(c.env.DB, id, SIGNUP_BONUS_TICKETS, "登録ボーナス");
 
   const token = await createSession(c.env.DB, id);
   setSessionCookie(c, token);
@@ -217,7 +217,7 @@ auth.get("/google/callback", async (c) => {
       )
         .bind(id, userInfo.email.toLowerCase(), userInfo.sub)
         .run();
-      await addTicket(c.env.DB, id, SIGNUP_BONUS_TICKETS, "登録ボーナス");
+      await grantTicket(c.env.DB, id, SIGNUP_BONUS_TICKETS, "登録ボーナス");
       user = { id };
     }
   }

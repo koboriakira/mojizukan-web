@@ -126,7 +126,6 @@ export interface HakkenGenerateRequest {
 }
 
 export interface HakkenGenerateResponse {
-  emoji: string;
   description: string;
 }
 

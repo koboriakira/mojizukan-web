@@ -5,7 +5,7 @@ import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../lib/ng-words";
 import { PRESET_WORDS } from "../lib/preset-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
-import { addTicket, getTicketBalance, canSpendTicket } from "../lib/tickets";
+import { spendTicket, getTicketBalance, canSpendTicket } from "../lib/tickets";
 import { generateJsonOpenAI } from "../lib/ai";
 import { generateImage } from "../lib/image";
 import { getCache, setCache } from "../lib/shared-cache";
@@ -53,7 +53,7 @@ export function getRandomWords({ n, collected, seeded }: RandomInput): string[] 
 hakken.get("/entries", requireAuth, async (c) => {
   const userId = c.var.userId!;
   const results = await c.env.DB.prepare(
-    "SELECT word, emoji, description, image_url FROM hakken_entries WHERE user_id = ?"
+    "SELECT word, description, image_url FROM hakken_entries WHERE user_id = ?"
   ).bind(userId).all();
   return c.json(results.results);
 });
@@ -99,7 +99,7 @@ hakken.post("/generate", requireAuth, async (c) => {
   let imageUrl: string;
 
   if (cached) {
-    generated = { emoji: "📖", description: cached.description };
+    generated = { description: cached.description };
     imageUrl = cached.image_url;
   } else {
     const prompt = `「${body.word}」についての子ども向け図鑑エントリを作ってください。
@@ -111,7 +111,7 @@ hakken.post("/generate", requireAuth, async (c) => {
 - 2文で書く（1文目と2文目を「。」で区切る）
 
 出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
-{"emoji":"絵文字1つ","description":"説明文（2文）"}`;
+{"description":"説明文（2文）"}`;
 
     [generated, imageUrl] = await Promise.all([
       generateJsonOpenAI<HakkenGenerateResponse>({
@@ -144,13 +144,13 @@ hakken.post("/generate", requireAuth, async (c) => {
   }
 
   await c.env.DB.prepare(
-    "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description, image_url) VALUES (?, ?, ?, ?, ?)"
+    "INSERT OR REPLACE INTO hakken_entries (user_id, word, description, image_url) VALUES (?, ?, ?, ?)"
   )
-    .bind(userId, body.word, generated.emoji, generated.description, imageUrl)
+    .bind(userId, body.word, generated.description, imageUrl)
     .run();
 
   if (!isRediscovery) {
-    await addTicket(c.env.DB, userId, -1, `はっけん生成: ${body.word}`);
+    await spendTicket(c.env.DB, userId, `はっけん生成: ${body.word}`);
   }
 
   return c.json({ ...generated, image_url: imageUrl, cached: !!cached, rediscovery: isRediscovery });

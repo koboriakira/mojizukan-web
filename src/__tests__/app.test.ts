@@ -16,7 +16,7 @@ describe("clientApp", () => {
   });
 
   it("全画面の switch case が含まれる", () => {
-    const screens = ["home", "write", "reveal", "zukan", "detail", "mitsukeru"];
+    const screens = ["home", "trace", "reveal", "zukan", "detail", "mitsukeru"];
     for (const s of screens) {
       expect(clientApp).toContain(`case '${s}'`);
     }
@@ -249,8 +249,8 @@ describe("clientApp", () => {
 
   it("loadState で初期 state が設定される", () => {
     expect(clientApp).toContain("var saved = loadState()");
-    expect(clientApp).toContain("saved.collected ||");
-    expect(clientApp).toContain("saved.discovered ||");
+    expect(clientApp).toContain("saved.zukanWords ||");
+    expect(clientApp).toContain("saved.hakkenWords ||");
     expect(clientApp).toContain("saved.handwriting ||");
   });
 

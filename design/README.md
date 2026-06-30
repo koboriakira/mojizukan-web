@@ -57,6 +57,18 @@ sessions/
 - Claude Design との対話で brief の前提と異なる決定が出た場合、decisions の「brief からの変更点」に記録される
 - Claude Code は次の brief を生成するときにその変更点を反映する
 
+## decisions 確定後の追加質問
+
+decisions を受け取った後に追加の論点が出た場合の対応:
+
+### A. 軽い問い → 追補（1論点、影響が局所的）
+
+既存の decisions ファイル末尾に `## 追補（YYYY-MM-DD）` を追記する。decisions 本体は変えない。
+
+### B. 大きな方針変更 → 新セッション（複数フローに波及）
+
+新しい brief + decisions のペア（`YYYYMMDD_HHmm_brief.md` / `_decisions.md`）を作る。前回 decisions への参照を brief に入れる。
+
 ## dc.html の管理
 
 機能領域ごとに1つの「最新」dc.html を維持する。Claude Design セッションで新しい dc.html が出たら、既存ファイルを上書きする（Git で差分が追える）。

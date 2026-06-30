@@ -37,7 +37,7 @@ test("書く → 図鑑登録 → 詳細表示", async ({ page }) => {
   await expect(page.getByText("1けん")).toBeVisible();
 
   // 収集済みの語をタップ → 詳細
-  await page.getByRole("button", { name: "て" }).click();
+  await page.getByRole("button", { name: "て", exact: true }).click();
   await expect(
     page.locator("div").filter({ hasText: /^て$/ }).first()
   ).toBeVisible();

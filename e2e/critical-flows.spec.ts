@@ -12,14 +12,14 @@ test("書く → 図鑑登録 → 詳細表示", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("もじずかん")).toBeVisible();
 
-  // みつける → 即時遷移で write 画面へ（Issue #62）
+  // みつける → 即時遷移で trace 画面へ（Issue #62）
   await page.getByRole("button", { name: "みつける" }).click();
   await expect(page.locator("canvas")).toBeVisible();
 
   // 決定論的テストのため「て」（1文字）に切り替え
   await page.evaluate(() => {
     (window as any).__setState({
-      screen: "write",
+      screen: "trace",
       word: "て",
       charIndex: 0,
       confirmed: [],

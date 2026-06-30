@@ -4,8 +4,8 @@ import { clientDictionary } from "../client/dictionary";
 describe("clientDictionary", () => {
   it("スターター10語すべてが含まれる", () => {
     const words = [
-      'あり', 'いす', 'いぬ', 'くつ', 'くま',
-      'つき', 'ねこ', 'はな', 'ぱん', 'ふね',
+      'いぬ', 'うま', 'くま', 'さかな', 'すいか',
+      'つき', 'とり', 'ねこ', 'はな', 'やま',
     ];
     for (const word of words) {
       expect(clientDictionary).toContain("'" + word + "'");

@@ -407,19 +407,19 @@ export const clientApp = `
       { cat: '', catIcon: '', desc: '', image_url: null });
     var kind = s.revealKind || 'normal';
     var title;
-    if (kind === 'review') {
+    if (kind === 'review' || kind === 'tanken-rediscovery') {
       title = 'また かけたね！😊';
     } else if (s.lastHakken) {
       title = kind === 'tanken' ? 'あたらしい ことば はっけん！⭐' : 'みつけた！⭐';
     } else {
       title = 'ずかんに のったよ！🎉';
     }
-    var nextAction = kind === 'tanken'
+    var nextAction = (kind === 'tanken' || kind === 'tanken-rediscovery')
       ? '<button onclick="window.__goTanken()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🧭 たんけんに もどる</button>'
       : '<button onclick="window.__goMitsukeru()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🔍 つぎも みつける</button>';
 
     var reviewBanner = '';
-    if (kind === 'review') {
+    if (kind === 'review' || kind === 'tanken-rediscovery') {
       reviewBanner = '<div style="background:linear-gradient(135deg,#fef9ef,#fdf3e0);border:2px solid var(--accent2);border-radius:18px;padding:16px;margin-top:20px;max-width:340px;text-align:left;">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent2);margin-bottom:8px;">もういちど はっけん しよう！</div>' +
         '<div style="font-size:14px;color:#5a5145;line-height:1.7;margin-bottom:10px;">なんども かけて すごい！<br>あたらしい ことばも かいて みたいね。</div>' +
@@ -2071,7 +2071,7 @@ export const clientApp = `
     if (result === 'dict') {
       window.__goWriteWord(word, false, 'tanken');
     } else if (result === 'rediscovery') {
-      window.__goWriteWord(word, false, 'review');
+      window.__goWriteWord(word, false, 'tanken-rediscovery');
     } else {
       if (!state.authed && (state.hakkenWords || []).length >= 10) {
         setState({ sheet: 'signup', authReason: 'tanken' });

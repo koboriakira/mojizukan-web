@@ -185,6 +185,7 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await page.evaluate(() => { (window as any).__setState({ drew: true }); });
   await page.getByRole("button", { name: "できた！" }).click();
   await expect(page.getByText("もういちど はっけん しよう！")).toBeVisible();
+  await expect(page.getByRole("button", { name: "たんけんに もどる" })).toBeVisible();
 
   // 辞書語の正常フロー: 「うし」を zukanWords から外して再挑戦
   await page.evaluate(() => {

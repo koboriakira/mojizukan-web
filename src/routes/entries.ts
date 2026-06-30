@@ -8,7 +8,7 @@ export const entries = new Hono<AppEnv>();
 
 entries.get("/", async (c) => {
   const category = c.req.query("category");
-  let query = "SELECT id, word, category, is_discovered, image_url, created_at FROM entries";
+  let query = "SELECT id, word, category, is_hakken, image_url, created_at FROM entries";
   const params: string[] = [];
 
   if (category) {
@@ -48,17 +48,17 @@ entries.post("/", async (c) => {
 
   const preset = findDictionaryWord(body.word);
   const id = crypto.randomUUID();
-  const isDiscovered = preset ? 0 : 1;
+  const isHakken = preset ? 0 : 1;
   const category = preset?.category ?? body.category ?? null;
   const description = preset?.description ?? null;
 
   await c.env.DB.prepare(
-    "INSERT INTO entries (id, word, category, is_discovered, description, created_at) VALUES (?, ?, ?, ?, ?, datetime('now'))",
+    "INSERT INTO entries (id, word, category, is_hakken, description, created_at) VALUES (?, ?, ?, ?, ?, datetime('now'))",
   )
-    .bind(id, body.word, category, isDiscovered, description)
+    .bind(id, body.word, category, isHakken, description)
     .run();
 
-  return c.json({ id, word: body.word, is_discovered: isDiscovered, category }, 201);
+  return c.json({ id, word: body.word, is_hakken: isHakken, category }, 201);
 });
 
 entries.delete("/:id", async (c) => {

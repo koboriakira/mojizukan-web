@@ -157,8 +157,8 @@ test.describe("ステージング認証済みフロー", () => {
       (window as any).__setState({
         authed: true,
         tickets: 5,
-        collected: ["かめ", "いぬ", "ねこ"],
-        discovered: { かめ: true, いぬ: true, ねこ: true },
+        zukanWords: ["かめ", "いぬ", "ねこ"],
+        hakkenWords: ["かめ", "いぬ", "ねこ"],
       });
     });
 

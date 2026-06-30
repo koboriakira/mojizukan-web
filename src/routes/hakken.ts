@@ -24,7 +24,7 @@ hakken.post("/classify", async (c) => {
   }
   const result = classifyWord({
     word: body.word,
-    collected: body.collected ?? [],
+    zukanWords: body.zukanWords ?? [],
     prepared: body.prepared ?? [],
   });
   return c.json(result);
@@ -32,11 +32,11 @@ hakken.post("/classify", async (c) => {
 
 hakken.get("/random", async (c) => {
   const n = parseInt(c.req.query("n") ?? "3", 10);
-  const collectedParam = c.req.query("collected") ?? "";
+  const zukanParam = c.req.query("zukanWords") ?? "";
   const preparedParam = c.req.query("prepared") ?? "";
-  const collected = collectedParam ? collectedParam.split(",") : [];
+  const zukanWords = zukanParam ? zukanParam.split(",") : [];
   const prepared = preparedParam ? preparedParam.split(",") : [];
-  const result = getRandomWords({ n, collected, prepared });
+  const result = getRandomWords({ n, zukanWords, prepared });
   return c.json(result);
 });
 
@@ -68,7 +68,7 @@ hakken.post("/prepared", requireAuth, async (c) => {
     throw new AppError(400, "word は必須です");
   }
   const userId = c.var.userId!;
-  const result = classifyWord({ word: body.word, collected: [], prepared: [] });
+  const result = classifyWord({ word: body.word, zukanWords: [], prepared: [] });
   if (result.status !== "ok") {
     throw new AppError(400, `この言葉は登録できません: ${result.message}`);
   }

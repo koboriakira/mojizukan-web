@@ -21,7 +21,7 @@ export const clientApp = `
     if (!_hasStorage) return;
     try {
       localStorage.setItem('mojizukan_entries', JSON.stringify(state.zukanWords));
-      localStorage.setItem('mojizukan_discovered', JSON.stringify(state.hakkenWords));
+      localStorage.setItem('mojizukan_hakken', JSON.stringify(state.hakkenWords));
       localStorage.setItem('mojizukan_handwriting', JSON.stringify(state.handwriting));
       localStorage.setItem('mojizukan_prepared', JSON.stringify(state.prepared));
     } catch(e) {}
@@ -31,7 +31,7 @@ export const clientApp = `
     if (!_hasStorage) return {};
     try {
       var entries = JSON.parse(localStorage.getItem('mojizukan_entries') || '[]');
-      var discovered = JSON.parse(localStorage.getItem('mojizukan_discovered') || '[]');
+      var discovered = JSON.parse(localStorage.getItem('mojizukan_hakken') || localStorage.getItem('mojizukan_discovered') || '[]');
       var handwriting = JSON.parse(localStorage.getItem('mojizukan_handwriting') || '{}');
       var prepared = JSON.parse(localStorage.getItem('mojizukan_prepared') || '[]');
       return { zukanWords: entries, hakkenWords: discovered, handwriting: handwriting, prepared: prepared };

@@ -8,6 +8,7 @@ import { HAKKEN_WORDS } from "../lib/hakken-words";
 import { addTicket } from "../lib/tickets";
 import { generateJsonOpenAI } from "../lib/ai";
 import { generateImage } from "../lib/image";
+import { getCache, setCache } from "../lib/shared-cache";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -87,7 +88,21 @@ hakken.post("/generate", requireAuth, async (c) => {
     throw new AppError(400, "word は必須です");
   }
 
-  const prompt = `「${body.word}」についての子ども向け図鑑エントリを作ってください。
+  const settings = await c.env.DB.prepare(
+    "SELECT image_style FROM user_settings WHERE id = ?"
+  ).bind(userId).first<{ image_style: string }>();
+  const imageStyle = (settings?.image_style || "ehon") as ImageStyle;
+
+  const cached = await getCache(c.env.DB, body.word, imageStyle);
+
+  let generated: HakkenGenerateResponse;
+  let imageUrl: string;
+
+  if (cached) {
+    generated = { emoji: "📖", description: cached.description };
+    imageUrl = cached.image_url;
+  } else {
+    const prompt = `「${body.word}」についての子ども向け図鑑エントリを作ってください。
 
 ルール:
 - 3〜4歳の子どもが理解できるやさしい言葉で説明する
@@ -98,25 +113,23 @@ hakken.post("/generate", requireAuth, async (c) => {
 出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
 {"emoji":"絵文字1つ","description":"説明文（2文）"}`;
 
-  const settings = await c.env.DB.prepare(
-    "SELECT image_style FROM user_settings WHERE id = ?"
-  ).bind(userId).first<{ image_style: string }>();
-  const imageStyle = (settings?.image_style || "ehon") as ImageStyle;
+    [generated, imageUrl] = await Promise.all([
+      generateJsonOpenAI<HakkenGenerateResponse>({
+        apiKey: c.env.OPENAI_API_KEY,
+        prompt,
+        model: "gpt-5.4",
+      }),
+      generateImage({
+        apiKey: c.env.OPENAI_API_KEY,
+        word: body.word,
+        userId,
+        bucket: c.env.IMAGES,
+        style: imageStyle,
+      }),
+    ]);
 
-  const [generated, imageUrl] = await Promise.all([
-    generateJsonOpenAI<HakkenGenerateResponse>({
-      apiKey: c.env.OPENAI_API_KEY,
-      prompt,
-      model: "gpt-5.4",
-    }),
-    generateImage({
-      apiKey: c.env.OPENAI_API_KEY,
-      word: body.word,
-      userId,
-      bucket: c.env.IMAGES,
-      style: imageStyle,
-    }),
-  ]);
+    await setCache(c.env.DB, body.word, imageStyle, imageUrl, generated.description);
+  }
 
   await c.env.DB.prepare(
     "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description, image_url) VALUES (?, ?, ?, ?, ?)"

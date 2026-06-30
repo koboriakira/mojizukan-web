@@ -73,8 +73,16 @@ src/
   index.ts          # エントリポイント、アプリ定義
   client/           # クライアント JS/CSS（TypeScript 文字列定数）
   routes/           # ルートハンドラ
+  services/         # ドメインロジック（コンテキスト別）
+    kotoba-atsume/  # 辞書・語彙・NGワード
+    ai-generation/  # AI呼び出し・画像生成・共有キャッシュ
+    ohanashi/       # おはなしプロンプト
+    account/        # 認証・セッション・チケット
+  middleware/       # Hono ミドルウェア
+  types/            # 型定義
   __tests__/        # Vitest ユニットテスト
 e2e/                # Playwright E2E テスト
+docs/               # ドメインドキュメント（グロッサリー・ADR・Canvas）
 migrations/         # D1 マイグレーション（連番）
 bin/                # 開発スクリプト
 public/             # 静的アセット（音声ファイル等）

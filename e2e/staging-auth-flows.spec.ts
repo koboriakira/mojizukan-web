@@ -126,7 +126,7 @@ test.describe("ステージング認証済みフロー", () => {
         sheet: null,
         authed: true,
         tickets: 3,
-        seeded: ["かめ"],
+        prepared: ["かめ"],
       });
     });
     await page.getByRole("button", { name: "ずかん" }).click();

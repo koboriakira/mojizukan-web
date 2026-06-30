@@ -112,12 +112,12 @@ test("ひみつのことば → 発見モード → hakkengen 演出", async ({ 
 
   await page.goto("/");
 
-  // seeded 状態を注入（「かめ」= 2文字で短い）
+  // prepared 状態を注入（「かめ」= 2文字で短い）
   await page.evaluate(() => {
     (window as any).__setState({
       authed: true,
       tickets: 3,
-      seeded: ["かめ"],
+      prepared: ["かめ"],
     });
   });
 

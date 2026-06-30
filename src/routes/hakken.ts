@@ -7,23 +7,25 @@ import { isNgWord } from "../services/kotoba-atsume/ng-words";
 import { DICTIONARY_WORDS } from "../services/kotoba-atsume/dictionary-words";
 import { HAKKEN_WORDS } from "../services/kotoba-atsume/hakken-words";
 import { executeHakkenGenerate } from "../services/kotoba-atsume/hakken-generate";
+import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
+import { getDailyHakkenMax, setDailyHakkenMax, getDailyHakkenUsed } from "../services/kotoba-atsume/daily-limit";
 
 export const hakken = new Hono<AppEnv>();
 
 interface ClassifyInput {
   word: string;
   collected: string[];
-  seeded: string[];
+  prepared: string[];
   ngList?: string[];
 }
 
 interface RandomInput {
   n: number;
   collected: string[];
-  seeded: string[];
+  prepared: string[];
 }
 
-export function classifyWord({ word, collected, seeded, ngList }: ClassifyInput): ClassifyResponse {
+export function classifyWord({ word, collected, prepared, ngList }: ClassifyInput): ClassifyResponse {
   const effectiveNgList = ngList ?? [];
 
   if (effectiveNgList.some(ng => word.includes(ng)) || (ngList === undefined && isNgWord(word))) {
@@ -35,17 +37,39 @@ export function classifyWord({ word, collected, seeded, ngList }: ClassifyInput)
   if (collected.includes(word)) {
     return { status: 'dup', message: 'もう ずかんに あるよ' };
   }
-  if (seeded.includes(word)) {
-    return { status: 'seeded', message: 'もう しこみずみ' };
+  if (prepared.includes(word)) {
+    return { status: 'prepared', message: 'もう しこみずみ' };
   }
   return { status: 'ok', message: 'はっけんOK' };
 }
 
-export function getRandomWords({ n, collected, seeded }: RandomInput): string[] {
-  const excluded = new Set([...collected, ...seeded]);
+export type RandomMode = "normal" | "review" | "exhausted";
+
+export function getRandomWords({ n, collected, prepared }: RandomInput): { words: string[]; mode: RandomMode } {
+  const collectedSet = new Set(collected);
+  const uncollectedPrepared = prepared.filter(w => !collectedSet.has(w));
+  const shuffledPrepared = [...uncollectedPrepared].sort(() => Math.random() - 0.5);
+
+  if (shuffledPrepared.length >= n) {
+    return { words: shuffledPrepared.slice(0, n), mode: "normal" };
+  }
+
+  const result = shuffledPrepared.slice();
+  const excluded = new Set([...collected, ...prepared]);
   const available = HAKKEN_WORDS.filter(w => !excluded.has(w));
-  const shuffled = available.sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
+  const shuffledAvailable = available.sort(() => Math.random() - 0.5);
+  result.push(...shuffledAvailable.slice(0, n - result.length));
+
+  if (result.length > 0) {
+    return { words: result, mode: "normal" };
+  }
+
+  if (collected.length > 0) {
+    const reviewPool = [...collected].sort(() => Math.random() - 0.5);
+    return { words: reviewPool.slice(0, n), mode: "review" };
+  }
+
+  return { words: [], mode: "exhausted" };
 }
 
 hakken.get("/entries", requireAuth, async (c) => {
@@ -64,7 +88,7 @@ hakken.post("/classify", async (c) => {
   const result = classifyWord({
     word: body.word,
     collected: body.collected ?? [],
-    seeded: body.seeded ?? [],
+    prepared: body.prepared ?? [],
   });
   return c.json(result);
 });
@@ -72,11 +96,11 @@ hakken.post("/classify", async (c) => {
 hakken.get("/random", async (c) => {
   const n = parseInt(c.req.query("n") ?? "3", 10);
   const collectedParam = c.req.query("collected") ?? "";
-  const seededParam = c.req.query("seeded") ?? "";
+  const preparedParam = c.req.query("prepared") ?? "";
   const collected = collectedParam ? collectedParam.split(",") : [];
-  const seeded = seededParam ? seededParam.split(",") : [];
-  const words = getRandomWords({ n, collected, seeded });
-  return c.json({ words });
+  const prepared = preparedParam ? preparedParam.split(",") : [];
+  const result = getRandomWords({ n, collected, prepared });
+  return c.json(result);
 });
 
 hakken.post("/generate", requireAuth, async (c) => {
@@ -93,4 +117,50 @@ hakken.post("/generate", requireAuth, async (c) => {
   );
 
   return c.json(result);
+});
+
+hakken.get("/prepared", requireAuth, async (c) => {
+  const userId = c.var.userId!;
+  const words = await listPreparedWords(c.env.DB, userId);
+  return c.json({ words });
+});
+
+hakken.post("/prepared", requireAuth, async (c) => {
+  const body = await c.req.json<{ word: string }>();
+  if (!body.word) {
+    throw new AppError(400, "word は必須です");
+  }
+  const userId = c.var.userId!;
+  const result = classifyWord({ word: body.word, collected: [], prepared: [] });
+  if (result.status !== "ok" && result.status !== "dict") {
+    throw new AppError(400, `この言葉は仕込めません: ${result.message}`);
+  }
+  await addPreparedWord(c.env.DB, userId, body.word);
+  return c.json({ ok: true });
+});
+
+hakken.delete("/prepared/:word", requireAuth, async (c) => {
+  const userId = c.var.userId!;
+  const word = c.req.param("word");
+  await removePreparedWord(c.env.DB, userId, word);
+  return c.json({ ok: true });
+});
+
+hakken.get("/daily-limit", requireAuth, async (c) => {
+  const userId = c.var.userId!;
+  const [max, used] = await Promise.all([
+    getDailyHakkenMax(c.env.DB, userId),
+    getDailyHakkenUsed(c.env.DB, userId),
+  ]);
+  return c.json({ max, used, remaining: Math.max(0, max - used) });
+});
+
+hakken.put("/daily-limit", requireAuth, async (c) => {
+  const body = await c.req.json<{ max: number }>();
+  if (typeof body.max !== "number" || !Number.isInteger(body.max)) {
+    throw new AppError(400, "max は整数で指定してください");
+  }
+  const userId = c.var.userId!;
+  await setDailyHakkenMax(c.env.DB, userId, body.max);
+  return c.json({ ok: true, max: body.max });
 });

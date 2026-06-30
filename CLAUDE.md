@@ -84,8 +84,8 @@ src/
 e2e/                # Playwright E2E テスト
 design/             # Claude Design 連携（詳細は design/README.md）
   *.dc.html         # 画面プロトタイプ（Claude Design 出力）
-  briefs/           # Claude Design への入力（Claude Code が生成・更新）
-  decisions/        # Claude Design からの出力（決定記録）
+  sessions/         # セッション記録（YYYYMMDD_HHmm_brief.md / _decisions.md）
+  _templates/       # brief / decisions のテンプレート
 docs/               # ドメインドキュメント（グロッサリー・ADR・Canvas）
 migrations/         # D1 マイグレーション（連番）
 bin/                # 開発スクリプト
@@ -129,10 +129,10 @@ bash bin/reset-db.sh --remote # リモート（ステージング）DB をリセ
 
 ### Claude Code の責務
 
-- **brief の生成・更新**: 機能実装の開始時や実装中の発見があったとき、`design/briefs/<テーマ>.md` を作成・更新する。テンプレートは `design/briefs/_template.md`
-- **decisions の読み取り**: 実装時に `design/decisions/<テーマ>.md` を読み、ユーザータイプ別フローと画面状態一覧に基づいて実装する
+- **brief の生成・更新**: Claude Design セッションの前に `design/sessions/YYYYMMDD_HHmm_brief.md` を作成する。テンプレートは `design/_templates/brief.md`
+- **decisions の読み取り**: 実装時に `design/sessions/*_decisions.md` を読み、ユーザータイプ別フローと画面状態一覧に基づいて実装する
 - **E2E テストの設計**: decisions のユーザータイプ別フローから E2E テストケースを導出する
-- **brief への差分反映**: decisions の「brief からの変更点」を次サイクルの brief に反映する
+- **brief への差分反映**: decisions の「brief からの変更点」を次セッションの brief に反映する
 
 ### E2E テストと decisions の対応
 

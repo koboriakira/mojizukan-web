@@ -1,4 +1,4 @@
-import { AppError } from "../middleware/error-handler";
+import { AppError } from "../../middleware/error-handler";
 
 const DEFAULT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 

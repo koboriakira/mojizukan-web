@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from "hono";
 import type { AppEnv } from "../types";
-import { getSession } from "../lib/session";
+import { getSession } from "../services/account/session";
 import { getCookie } from "hono/cookie";
 
 export const optionalAuth: MiddlewareHandler<AppEnv> = async (c, next) => {

@@ -2,13 +2,13 @@ import { Hono } from "hono";
 import type { AppEnv, ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenGenerateRequest, HakkenGenerateResponse, ImageStyle } from "../types";
 import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
-import { isNgWord } from "../lib/ng-words";
-import { DICTIONARY_WORDS } from "../lib/dictionary-words";
-import { HAKKEN_WORDS } from "../lib/hakken-words";
-import { spendTicket, getTicketBalance, canSpendTicket } from "../lib/tickets";
-import { generateJsonOpenAI } from "../lib/ai";
-import { generateImage } from "../lib/image";
-import { getCache, setCache } from "../lib/shared-cache";
+import { isNgWord } from "../services/kotoba-atsume/ng-words";
+import { DICTIONARY_WORDS } from "../services/kotoba-atsume/dictionary-words";
+import { HAKKEN_WORDS } from "../services/kotoba-atsume/hakken-words";
+import { spendTicket, getTicketBalance, canSpendTicket } from "../services/account/tickets";
+import { generateJsonOpenAI } from "../services/ai-generation/ai";
+import { generateImage } from "../services/ai-generation/image";
+import { getCache, setCache } from "../services/ai-generation/shared-cache";
 
 export const hakken = new Hono<AppEnv>();
 

@@ -1,4 +1,4 @@
-import type { DictionaryWord, WordCategory } from "../types";
+import type { DictionaryWord, WordCategory } from "../../types";
 
 const DICTIONARY_WORDS: DictionaryWord[] = [
   // どうぶつ

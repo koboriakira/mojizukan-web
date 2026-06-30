@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv, CreateEntryRequest } from "../types";
 import { AppError } from "../middleware/error-handler";
-import { findDictionaryWord } from "../lib/word-dictionary";
+import { findDictionaryWord } from "../services/kotoba-atsume/word-dictionary";
 
 export const entries = new Hono<AppEnv>();
 

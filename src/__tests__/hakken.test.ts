@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { classifyWord, getRandomWords } from "../routes/hakken";
-import { isNgWord } from "../lib/ng-words";
-import { HAKKEN_WORDS } from "../lib/hakken-words";
+import { isNgWord } from "../services/kotoba-atsume/ng-words";
+import { HAKKEN_WORDS } from "../services/kotoba-atsume/hakken-words";
 
 describe("isNgWord", () => {
   it("NGリストにない言葉は false を返す", () => {

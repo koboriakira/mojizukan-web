@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import type { AppEnv, StoryRequest, StoryResponse, StoryPage } from "../types";
 import { AppError } from "../middleware/error-handler";
-import { generateJsonOpenAI, extractJson } from "../lib/ai";
-import { buildStoryPrompt } from "../lib/story-prompt";
+import { generateJsonOpenAI, extractJson } from "../services/ai-generation/ai";
+import { buildStoryPrompt } from "../services/ohanashi/story-prompt";
 
 export const story = new Hono<AppEnv>();
 

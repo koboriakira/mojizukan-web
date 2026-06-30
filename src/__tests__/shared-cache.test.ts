@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { getCache, setCache } from "../lib/shared-cache";
+import { getCache, setCache } from "../services/ai-generation/shared-cache";
 
 interface CacheRow {
   image_url: string;

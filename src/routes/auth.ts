@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import type { AppEnv } from "../types";
-import { hashPassword, verifyPassword } from "../lib/password";
-import { createSession, deleteSession, SESSION_MAX_AGE_SEC } from "../lib/session";
-import { getTicketBalance, grantTicket, SIGNUP_BONUS_TICKETS } from "../lib/tickets";
+import { hashPassword, verifyPassword } from "../services/account/password";
+import { createSession, deleteSession, SESSION_MAX_AGE_SEC } from "../services/account/session";
+import { getTicketBalance, grantTicket, SIGNUP_BONUS_TICKETS } from "../services/account/tickets";
 
 const auth = new Hono<AppEnv>();
 
@@ -96,7 +96,7 @@ auth.get("/me", async (c) => {
   if (!token) {
     return c.json({ authed: false });
   }
-  const { getSession } = await import("../lib/session");
+  const { getSession } = await import("../services/account/session");
   const session = await getSession(c.env.DB, token);
   if (!session) {
     deleteCookie(c, "session", { path: "/" });

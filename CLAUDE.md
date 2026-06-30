@@ -79,9 +79,13 @@ src/
     ohanashi/       # おはなしプロンプト
     account/        # 認証・セッション・チケット
   middleware/       # Hono ミドルウェア
-  types/            # 型定義
+  types/            # 型定義（AppEnv, Bindings のみ。コンテキスト固有型は services/<ctx>/types.ts）
   __tests__/        # Vitest ユニットテスト
 e2e/                # Playwright E2E テスト
+design/             # Claude Design 連携（詳細は design/README.md）
+  *.dc.html         # 画面プロトタイプ（Claude Design 出力）
+  briefs/           # Claude Design への入力（Claude Code が生成・更新）
+  decisions/        # Claude Design からの出力（決定記録）
 docs/               # ドメインドキュメント（グロッサリー・ADR・Canvas）
 migrations/         # D1 マイグレーション（連番）
 bin/                # 開発スクリプト
@@ -118,6 +122,21 @@ bash bin/reset-db.sh --remote # リモート（ステージング）DB をリセ
 ```
 
 全テーブルを DROP してマイグレーションを再適用する。リモート実行時は確認プロンプトあり。
+
+## デザイン連携（Claude Design ↔ Claude Code）
+
+画面のデザイン・要件定義は Claude Design で行い、`design/` ディレクトリで Claude Code と接続する。詳細は `design/README.md` を参照。
+
+### Claude Code の責務
+
+- **brief の生成・更新**: 機能実装の開始時や実装中の発見があったとき、`design/briefs/<テーマ>.md` を作成・更新する。テンプレートは `design/briefs/_template.md`
+- **decisions の読み取り**: 実装時に `design/decisions/<テーマ>.md` を読み、ユーザータイプ別フローと画面状態一覧に基づいて実装する
+- **E2E テストの設計**: decisions のユーザータイプ別フローから E2E テストケースを導出する
+- **brief への差分反映**: decisions の「brief からの変更点」を次サイクルの brief に反映する
+
+### E2E テストと decisions の対応
+
+decisions のユーザータイプ別フローが E2E テストの骨格になる。新しい decisions がコミットされたら、対応する E2E テストの追加・更新を検討する。
 
 ## ドメインドキュメント
 

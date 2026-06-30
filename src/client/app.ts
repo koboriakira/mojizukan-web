@@ -1985,6 +1985,14 @@ export const clientApp = `
   };
 
   window.__openSecret = function(word) {
+    if (!state.authed && (state.discovered || []).length >= 10) {
+      setState({ sheet: 'signup', authReason: 'mitsuke' });
+      return;
+    }
+    if (state.authed && (state.tickets || 0) <= 0) {
+      setState({ tankenMsg: { type: 'limit', text: 'チケットが たりないよ' } });
+      return;
+    }
     playSound('tap');
     _canvasWired = null;
     setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false });

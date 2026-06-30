@@ -5,7 +5,7 @@ import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../lib/ng-words";
 import { PRESET_WORDS } from "../lib/preset-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
-import { addTicket } from "../lib/tickets";
+import { addTicket, getTicketBalance, canSpendTicket } from "../lib/tickets";
 import { generateJsonOpenAI } from "../lib/ai";
 import { generateImage } from "../lib/image";
 import { getCache, setCache } from "../lib/shared-cache";
@@ -135,6 +135,13 @@ hakken.post("/generate", requireAuth, async (c) => {
     "SELECT word FROM hakken_entries WHERE user_id = ? AND word = ?"
   ).bind(userId, body.word).first();
   const isRediscovery = existing !== null;
+
+  if (!isRediscovery) {
+    const balance = await getTicketBalance(c.env.DB, userId);
+    if (!canSpendTicket(balance)) {
+      throw new AppError(402, "チケットが足りません");
+    }
+  }
 
   await c.env.DB.prepare(
     "INSERT OR REPLACE INTO hakken_entries (user_id, word, emoji, description, image_url) VALUES (?, ?, ?, ?, ?)"

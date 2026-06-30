@@ -35,7 +35,7 @@ export function classifyWord({ word, collected, prepared, ngList }: ClassifyInpu
     return { status: 'dict', message: 'じしょに あり・むりょう' };
   }
   if (collected.includes(word)) {
-    return { status: 'dup', message: 'もう ずかんに あるよ' };
+    return { status: 'rediscovery', message: 'もういちど はっけん！' };
   }
   if (prepared.includes(word)) {
     return { status: 'prepared', message: 'もう しこみずみ' };

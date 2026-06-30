@@ -222,7 +222,7 @@ export const clientApp = `
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
     if (DICTIONARY[word]) return 'dict';
-    if (state.zukanWords.indexOf(word) !== -1) return 'dup';
+    if (state.zukanWords.indexOf(word) !== -1) return 'rediscovery';
     if (state.prepared.indexOf(word) !== -1) return 'prepared';
     return 'ok';
   }
@@ -233,7 +233,7 @@ export const clientApp = `
     for (var i = 0; i < ngWords.length; i++) {
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
-    if (state.zukanWords.indexOf(word) !== -1 || state.hakkenWords.indexOf(word) !== -1) return 'dup';
+    if (state.zukanWords.indexOf(word) !== -1 || state.hakkenWords.indexOf(word) !== -1) return 'rediscovery';
     if (DICTIONARY[word]) return 'dict';
     return 'hakken';
   }
@@ -298,8 +298,8 @@ export const clientApp = `
 
     var msgBanner = '';
     if (s.tankenMsg) {
-      var msgColor = s.tankenMsg.type === 'ng' ? '#b03a3a' : (s.tankenMsg.type === 'dup' ? '#c95835' : 'var(--sub)');
-      var msgBg = s.tankenMsg.type === 'ng' ? '#fbe6e6' : (s.tankenMsg.type === 'dup' ? '#fff0e6' : '#f5ede6');
+      var msgColor = s.tankenMsg.type === 'ng' ? '#b03a3a' : (s.tankenMsg.type === 'rediscovery' ? '#2d7a2d' : 'var(--sub)');
+      var msgBg = s.tankenMsg.type === 'ng' ? '#fbe6e6' : (s.tankenMsg.type === 'rediscovery' ? '#e6f5e6' : '#f5ede6');
       msgBanner = '<div style="background:' + msgBg + ';color:' + msgColor + ';font-weight:700;font-size:15px;padding:10px 16px;border-radius:14px;text-align:center;margin-bottom:12px;">' + s.tankenMsg.text + '</div>';
     }
 
@@ -421,7 +421,7 @@ export const clientApp = `
     var reviewBanner = '';
     if (kind === 'review') {
       reviewBanner = '<div style="background:linear-gradient(135deg,#fef9ef,#fdf3e0);border:2px solid var(--accent2);border-radius:18px;padding:16px;margin-top:20px;max-width:340px;text-align:left;">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent2);margin-bottom:8px;">この ことばは もう ずかんに いるよ！</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent2);margin-bottom:8px;">もういちど はっけん しよう！</div>' +
         '<div style="font-size:14px;color:#5a5145;line-height:1.7;margin-bottom:10px;">なんども かけて すごい！<br>あたらしい ことばも かいて みたいね。</div>' +
         '<div style="font-size:12px;color:var(--sub);line-height:1.6;border-top:1px solid rgba(0,0,0,.08);padding-top:8px;">おうちの方へ：あたらしい ことばを おぼえる チャンスです。「ひみつの ことば」を 図鑑に 追加して あげましょう。</div>' +
       '</div>';
@@ -979,7 +979,7 @@ export const clientApp = `
 
     var statusMeta = {
       ok:     { text: '発見OK',              tc: '#9c4d70', bg: '#fbeaf1' },
-      dup:    { text: 'すでに図鑑にあります', tc: '#c95835', bg: '#fff0e6' },
+      rediscovery: { text: 'もういちど はっけん！', tc: '#2d7a2d', bg: '#e6f5e6' },
       prepared: { text: '仕込み済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
       dict:   { text: '辞書にあり・無料',    tc: '#3f7a52', bg: '#e6f1e9' },
       ng:     { text: 'この言葉は使えません', tc: '#b03a3a', bg: '#fbe6e6' }
@@ -2067,12 +2067,8 @@ export const clientApp = `
       setState({ tankenMsg: { type: 'ng', text: 'この ことばは つかえないよ' } });
       return;
     }
-    if (result === 'dup') {
-      setState({ tankenMsg: { type: 'dup', text: 'もう ずかんに あるよ' } });
-      return;
-    }
     playSound('tap');
-    if (result === 'dict') {
+    if (result === 'dict' || result === 'rediscovery') {
       window.__goWriteWord(word, false, 'tanken');
     } else {
       if (!state.authed && (state.hakkenWords || []).length >= 10) {

@@ -32,9 +32,9 @@ describe("classifyWord", () => {
     expect(result.status).toBe("dict");
   });
 
-  it("既に収集済みの言葉は dup を返す", () => {
+  it("既に収集済みの言葉は rediscovery を返す", () => {
     const result = classifyWord({ word: "らいおん", collected: ["らいおん"], prepared: [], ngList: [] });
-    expect(result.status).toBe("dup");
+    expect(result.status).toBe("rediscovery");
   });
 
   it("仕込み済みの言葉は prepared を返す", () => {

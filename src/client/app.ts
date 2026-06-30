@@ -1095,11 +1095,8 @@ export const clientApp = `
 
   function mitsukePool(s) {
     var pool = [];
-    for (var i = 0; i < s.prepared.length; i++) {
-      pool.push(s.prepared[i]);
-    }
     for (var w in DICTIONARY) {
-      if (s.zukanWords.indexOf(w) === -1 && pool.indexOf(w) === -1) {
+      if (s.zukanWords.indexOf(w) === -1 && s.prepared.indexOf(w) === -1) {
         pool.push(w);
       }
     }
@@ -1496,19 +1493,23 @@ export const clientApp = `
 
   window.__goMitsukeru = function () {
     playSound('tap');
-    var pool = mitsukePool(state);
-    if (pool.length > 0) {
-      var pick = pool[Math.floor(Math.random() * pool.length)];
-      if (state.prepared.indexOf(pick) !== -1) {
-        window.__openSecret(pick);
-      } else {
-        window.__goWriteWord(pick, false, 'mitsuke');
-      }
-    } else if (state.zukanWords.length > 0) {
-      var reviewPick = state.zukanWords[Math.floor(Math.random() * state.zukanWords.length)];
-      window.__goWriteWord(reviewPick, false, 'review');
+    var unusedPrepared = state.prepared.filter(function(w) {
+      return state.zukanWords.indexOf(w) === -1;
+    });
+    if (unusedPrepared.length > 0) {
+      var pick = unusedPrepared[Math.floor(Math.random() * unusedPrepared.length)];
+      window.__openSecret(pick);
     } else {
-      setState({ screen: 'mitsukeru' });
+      var pool = mitsukePool(state);
+      if (pool.length > 0) {
+        var pick = pool[Math.floor(Math.random() * pool.length)];
+        window.__goWriteWord(pick, false, 'mitsuke');
+      } else if (state.zukanWords.length > 0) {
+        var reviewPick = state.zukanWords[Math.floor(Math.random() * state.zukanWords.length)];
+        window.__goWriteWord(reviewPick, false, 'review');
+      } else {
+        setState({ screen: 'mitsukeru' });
+      }
     }
   };
 

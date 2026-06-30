@@ -7,7 +7,6 @@ import { isNgWord } from "../services/kotoba-atsume/ng-words";
 import { DICTIONARY_WORDS } from "../services/kotoba-atsume/dictionary-words";
 import { executeHakkenGenerate } from "../services/kotoba-atsume/hakken-generate";
 import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
-import { getDailyHakkenMax, setDailyHakkenMax, getDailyHakkenUsed } from "../services/kotoba-atsume/daily-limit";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -34,7 +33,7 @@ export function classifyWord({ word, collected, prepared, ngList }: ClassifyInpu
     return { status: 'dict', message: 'じしょに あり・むりょう' };
   }
   if (collected.includes(word)) {
-    return { status: 'dup', message: 'もう ずかんに あるよ' };
+    return { status: 'rediscovery', message: 'もういちど はっけん！' };
   }
   if (prepared.includes(word)) {
     return { status: 'prepared', message: 'もう しこみずみ' };
@@ -142,23 +141,4 @@ hakken.delete("/prepared/:word", requireAuth, async (c) => {
   const word = c.req.param("word");
   await removePreparedWord(c.env.DB, userId, word);
   return c.json({ ok: true });
-});
-
-hakken.get("/daily-limit", requireAuth, async (c) => {
-  const userId = c.var.userId!;
-  const [max, used] = await Promise.all([
-    getDailyHakkenMax(c.env.DB, userId),
-    getDailyHakkenUsed(c.env.DB, userId),
-  ]);
-  return c.json({ max, used, remaining: Math.max(0, max - used) });
-});
-
-hakken.put("/daily-limit", requireAuth, async (c) => {
-  const body = await c.req.json<{ max: number }>();
-  if (typeof body.max !== "number" || !Number.isInteger(body.max)) {
-    throw new AppError(400, "max は整数で指定してください");
-  }
-  const userId = c.var.userId!;
-  await setDailyHakkenMax(c.env.DB, userId, body.max);
-  return c.json({ ok: true, max: body.max });
 });

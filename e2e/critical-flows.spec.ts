@@ -77,7 +77,6 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
 
   // みつける・たんけんカード
   await expect(page.getByText("みつける と たんけん")).toBeVisible();
-  await expect(page.getByText("たんけんの1日の回数")).toBeVisible();
 
   // 未登録 → signup シート
   await page.getByRole("button", { name: "言葉を仕込む" }).click();
@@ -165,7 +164,7 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await page.getByRole("button", { name: "たんけんに でる" }).click();
   await expect(page.getByText("たんけん")).toBeVisible();
 
-  // 重複チェック: zukanWords に「うし」が入っている状態で「うし」を組み立て
+  // 再発見: zukanWords に「うし」が入っている状態で「うし」を組み立て → ブロックされず書く画面へ
   await page.evaluate(() => {
     (window as any).__setState({
       screen: "tanken",
@@ -175,7 +174,16 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
     });
   });
   await page.getByRole("button", { name: /これを かく/ }).click();
-  await expect(page.getByText("もう ずかんに あるよ")).toBeVisible();
+  await expect(page.locator("canvas")).toBeVisible();
+
+  // 再発見のなぞり完了 → reveal 画面で「もういちど はっけん しよう！」バナー表示
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
+  await page.getByRole("button", { name: "なぞれたよ！" }).click();
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
+  await page.getByRole("button", { name: "できた！" }).click();
+  await expect(page.getByText("もういちど はっけん しよう！")).toBeVisible();
+  await expect(page.getByRole("button", { name: "たんけんに もどる" })).toBeVisible();
 
   // 辞書語の正常フロー: 「うし」を zukanWords から外して再挑戦
   await page.evaluate(() => {

@@ -60,7 +60,7 @@ describe("clientApp", () => {
 
   it("復習モード (revealKind='review') のタイトルとバナーがある", () => {
     expect(clientApp).toContain("また かけたね");
-    expect(clientApp).toContain("この ことばは もう ずかんに いるよ");
+    expect(clientApp).toContain("もういちど はっけん しよう！");
     expect(clientApp).toContain("ひみつの ことば");
   });
 
@@ -121,26 +121,14 @@ describe("clientApp", () => {
   });
 
   it("日次制限 state が定義されている", () => {
-    expect(clientApp).toContain("dailyHakkenMax:");
-    expect(clientApp).toContain("dailyHakkenUsed:");
     expect(clientApp).toContain("limitWord:");
   });
 
-  it("日次制限の localStorage キーが定義されている", () => {
-    expect(clientApp).toContain("mojizukan_hakken_max");
-    expect(clientApp).toContain("mojizukan_hakken_used");
-    expect(clientApp).toContain("mojizukan_hakken_date");
-  });
-
   it("グローバル関数が定義されている", () => {
-    const funcs = ["__goHome", "__goWrite", "__goZukan", "__confirmChar", "__clearCanvas", "__undo", "__goMitsukeru", "__goTanken", "__goWriteWord", "__incDaily", "__decDaily"];
+    const funcs = ["__goHome", "__goWrite", "__goZukan", "__confirmChar", "__clearCanvas", "__undo", "__goMitsukeru", "__goTanken", "__goWriteWord"];
     for (const f of funcs) {
       expect(clientApp).toContain(`window.${f}`);
     }
-  });
-
-  it("保護者メニューにたんけん設定カードが含まれる", () => {
-    expect(clientApp).toContain("たんけんの1日の回数");
   });
 
   it("DICTIONARY データが埋め込まれている", () => {

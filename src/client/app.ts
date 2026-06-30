@@ -24,9 +24,6 @@ export const clientApp = `
       localStorage.setItem('mojizukan_discovered', JSON.stringify(state.hakkenWords));
       localStorage.setItem('mojizukan_handwriting', JSON.stringify(state.handwriting));
       localStorage.setItem('mojizukan_prepared', JSON.stringify(state.prepared));
-      localStorage.setItem('mojizukan_hakken_max', String(state.dailyHakkenMax));
-      localStorage.setItem('mojizukan_hakken_used', String(state.dailyHakkenUsed));
-      localStorage.setItem('mojizukan_hakken_date', new Date().toISOString().slice(0,10));
     } catch(e) {}
   }
 
@@ -37,12 +34,7 @@ export const clientApp = `
       var discovered = JSON.parse(localStorage.getItem('mojizukan_discovered') || '[]');
       var handwriting = JSON.parse(localStorage.getItem('mojizukan_handwriting') || '{}');
       var prepared = JSON.parse(localStorage.getItem('mojizukan_prepared') || '[]');
-      var hakkenMax = parseInt(localStorage.getItem('mojizukan_hakken_max') || '3', 10);
-      var hakkenUsed = parseInt(localStorage.getItem('mojizukan_hakken_used') || '0', 10);
-      var hakkenDate = localStorage.getItem('mojizukan_hakken_date') || '';
-      var today = new Date().toISOString().slice(0,10);
-      if (hakkenDate !== today) { hakkenUsed = 0; }
-      return { zukanWords: entries, hakkenWords: discovered, handwriting: handwriting, prepared: prepared, dailyHakkenMax: hakkenMax, dailyHakkenUsed: hakkenUsed };
+      return { zukanWords: entries, hakkenWords: discovered, handwriting: handwriting, prepared: prepared };
     } catch(e) {
       return {};
     }
@@ -88,8 +80,6 @@ export const clientApp = `
     tankenChars: [],
     tankenMsg: null,
     tankenMode: false,
-    dailyHakkenMax: saved.dailyHakkenMax || 3,
-    dailyHakkenUsed: saved.dailyHakkenUsed || 0,
     limitWord: '',
     drew: false,
     genCached: false,
@@ -222,7 +212,7 @@ export const clientApp = `
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
     if (DICTIONARY[word]) return 'dict';
-    if (state.zukanWords.indexOf(word) !== -1) return 'dup';
+    if (state.zukanWords.indexOf(word) !== -1) return 'rediscovery';
     if (state.prepared.indexOf(word) !== -1) return 'prepared';
     return 'ok';
   }
@@ -233,7 +223,7 @@ export const clientApp = `
     for (var i = 0; i < ngWords.length; i++) {
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
-    if (state.zukanWords.indexOf(word) !== -1 || state.hakkenWords.indexOf(word) !== -1) return 'dup';
+    if (state.zukanWords.indexOf(word) !== -1 || state.hakkenWords.indexOf(word) !== -1) return 'rediscovery';
     if (DICTIONARY[word]) return 'dict';
     return 'hakken';
   }
@@ -298,8 +288,8 @@ export const clientApp = `
 
     var msgBanner = '';
     if (s.tankenMsg) {
-      var msgColor = s.tankenMsg.type === 'ng' ? '#b03a3a' : (s.tankenMsg.type === 'dup' ? '#c95835' : 'var(--sub)');
-      var msgBg = s.tankenMsg.type === 'ng' ? '#fbe6e6' : (s.tankenMsg.type === 'dup' ? '#fff0e6' : '#f5ede6');
+      var msgColor = s.tankenMsg.type === 'ng' ? '#b03a3a' : (s.tankenMsg.type === 'rediscovery' ? '#2d7a2d' : 'var(--sub)');
+      var msgBg = s.tankenMsg.type === 'ng' ? '#fbe6e6' : (s.tankenMsg.type === 'rediscovery' ? '#e6f5e6' : '#f5ede6');
       msgBanner = '<div style="background:' + msgBg + ';color:' + msgColor + ';font-weight:700;font-size:15px;padding:10px 16px;border-radius:14px;text-align:center;margin-bottom:12px;">' + s.tankenMsg.text + '</div>';
     }
 
@@ -313,9 +303,7 @@ export const clientApp = `
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">' +
           '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
           '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--accent);">🧭 たんけん</div>' +
-          '<div style="width:56px;display:flex;justify-content:center;gap:4px;">' +
-            (function() { var pips = ''; for (var pi = 0; pi < s.dailyHakkenMax; pi++) { pips += '<div style="width:10px;height:10px;border-radius:50%;background:' + (pi < s.dailyHakkenUsed ? 'var(--accent)' : 'var(--locked)') + ';"></div>'; } return pips; })() +
-          '</div>' +
+          '<div style="width:56px;"></div>' +
         '</div>' +
         '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:8px;">' + slots + '</div>' +
         '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:14px;">' +
@@ -407,21 +395,21 @@ export const clientApp = `
       { cat: '', catIcon: '', desc: '', image_url: null });
     var kind = s.revealKind || 'normal';
     var title;
-    if (kind === 'review') {
+    if (kind === 'review' || kind === 'tanken-rediscovery') {
       title = 'また かけたね！😊';
     } else if (s.lastHakken) {
       title = kind === 'tanken' ? 'あたらしい ことば はっけん！⭐' : 'みつけた！⭐';
     } else {
       title = 'ずかんに のったよ！🎉';
     }
-    var nextAction = kind === 'tanken'
+    var nextAction = (kind === 'tanken' || kind === 'tanken-rediscovery')
       ? '<button onclick="window.__goTanken()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🧭 たんけんに もどる</button>'
       : '<button onclick="window.__goMitsukeru()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🔍 つぎも みつける</button>';
 
     var reviewBanner = '';
-    if (kind === 'review') {
+    if (kind === 'review' || kind === 'tanken-rediscovery') {
       reviewBanner = '<div style="background:linear-gradient(135deg,#fef9ef,#fdf3e0);border:2px solid var(--accent2);border-radius:18px;padding:16px;margin-top:20px;max-width:340px;text-align:left;">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent2);margin-bottom:8px;">この ことばは もう ずかんに いるよ！</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent2);margin-bottom:8px;">もういちど はっけん しよう！</div>' +
         '<div style="font-size:14px;color:#5a5145;line-height:1.7;margin-bottom:10px;">なんども かけて すごい！<br>あたらしい ことばも かいて みたいね。</div>' +
         '<div style="font-size:12px;color:var(--sub);line-height:1.6;border-top:1px solid rgba(0,0,0,.08);padding-top:8px;">おうちの方へ：あたらしい ことばを おぼえる チャンスです。「ひみつの ことば」を 図鑑に 追加して あげましょう。</div>' +
       '</div>';
@@ -628,15 +616,6 @@ export const clientApp = `
           '</div>'
         : '') +
         '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ 言葉を仕込む</button>' +
-        '<div style="background:#f5f0e8;border-radius:14px;padding:14px 16px;margin-bottom:8px;">' +
-          '<div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">🧭 たんけんの1日の回数</div>' +
-          '<div style="display:flex;align-items:center;justify-content:center;gap:16px;">' +
-            '<button onclick="window.__decDaily()" style="width:44px;height:44px;border-radius:50%;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 0 rgba(0,0,0,.06);color:var(--ink);">−</button>' +
-            '<div style="font-family:var(--fhead);font-weight:900;font-size:36px;color:var(--accent);min-width:48px;text-align:center;">' + (s.dailyHakkenMax || 3) + '</div>' +
-            '<button onclick="window.__incDaily()" style="width:44px;height:44px;border-radius:50%;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 0 rgba(0,0,0,.06);color:var(--ink);">＋</button>' +
-          '</div>' +
-          '<div style="font-size:12px;color:var(--sub);text-align:center;margin-top:8px;">0にするとたんけんをお休みできます</div>' +
-        '</div>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ 設定</div>' +
@@ -979,7 +958,7 @@ export const clientApp = `
 
     var statusMeta = {
       ok:     { text: '発見OK',              tc: '#9c4d70', bg: '#fbeaf1' },
-      dup:    { text: 'すでに図鑑にあります', tc: '#c95835', bg: '#fff0e6' },
+      rediscovery: { text: 'もういちど はっけん！', tc: '#2d7a2d', bg: '#e6f5e6' },
       prepared: { text: '仕込み済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
       dict:   { text: '辞書にあり・無料',    tc: '#3f7a52', bg: '#e6f1e9' },
       ng:     { text: 'この言葉は使えません', tc: '#b03a3a', bg: '#fbe6e6' }
@@ -1881,16 +1860,6 @@ export const clientApp = `
     setState({ screen: 'parent', sheet: null });
   };
 
-  window.__incDaily = function() {
-    playSound('tap');
-    setState({ dailyHakkenMax: Math.min(9, (state.dailyHakkenMax || 3) + 1) });
-  };
-
-  window.__decDaily = function() {
-    playSound('tap');
-    setState({ dailyHakkenMax: Math.max(0, (state.dailyHakkenMax || 3) - 1) });
-  };
-
   window.__goPrep = function() {
     playSound('tap');
     if (!state.authed) {
@@ -2041,19 +2010,17 @@ export const clientApp = `
       setState({ tankenMsg: { type: 'ng', text: 'この ことばは つかえないよ' } });
       return;
     }
-    if (result === 'dup') {
-      setState({ tankenMsg: { type: 'dup', text: 'もう ずかんに あるよ' } });
-      return;
-    }
     playSound('tap');
     if (result === 'dict') {
       window.__goWriteWord(word, false, 'tanken');
+    } else if (result === 'rediscovery') {
+      window.__goWriteWord(word, false, 'tanken-rediscovery');
     } else {
       if (!state.authed && (state.hakkenWords || []).length >= 10) {
         setState({ sheet: 'signup', authReason: 'tanken' });
         return;
       }
-      if (state.authed && (state.dailyHakkenUsed >= state.dailyHakkenMax || (state.tickets || 0) <= 0)) {
+      if (state.authed && (state.tickets || 0) <= 0) {
         setState({ screen: 'tankenlimit', limitWord: word });
         return;
       }
@@ -2115,9 +2082,6 @@ export const clientApp = `
     if (!window.__hakkenCache) window.__hakkenCache = {};
     window.__hakkenCache[word] = { desc: desc, image_url: imageUrl || null };
 
-    var used = state.dailyHakkenUsed;
-    if (state.tankenMode) { used = used + 1; }
-
     setState({
       screen: 'reveal',
       zukanWords: col,
@@ -2126,7 +2090,6 @@ export const clientApp = `
       tickets: tickets,
       lastHakken: true,
       discovering: false,
-      dailyHakkenUsed: used,
       tankenMode: false
     });
   };

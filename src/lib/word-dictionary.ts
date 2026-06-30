@@ -1,6 +1,6 @@
-import type { PresetWord, WordCategory } from "../types";
+import type { DictionaryWord, WordCategory } from "../types";
 
-const PRESET_WORDS: PresetWord[] = [
+const DICTIONARY_WORDS: DictionaryWord[] = [
   // どうぶつ
   { word: "うし", category: "どうぶつ", description: "おおきな からだで のんびり くさを たべるよ。「もー」と ないて おしえてくれるよ。" },
   { word: "いぬ", category: "どうぶつ", description: "しっぽを ふって よろこぶよ。おさんぽが だいすきなんだ。" },
@@ -73,22 +73,22 @@ const PRESET_WORDS: PresetWord[] = [
   { word: "えほん", category: "その他", description: "えと おはなしが いっぱいだよ。よんでもらうと わくわくするね。" },
 ];
 
-export function findPresetWord(word: string): PresetWord | undefined {
-  return PRESET_WORDS.find((p) => p.word === word) ?? findWithNormalization(word);
+export function findDictionaryWord(word: string): DictionaryWord | undefined {
+  return DICTIONARY_WORDS.find((p) => p.word === word) ?? findWithNormalization(word);
 }
 
-export function getPresetsByCategory(category: WordCategory): PresetWord[] {
-  return PRESET_WORDS.filter((p) => p.category === category);
+export function getDictionaryWordsByCategory(category: WordCategory): DictionaryWord[] {
+  return DICTIONARY_WORDS.filter((p) => p.category === category);
 }
 
-export function getAllPresets(): PresetWord[] {
-  return [...PRESET_WORDS];
+export function getAllDictionaryWords(): DictionaryWord[] {
+  return [...DICTIONARY_WORDS];
 }
 
-function findWithNormalization(word: string): PresetWord | undefined {
+function findWithNormalization(word: string): DictionaryWord | undefined {
   const normalized = normalizeKana(word);
   if (normalized === word) return undefined;
-  return PRESET_WORDS.find((p) => p.word === normalized);
+  return DICTIONARY_WORDS.find((p) => p.word === normalized);
 }
 
 const SMALL_TO_LARGE: Record<string, string> = {

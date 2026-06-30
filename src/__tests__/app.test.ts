@@ -45,7 +45,7 @@ describe("clientApp", () => {
   });
 
   it("Reveal 画面がプリセットデータ参照を含む", () => {
-    expect(clientApp).toContain("PRESETS[word]");
+    expect(clientApp).toContain("DICTIONARY[word]");
     expect(clientApp).toContain("ずかんに のったよ");
   });
 
@@ -143,8 +143,8 @@ describe("clientApp", () => {
     expect(clientApp).toContain("たんけんの1日の回数");
   });
 
-  it("PRESETS データが埋め込まれている", () => {
-    expect(clientApp).toContain("var PRESETS");
+  it("DICTIONARY データが埋め込まれている", () => {
+    expect(clientApp).toContain("var DICTIONARY");
     expect(clientApp).toContain("var WORDPOOL");
   });
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { clientPresets } from "../client/presets";
+import { clientDictionary } from "../client/dictionary";
 
-describe("clientPresets", () => {
+describe("clientDictionary", () => {
   it("51語すべてが含まれる", () => {
     const words = [
       'うし', 'いぬ', 'ねこ', 'きりん', 'ぞう', 'うさぎ', 'くま', 'ぱんだ',
@@ -16,20 +16,20 @@ describe("clientPresets", () => {
       'ほし', 'にじ', 'おんがく', 'えほん',
     ];
     for (const word of words) {
-      expect(clientPresets).toContain("'" + word + "'");
+      expect(clientDictionary).toContain("'" + word + "'");
     }
   });
 
   it("各エントリに cat, desc が含まれる", () => {
-    expect(clientPresets).toContain("cat:");
-    expect(clientPresets).toContain("desc:");
+    expect(clientDictionary).toContain("cat:");
+    expect(clientDictionary).toContain("desc:");
   });
 
   it("WORDPOOL が定義されている", () => {
-    expect(clientPresets).toContain("var WORDPOOL");
+    expect(clientDictionary).toContain("var WORDPOOL");
   });
 
-  it("PRESETS が定義されている", () => {
-    expect(clientPresets).toContain("var PRESETS");
+  it("DICTIONARY が定義されている", () => {
+    expect(clientDictionary).toContain("var DICTIONARY");
   });
 });

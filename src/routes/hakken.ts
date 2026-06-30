@@ -3,7 +3,7 @@ import type { AppEnv, ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenG
 import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../lib/ng-words";
-import { PRESET_WORDS } from "../lib/preset-words";
+import { DICTIONARY_WORDS } from "../lib/dictionary-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
 import { spendTicket, getTicketBalance, canSpendTicket } from "../lib/tickets";
 import { generateJsonOpenAI } from "../lib/ai";
@@ -31,7 +31,7 @@ export function classifyWord({ word, collected, seeded, ngList }: ClassifyInput)
   if (effectiveNgList.some(ng => word.includes(ng)) || (ngList === undefined && isNgWord(word))) {
     return { status: 'ng', message: 'この ことばは つかえないよ' };
   }
-  if (PRESET_WORDS.includes(word)) {
+  if (DICTIONARY_WORDS.includes(word)) {
     return { status: 'dict', message: 'じしょに あり・むりょう' };
   }
   if (collected.includes(word)) {

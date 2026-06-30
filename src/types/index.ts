@@ -17,7 +17,7 @@ export interface DiscoverEntryRequest {
   word: string;
 }
 
-export interface PresetWord {
+export interface DictionaryWord {
   word: string;
   category: WordCategory;
   description: string;

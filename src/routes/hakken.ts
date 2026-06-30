@@ -7,6 +7,7 @@ import { isNgWord } from "../services/kotoba-atsume/ng-words";
 import { DICTIONARY_WORDS } from "../services/kotoba-atsume/dictionary-words";
 import { HAKKEN_WORDS } from "../services/kotoba-atsume/hakken-words";
 import { executeHakkenGenerate } from "../services/kotoba-atsume/hakken-generate";
+import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -42,10 +43,20 @@ export function classifyWord({ word, collected, prepared, ngList }: ClassifyInpu
 }
 
 export function getRandomWords({ n, collected, prepared }: RandomInput): string[] {
+  const collectedSet = new Set(collected);
+  const uncollectedPrepared = prepared.filter(w => !collectedSet.has(w));
+  const shuffledPrepared = [...uncollectedPrepared].sort(() => Math.random() - 0.5);
+
+  if (shuffledPrepared.length >= n) {
+    return shuffledPrepared.slice(0, n);
+  }
+
+  const result = shuffledPrepared.slice();
   const excluded = new Set([...collected, ...prepared]);
   const available = HAKKEN_WORDS.filter(w => !excluded.has(w));
-  const shuffled = available.sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
+  const shuffledAvailable = available.sort(() => Math.random() - 0.5);
+  result.push(...shuffledAvailable.slice(0, n - result.length));
+  return result;
 }
 
 hakken.get("/entries", requireAuth, async (c) => {
@@ -93,4 +104,31 @@ hakken.post("/generate", requireAuth, async (c) => {
   );
 
   return c.json(result);
+});
+
+hakken.get("/prepared", requireAuth, async (c) => {
+  const userId = c.var.userId!;
+  const words = await listPreparedWords(c.env.DB, userId);
+  return c.json({ words });
+});
+
+hakken.post("/prepared", requireAuth, async (c) => {
+  const body = await c.req.json<{ word: string }>();
+  if (!body.word) {
+    throw new AppError(400, "word は必須です");
+  }
+  const userId = c.var.userId!;
+  const result = classifyWord({ word: body.word, collected: [], prepared: [] });
+  if (result.status !== "ok" && result.status !== "dict") {
+    throw new AppError(400, `この言葉は仕込めません: ${result.message}`);
+  }
+  await addPreparedWord(c.env.DB, userId, body.word);
+  return c.json({ ok: true });
+});
+
+hakken.delete("/prepared/:word", requireAuth, async (c) => {
+  const userId = c.var.userId!;
+  const word = c.req.param("word");
+  await removePreparedWord(c.env.DB, userId, word);
+  return c.json({ ok: true });
 });

@@ -67,11 +67,11 @@ describe("getRandomWords", () => {
     }
   });
 
-  it("返すワードは仕込み済みリストに含まれない", () => {
+  it("仕込み済みワードを優先的に返す", () => {
     const prepared = HAKKEN_WORDS.slice(0, 30);
     const words = getRandomWords({ n: 3, collected: [], prepared });
     for (const word of words) {
-      expect(prepared).not.toContain(word);
+      expect(prepared).toContain(word);
     }
   });
 

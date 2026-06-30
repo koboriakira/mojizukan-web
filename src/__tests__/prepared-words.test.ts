@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getRandomWords } from "../routes/hakken";
-import { HAKKEN_WORDS } from "../services/kotoba-atsume/hakken-words";
 import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
+
+const SAMPLE_WORDS = ["らいおん", "ぺんぎん", "いるか", "くじら", "かめ"];
 
 interface PreparedRow {
   id: number;
@@ -98,31 +99,32 @@ describe("ひみつのことば（prepared）管理", () => {
 
   describe("getRandomWords - prepared 優先", () => {
     it("prepared words を優先的に返す", () => {
-      const prepared = HAKKEN_WORDS.slice(0, 2);
-      const result = getRandomWords({ n: 3, collected: [], prepared });
-      expect(result.words).toHaveLength(3);
+      const prepared = SAMPLE_WORDS.slice(0, 2);
+      const result = getRandomWords({ n: 3, collected: SAMPLE_WORDS.slice(2), prepared });
       for (const p of prepared) {
         expect(result.words).toContain(p);
       }
     });
 
-    it("prepared が n 個未満なら HAKKEN_WORDS で補完する", () => {
-      const prepared = [HAKKEN_WORDS[0]];
-      const result = getRandomWords({ n: 3, collected: [], prepared });
+    it("prepared が n 個未満なら collected から補完する", () => {
+      const prepared = [SAMPLE_WORDS[0]];
+      const collected = SAMPLE_WORDS.slice(1);
+      const result = getRandomWords({ n: 3, collected, prepared });
       expect(result.words).toHaveLength(3);
       expect(result.words).toContain(prepared[0]);
     });
 
     it("collected 済みの prepared は除外する", () => {
-      const prepared = HAKKEN_WORDS.slice(0, 2);
+      // n を uncollectedPrepared 数以下にして review 補完が発生しないシナリオ
+      const prepared = SAMPLE_WORDS.slice(0, 3);
       const collected = [prepared[0]];
-      const result = getRandomWords({ n: 3, collected, prepared });
+      const result = getRandomWords({ n: 2, collected, prepared });
       expect(result.words).not.toContain(prepared[0]);
-      expect(result.words).toContain(prepared[1]);
+      expect(result.words).toHaveLength(2);
     });
 
     it("prepared が n 個以上なら prepared から n 個返す", () => {
-      const prepared = HAKKEN_WORDS.slice(0, 5);
+      const prepared = SAMPLE_WORDS.slice(0, 5);
       const result = getRandomWords({ n: 3, collected: [], prepared });
       expect(result.words).toHaveLength(3);
       for (const w of result.words) {

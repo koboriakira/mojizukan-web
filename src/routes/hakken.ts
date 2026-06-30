@@ -5,7 +5,6 @@ import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../services/kotoba-atsume/ng-words";
 import { DICTIONARY_WORDS } from "../services/kotoba-atsume/dictionary-words";
-import { HAKKEN_WORDS } from "../services/kotoba-atsume/hakken-words";
 import { executeHakkenGenerate } from "../services/kotoba-atsume/hakken-generate";
 import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
 
@@ -54,18 +53,17 @@ export function getRandomWords({ n, collected, prepared }: RandomInput): { words
   }
 
   const result = shuffledPrepared.slice();
-  const excluded = new Set([...collected, ...prepared]);
-  const available = HAKKEN_WORDS.filter(w => !excluded.has(w));
-  const shuffledAvailable = available.sort(() => Math.random() - 0.5);
-  result.push(...shuffledAvailable.slice(0, n - result.length));
+
+  // prepared が足りない場合、収集済みから復習モードで補完
+  if (result.length < n && collected.length > 0) {
+    const reviewPool = [...collected].sort(() => Math.random() - 0.5);
+    const needed = n - result.length;
+    result.push(...reviewPool.slice(0, needed));
+    return { words: result, mode: shuffledPrepared.length === 0 ? "review" : "normal" };
+  }
 
   if (result.length > 0) {
     return { words: result, mode: "normal" };
-  }
-
-  if (collected.length > 0) {
-    const reviewPool = [...collected].sort(() => Math.random() - 0.5);
-    return { words: reviewPool.slice(0, n), mode: "review" };
   }
 
   return { words: [], mode: "exhausted" };

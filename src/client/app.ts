@@ -1016,7 +1016,6 @@ export const clientApp = `
           '<input id="prep-input" type="text" value="' + (s.prepInput || '') + '" oninput="window.__updatePrepInput(this)" placeholder="ことばを入力" style="flex:1;min-height:54px;border-radius:16px;border:2px solid var(--cbd);padding:0 16px;font-size:18px;font-family:var(--fhead);background:#fff;color:var(--ink);outline:none;" />' +
           '<button onclick="window.__addPrepWord()" style="width:54px;height:54px;border-radius:16px;background:var(--accent3);color:#fff;font-size:26px;font-weight:900;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:none;">＋</button>' +
         '</div>' +
-        '<button onclick="window.__rollRandom()" style="width:100%;min-height:48px;border-radius:16px;background:#fff;border:2px dashed var(--accent3);color:var(--accent3);font-size:16px;font-weight:700;margin-bottom:16px;box-shadow:none;">🎲 ランダム候補を3つ出す</button>' +
       '</div>' +
       '<div style="flex:1;padding:0 18px;">' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">' +
@@ -1910,31 +1909,6 @@ export const clientApp = `
     if (existing.length > 0) return;
     var sel = state.prepSel.concat([{ w: word, status: status, selected: status === 'ok' }]);
     setState({ prepSel: sel, prepInput: '' });
-  };
-
-  window.__rollRandom = function() {
-    playSound('tap');
-    var available = [];
-    for (var i = 0; i < HAKKEN_WORDS.length; i++) {
-      var w = HAKKEN_WORDS[i];
-      if (state.zukanWords.indexOf(w) === -1 && state.prepared.indexOf(w) === -1) {
-        var alreadyInSel = false;
-        for (var j = 0; j < state.prepSel.length; j++) {
-          if (state.prepSel[j].w === w) { alreadyInSel = true; break; }
-        }
-        if (!alreadyInSel) available.push(w);
-      }
-    }
-    for (var k = available.length - 1; k > 0; k--) {
-      var r = Math.floor(Math.random() * (k + 1));
-      var tmp = available[k]; available[k] = available[r]; available[r] = tmp;
-    }
-    var picked = available.slice(0, 3);
-    var newSel = state.prepSel.slice();
-    for (var m = 0; m < picked.length; m++) {
-      newSel.push({ w: picked[m], status: 'ok', selected: true });
-    }
-    setState({ prepSel: newSel });
   };
 
   window.__togglePrepSel = function(word) {

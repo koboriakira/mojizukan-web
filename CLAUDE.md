@@ -64,6 +64,7 @@ git worktree remove ../mojizukan-web-feat-xxx
 - クライアント JS（`src/client/*.ts`）は TypeScript 文字列定数として定義されている。テンプレートリテラル内の構文エラーや未定義変数は TypeScript もユニットテストも検出できないため、E2E が最後の砦になる
 - E2E は `npm run test:e2e` で実行。`wrangler dev` を自動起動して Playwright でブラウザ操作する
 - E2E を増やしすぎない。フローの追加は3本を超えたら本当に必要か考える
+- `src/client/*.ts` に触れるリファクタリング後は、コミット前に `npm run test:e2e` を実行する。TypeScript も unit テストも文字列埋め込み内の変数を検出できないため
 
 ## ディレクトリ構成
 

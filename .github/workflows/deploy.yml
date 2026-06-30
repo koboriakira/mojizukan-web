@@ -58,9 +58,7 @@ jobs:
       - name: Configure secrets
         run: |
           NAME="${{ steps.preview.outputs.name }}"
-          echo "${{ secrets.OPENAI_API_KEY }}"         | npx wrangler secret put OPENAI_API_KEY --name "${NAME}"
-          echo "${{ secrets.GOOGLE_CLIENT_ID }}"       | npx wrangler secret put GOOGLE_CLIENT_ID --name "${NAME}"
-          echo "${{ secrets.GOOGLE_CLIENT_SECRET }}"   | npx wrangler secret put GOOGLE_CLIENT_SECRET --name "${NAME}"
+          echo "${{ secrets.OPENAI_API_KEY }}" | npx wrangler secret put OPENAI_API_KEY --name "${NAME}"
 
       - name: Comment preview URL
         uses: actions/github-script@v8

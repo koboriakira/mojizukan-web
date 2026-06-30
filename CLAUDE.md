@@ -129,7 +129,7 @@ bash bin/reset-db.sh --remote # リモート（ステージング）DB をリセ
 
 ### Claude Code の責務
 
-- **brief の生成・更新**: Claude Design セッションの前に `design/sessions/YYYYMMDD_HHmm_brief.md` を作成する。テンプレートは `design/_templates/brief.md`
+- **brief の生成・zip 化**: Claude Design セッションの前に `design/sessions/YYYYMMDD_HHmm_brief.md` を作成し、参照ファイル（前回 decisions、dc.html、glossary、ADR）と合わせて zip にまとめる。テンプレートは `design/_templates/brief.md`
 - **decisions の読み取り**: 実装時に `design/sessions/*_decisions.md` を読み、ユーザータイプ別フローと画面状態一覧に基づいて実装する
 - **E2E テストの設計**: decisions のユーザータイプ別フローから E2E テストケースを導出する
 - **brief への差分反映**: decisions の「brief からの変更点」を次セッションの brief に反映する

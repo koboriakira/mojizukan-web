@@ -57,10 +57,8 @@ sessions/
 - Claude Design との対話で brief の前提と異なる決定が出た場合、decisions の「brief からの変更点」に記録される
 - Claude Code は次の brief を生成するときにその変更点を反映する
 
-## 既存ファイル（レガシー）
+## dc.html の管理
 
-以下のファイルは新ワークフロー導入前に作成されたもの。参照は可能だが、今後は sessions/ を使う。
+機能領域ごとに1つの「最新」dc.html を維持する。Claude Design セッションで新しい dc.html が出たら、既存ファイルを上書きする（Git で差分が追える）。
 
-- `HANDOFF.md`, `HANDOFF-v2.md`: 旧形式のデザインハンドオフ
-- `LATEST-SPEC.md`: 最新仕様のスナップショット
-- `*-HANDOFF.md`: 機能別ハンドオフ
+旧ワークフローのファイル（HANDOFF.md、旧 dc.html 等）は Git 履歴に保存済み。

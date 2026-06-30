@@ -3,7 +3,7 @@ import type { AppEnv, StoryPage, StoryRecord, StoryResponse } from "../types";
 import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
 import { generateJsonOpenAI } from "../lib/ai";
-import { buildStoryPrompt } from "./story";
+import { buildStoryPrompt } from "../lib/story-prompt";
 
 export const stories = new Hono<AppEnv>();
 stories.use("/*", requireAuth);

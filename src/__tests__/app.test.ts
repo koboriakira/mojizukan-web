@@ -60,7 +60,7 @@ describe("clientApp", () => {
 
   it("復習モード (revealKind='review') のタイトルとバナーがある", () => {
     expect(clientApp).toContain("また かけたね");
-    expect(clientApp).toContain("この ことばは もう ずかんに いるよ");
+    expect(clientApp).toContain("もういちど はっけん しよう！");
     expect(clientApp).toContain("ひみつの ことば");
   });
 

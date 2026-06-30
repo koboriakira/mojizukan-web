@@ -210,7 +210,7 @@ export const clientApp = `
     for (var i = 0; i < ngWords.length; i++) {
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
-    if (DICTIONARY[word]) return 'dict';
+    if (STARTER_WORDS[word]) return 'dict';
     if (state.zukanWords.indexOf(word) !== -1) return 'rediscovery';
     if (state.prepared.indexOf(word) !== -1) return 'prepared';
     return 'ok';
@@ -223,7 +223,7 @@ export const clientApp = `
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
     if (state.zukanWords.indexOf(word) !== -1 || state.hakkenWords.indexOf(word) !== -1) return 'rediscovery';
-    if (DICTIONARY[word]) return 'dict';
+    if (STARTER_WORDS[word]) return 'dict';
     return 'hakken';
   }
 
@@ -389,7 +389,7 @@ export const clientApp = `
 
   function renderReveal(s) {
     var word = s.word || '';
-    var preset = DICTIONARY[word] || (window.__hakkenCache && window.__hakkenCache[word] ?
+    var preset = STARTER_WORDS[word] || (window.__hakkenCache && window.__hakkenCache[word] ?
       { desc: window.__hakkenCache[word].desc, image_url: window.__hakkenCache[word].image_url } :
       { desc: '', image_url: null });
     var kind = s.revealKind || 'normal';
@@ -470,7 +470,7 @@ export const clientApp = `
 
   function renderDetail(s) {
     var word = s.detailWord || '';
-    var preset = DICTIONARY[word] || { desc: '' };
+    var preset = STARTER_WORDS[word] || { desc: '' };
 
     return '<div style="flex:1;display:flex;flex-direction:column;padding-top:18px;">' +
       '<div style="display:flex;align-items:center;margin-bottom:8px;">' +
@@ -724,7 +724,7 @@ export const clientApp = `
     var cells = '';
     for (var i = 0; i < zukanList.length; i++) {
       var w = zukanList[i];
-      var preset = DICTIONARY[w] || {};
+      var preset = STARTER_WORDS[w] || {};
       var isSelected = sel.indexOf(w) !== -1;
       var border = isSelected ? '3px solid var(--accent3)' : '3px solid var(--cbd)';
       var hasHandwriting = s.handwriting && s.handwriting[w] && s.handwriting[w].length > 0;
@@ -1087,15 +1087,16 @@ export const clientApp = `
   }
 
   function nextWord() {
-    for (var i = 0; i < WORDPOOL.length; i++) {
-      if (state.zukanWords.indexOf(WORDPOOL[i]) === -1) return WORDPOOL[i];
+    var keys = Object.keys(STARTER_WORDS);
+    for (var i = 0; i < keys.length; i++) {
+      if (state.zukanWords.indexOf(keys[i]) === -1) return keys[i];
     }
-    return WORDPOOL[0];
+    return keys[0];
   }
 
   function mitsukePool(s) {
     var pool = [];
-    for (var w in DICTIONARY) {
+    for (var w in STARTER_WORDS) {
       if (s.zukanWords.indexOf(w) === -1 && s.prepared.indexOf(w) === -1) {
         pool.push(w);
       }

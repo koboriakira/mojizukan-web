@@ -164,13 +164,13 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await page.getByRole("button", { name: "たんけんに でる" }).click();
   await expect(page.getByText("たんけん")).toBeVisible();
 
-  // 再発見: zukanWords に「うし」が入っている状態で「うし」を組み立て → ブロックされず書く画面へ
+  // 再発見: zukanWords に「いぬ」が入っている状態で「いぬ」を組み立て → ブロックされず書く画面へ
   await page.evaluate(() => {
     (window as any).__setState({
       screen: "tanken",
-      tankenChars: ["う", "し"],
+      tankenChars: ["い", "ぬ"],
       tankenMsg: null,
-      zukanWords: ["うし"],
+      zukanWords: ["いぬ"],
     });
   });
   await page.getByRole("button", { name: /これを かく/ }).click();
@@ -185,11 +185,11 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await expect(page.getByText("もういちど はっけん しよう！")).toBeVisible();
   await expect(page.getByRole("button", { name: "たんけんに もどる" })).toBeVisible();
 
-  // 辞書語の正常フロー: 「うし」を zukanWords から外して再挑戦
+  // 辞書語の正常フロー: 「いぬ」を zukanWords から外して再挑戦
   await page.evaluate(() => {
     (window as any).__setState({
       screen: "tanken",
-      tankenChars: ["う", "し"],
+      tankenChars: ["い", "ぬ"],
       tankenMsg: null,
       zukanWords: [],
     });
@@ -198,7 +198,7 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   // CTA をクリック
   await page.getByRole("button", { name: /これを かく/ }).click();
   await expect(page.locator("canvas")).toBeVisible();
-  await expect(page.getByText("「うし」を なぞろう")).toBeVisible();
+  await expect(page.getByText("「いぬ」を なぞろう")).toBeVisible();
 
   // drew ゲートを解除して2文字分確定
   await page.evaluate(() => { (window as any).__setState({ drew: true }); });

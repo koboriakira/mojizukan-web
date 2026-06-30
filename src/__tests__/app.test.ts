@@ -45,7 +45,7 @@ describe("clientApp", () => {
   });
 
   it("Reveal 画面がプリセットデータ参照を含む", () => {
-    expect(clientApp).toContain("DICTIONARY[word]");
+    expect(clientApp).toContain("STARTER_WORDS[word]");
     expect(clientApp).toContain("ずかんに のったよ");
   });
 
@@ -130,9 +130,8 @@ describe("clientApp", () => {
     }
   });
 
-  it("DICTIONARY データが埋め込まれている", () => {
-    expect(clientApp).toContain("var DICTIONARY");
-    expect(clientApp).toContain("var WORDPOOL");
+  it("STARTER_WORDS データが埋め込まれている", () => {
+    expect(clientApp).toContain("var STARTER_WORDS");
   });
 
   it("Canvas の重複リスナー防止フラグが存在する", () => {

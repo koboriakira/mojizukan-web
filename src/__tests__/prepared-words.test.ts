@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { getRandomWords } from "../routes/hakken";
+import { getRandomWords } from "../services/kotoba-atsume/hakken-logic";
 import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
 
 const SAMPLE_WORDS = ["らいおん", "ぺんぎん", "いるか", "くじら", "かめ"];

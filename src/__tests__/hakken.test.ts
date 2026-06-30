@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { classifyWord, getRandomWords } from "../routes/hakken";
+import { classifyWord, getRandomWords } from "../services/kotoba-atsume/hakken-logic";
 import { isNgWord } from "../services/kotoba-atsume/ng-words";
 
 describe("isNgWord", () => {

@@ -2068,8 +2068,10 @@ export const clientApp = `
       return;
     }
     playSound('tap');
-    if (result === 'dict' || result === 'rediscovery') {
+    if (result === 'dict') {
       window.__goWriteWord(word, false, 'tanken');
+    } else if (result === 'rediscovery') {
+      window.__goWriteWord(word, false, 'review');
     } else {
       if (!state.authed && (state.hakkenWords || []).length >= 10) {
         setState({ sheet: 'signup', authReason: 'tanken' });

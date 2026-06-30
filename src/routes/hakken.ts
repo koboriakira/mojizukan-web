@@ -13,17 +13,17 @@ export const hakken = new Hono<AppEnv>();
 interface ClassifyInput {
   word: string;
   collected: string[];
-  seeded: string[];
+  prepared: string[];
   ngList?: string[];
 }
 
 interface RandomInput {
   n: number;
   collected: string[];
-  seeded: string[];
+  prepared: string[];
 }
 
-export function classifyWord({ word, collected, seeded, ngList }: ClassifyInput): ClassifyResponse {
+export function classifyWord({ word, collected, prepared, ngList }: ClassifyInput): ClassifyResponse {
   const effectiveNgList = ngList ?? [];
 
   if (effectiveNgList.some(ng => word.includes(ng)) || (ngList === undefined && isNgWord(word))) {
@@ -35,14 +35,14 @@ export function classifyWord({ word, collected, seeded, ngList }: ClassifyInput)
   if (collected.includes(word)) {
     return { status: 'dup', message: 'もう ずかんに あるよ' };
   }
-  if (seeded.includes(word)) {
-    return { status: 'seeded', message: 'もう しこみずみ' };
+  if (prepared.includes(word)) {
+    return { status: 'prepared', message: 'もう しこみずみ' };
   }
   return { status: 'ok', message: 'はっけんOK' };
 }
 
-export function getRandomWords({ n, collected, seeded }: RandomInput): string[] {
-  const excluded = new Set([...collected, ...seeded]);
+export function getRandomWords({ n, collected, prepared }: RandomInput): string[] {
+  const excluded = new Set([...collected, ...prepared]);
   const available = HAKKEN_WORDS.filter(w => !excluded.has(w));
   const shuffled = available.sort(() => Math.random() - 0.5);
   return shuffled.slice(0, n);
@@ -64,7 +64,7 @@ hakken.post("/classify", async (c) => {
   const result = classifyWord({
     word: body.word,
     collected: body.collected ?? [],
-    seeded: body.seeded ?? [],
+    prepared: body.prepared ?? [],
   });
   return c.json(result);
 });
@@ -72,10 +72,10 @@ hakken.post("/classify", async (c) => {
 hakken.get("/random", async (c) => {
   const n = parseInt(c.req.query("n") ?? "3", 10);
   const collectedParam = c.req.query("collected") ?? "";
-  const seededParam = c.req.query("seeded") ?? "";
+  const preparedParam = c.req.query("prepared") ?? "";
   const collected = collectedParam ? collectedParam.split(",") : [];
-  const seeded = seededParam ? seededParam.split(",") : [];
-  const words = getRandomWords({ n, collected, seeded });
+  const prepared = preparedParam ? preparedParam.split(",") : [];
+  const words = getRandomWords({ n, collected, prepared });
   return c.json({ words });
 });
 

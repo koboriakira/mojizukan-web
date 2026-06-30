@@ -52,12 +52,12 @@ export const CATEGORIES: CategoryInfo[] = [
   { name: "その他" },
 ];
 
-export type ClassifyStatus = 'ok' | 'dup' | 'seeded' | 'dict' | 'ng';
+export type ClassifyStatus = 'ok' | 'dup' | 'prepared' | 'dict' | 'ng';
 
 export interface ClassifyRequest {
   word: string;
   collected: string[];
-  seeded: string[];
+  prepared: string[];
 }
 
 export interface ClassifyResponse {

@@ -23,7 +23,7 @@ export const clientApp = `
       localStorage.setItem('mojizukan_entries', JSON.stringify(state.zukanWords));
       localStorage.setItem('mojizukan_discovered', JSON.stringify(state.hakkenWords));
       localStorage.setItem('mojizukan_handwriting', JSON.stringify(state.handwriting));
-      localStorage.setItem('mojizukan_seeded', JSON.stringify(state.seeded));
+      localStorage.setItem('mojizukan_prepared', JSON.stringify(state.prepared));
       localStorage.setItem('mojizukan_hakken_max', String(state.dailyHakkenMax));
       localStorage.setItem('mojizukan_hakken_used', String(state.dailyHakkenUsed));
       localStorage.setItem('mojizukan_hakken_date', new Date().toISOString().slice(0,10));
@@ -36,13 +36,13 @@ export const clientApp = `
       var entries = JSON.parse(localStorage.getItem('mojizukan_entries') || '[]');
       var discovered = JSON.parse(localStorage.getItem('mojizukan_discovered') || '[]');
       var handwriting = JSON.parse(localStorage.getItem('mojizukan_handwriting') || '{}');
-      var seeded = JSON.parse(localStorage.getItem('mojizukan_seeded') || '[]');
+      var prepared = JSON.parse(localStorage.getItem('mojizukan_prepared') || '[]');
       var hakkenMax = parseInt(localStorage.getItem('mojizukan_hakken_max') || '3', 10);
       var hakkenUsed = parseInt(localStorage.getItem('mojizukan_hakken_used') || '0', 10);
       var hakkenDate = localStorage.getItem('mojizukan_hakken_date') || '';
       var today = new Date().toISOString().slice(0,10);
       if (hakkenDate !== today) { hakkenUsed = 0; }
-      return { zukanWords: entries, hakkenWords: discovered, handwriting: handwriting, seeded: seeded, dailyHakkenMax: hakkenMax, dailyHakkenUsed: hakkenUsed };
+      return { zukanWords: entries, hakkenWords: discovered, handwriting: handwriting, prepared: prepared, dailyHakkenMax: hakkenMax, dailyHakkenUsed: hakkenUsed };
     } catch(e) {
       return {};
     }
@@ -80,7 +80,7 @@ export const clientApp = `
     authReason: null,
     imgStyle: 'ehon',
     mode: 'omakase',
-    seeded: saved.seeded || [],
+    prepared: saved.prepared || [],
     discovering: false,
     prepInput: '',
     prepSel: [],
@@ -223,7 +223,7 @@ export const clientApp = `
     }
     if (DICTIONARY[word]) return 'dict';
     if (state.zukanWords.indexOf(word) !== -1) return 'dup';
-    if (state.seeded.indexOf(word) !== -1) return 'seeded';
+    if (state.prepared.indexOf(word) !== -1) return 'prepared';
     return 'ok';
   }
 
@@ -461,15 +461,15 @@ export const clientApp = `
     '</button>' : '');
 
     var secretSection = '';
-    if (s.seeded && s.seeded.length > 0) {
+    if (s.prepared && s.prepared.length > 0) {
       secretSection += '<div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">' +
         '<span style="font-size:22px;">⭐</span>' +
-        '<span style="font-family:var(--fhead);font-weight:900;font-size:20px;color:#9c4d70;">ひみつの ことば ' + s.seeded.length + 'こ</span>' +
+        '<span style="font-family:var(--fhead);font-weight:900;font-size:20px;color:#9c4d70;">ひみつの ことば ' + s.prepared.length + 'こ</span>' +
       '</div>';
       secretSection += '<div style="font-size:14px;color:#9c4d70;margin-bottom:12px;">? を かいて はっけんしよう！</div>';
       secretSection += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:26px;">';
-      for (var si = 0; si < s.seeded.length; si++) {
-        var sw = s.seeded[si];
+      for (var si = 0; si < s.prepared.length; si++) {
+        var sw = s.prepared[si];
         secretSection += '<button onclick="window.__openSecret(\\'' + sw + '\\')" style="background:#fff;border:2px dashed #e3b8cd;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;cursor:pointer;">' +
           '<span style="font-size:38px;font-weight:900;color:#c2698f;line-height:1;">?</span>' +
           '<span style="font-size:11px;color:#c2698f;font-weight:700;">かいて みよう</span>' +
@@ -621,10 +621,10 @@ export const clientApp = `
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:10px;">🔍🧭 みつける と たんけん</div>' +
         '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">「みつける」は プリセット語を なぞって あつめるモード。「たんけん」は じぶんで ことばを つくって はっけんするモードです。</div>' +
-        (s.seeded && s.seeded.length > 0 ?
+        (s.prepared && s.prepared.length > 0 ?
           '<div style="background:#fff;border:1px solid var(--cbd);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
             '<span style="font-size:14px;color:var(--sub);font-weight:700;">⭐ 仕込み中の秘密のことば</span>' +
-            '<span style="font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent3);">' + (s.seeded ? s.seeded.length : 0) + '</span>' +
+            '<span style="font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent3);">' + (s.prepared ? s.prepared.length : 0) + '</span>' +
           '</div>'
         : '') +
         '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ 言葉を仕込む</button>' +
@@ -980,7 +980,7 @@ export const clientApp = `
     var statusMeta = {
       ok:     { text: '発見OK',              tc: '#9c4d70', bg: '#fbeaf1' },
       dup:    { text: 'すでに図鑑にあります', tc: '#c95835', bg: '#fff0e6' },
-      seeded: { text: '仕込み済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
+      prepared: { text: '仕込み済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
       dict:   { text: '辞書にあり・無料',    tc: '#3f7a52', bg: '#e6f1e9' },
       ng:     { text: 'この言葉は使えません', tc: '#b03a3a', bg: '#fbe6e6' }
     };
@@ -1230,8 +1230,8 @@ export const clientApp = `
 
   function mitsukePool(s) {
     var pool = [];
-    for (var i = 0; i < s.seeded.length; i++) {
-      pool.push(s.seeded[i]);
+    for (var i = 0; i < s.prepared.length; i++) {
+      pool.push(s.prepared[i]);
     }
     for (var w in DICTIONARY) {
       if (s.zukanWords.indexOf(w) === -1 && pool.indexOf(w) === -1) {
@@ -1634,7 +1634,7 @@ export const clientApp = `
     var pool = mitsukePool(state);
     if (pool.length > 0) {
       var pick = pool[Math.floor(Math.random() * pool.length)];
-      if (state.seeded.indexOf(pick) !== -1) {
+      if (state.prepared.indexOf(pick) !== -1) {
         window.__openSecret(pick);
       } else {
         window.__goWriteWord(pick, false, 'mitsuke');
@@ -1917,7 +1917,7 @@ export const clientApp = `
     var available = [];
     for (var i = 0; i < HAKKEN_WORDS.length; i++) {
       var w = HAKKEN_WORDS[i];
-      if (state.zukanWords.indexOf(w) === -1 && state.seeded.indexOf(w) === -1) {
+      if (state.zukanWords.indexOf(w) === -1 && state.prepared.indexOf(w) === -1) {
         var alreadyInSel = false;
         for (var j = 0; j < state.prepSel.length; j++) {
           if (state.prepSel[j].w === w) { alreadyInSel = true; break; }
@@ -1970,13 +1970,13 @@ export const clientApp = `
 
   window.__confirmSeed = function() {
     playSound('success');
-    var newSeeded = state.seeded.slice();
+    var newPrepared = state.prepared.slice();
     for (var i = 0; i < state.prepSel.length; i++) {
       if (state.prepSel[i].selected && state.prepSel[i].status === 'ok') {
-        newSeeded.push(state.prepSel[i].w);
+        newPrepared.push(state.prepSel[i].w);
       }
     }
-    setState({ seeded: newSeeded, prepSel: [], sheet: null, screen: 'parent' });
+    setState({ prepared: newPrepared, prepSel: [], sheet: null, screen: 'parent' });
   };
 
   window.__openSecret = function(word) {
@@ -2135,7 +2135,7 @@ export const clientApp = `
     var disc = state.hakkenWords.indexOf(word) === -1
       ? state.hakkenWords.concat([word])
       : state.hakkenWords;
-    var newSeeded = state.seeded.filter(function(w) { return w !== word; });
+    var newPrepared = state.prepared.filter(function(w) { return w !== word; });
     var tickets = consumeTicket !== false ? Math.max(0, (state.tickets || 0) - 1) : (state.tickets || 0);
 
     if (!window.__hakkenCache) window.__hakkenCache = {};
@@ -2148,7 +2148,7 @@ export const clientApp = `
       screen: 'reveal',
       zukanWords: col,
       hakkenWords: disc,
-      seeded: newSeeded,
+      prepared: newPrepared,
       tickets: tickets,
       lastHakken: true,
       discovering: false,

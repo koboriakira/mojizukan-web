@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv, ImageStyle } from "../types";
 import { requireAuth } from "../middleware/auth";
-import { getAllStyles, getStyleConfig } from "../lib/image-styles";
+import { getAllStyles, getStyleConfig } from "../services/ai-generation/image-styles";
 
 const VALID_STYLES: ImageStyle[] = ["honwaka", "ehon", "pop", "watercolor", "zukan"];
 

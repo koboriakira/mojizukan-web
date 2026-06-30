@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { hashPassword, verifyPassword } from "../lib/password";
+import { hashPassword, verifyPassword } from "../services/account/password";
 
 describe("password", () => {
   it("hashPassword がソルト付きハッシュ文字列を返す", async () => {

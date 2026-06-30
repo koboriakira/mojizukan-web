@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateToken, SESSION_MAX_AGE_SEC } from "../lib/session";
+import { generateToken, SESSION_MAX_AGE_SEC } from "../services/account/session";
 
 describe("session", () => {
   it("generateToken が32バイトの hex 文字列を返す", () => {

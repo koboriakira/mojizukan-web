@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractJson } from "../lib/ai";
+import { extractJson } from "../services/ai-generation/ai";
 
 describe("extractJson", () => {
   it("素の JSON 文字列をパースできる", () => {

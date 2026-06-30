@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import type { AppEnv } from "../types";
-import { hashPassword } from "../lib/password";
-import { createSession, SESSION_MAX_AGE_SEC } from "../lib/session";
-import { getTicketBalance, grantTicket } from "../lib/tickets";
+import { hashPassword } from "../services/account/password";
+import { createSession, SESSION_MAX_AGE_SEC } from "../services/account/session";
+import { getTicketBalance, grantTicket } from "../services/account/tickets";
 
 export const dev = new Hono<AppEnv>();
 
@@ -65,7 +65,7 @@ dev.get("/auto-logout", async (c) => {
 
   const { deleteCookie } = await import("hono/cookie");
   const { getCookie } = await import("hono/cookie");
-  const { deleteSession } = await import("../lib/session");
+  const { deleteSession } = await import("../services/account/session");
 
   const sessionToken = getCookie(c, "session");
   if (sessionToken) {

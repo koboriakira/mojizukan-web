@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { buildR2Key } from "../lib/image";
-import { buildImagePrompt, getStyleConfig, getAllStyles } from "../lib/image-styles";
+import { buildR2Key } from "../services/ai-generation/image";
+import { buildImagePrompt, getStyleConfig, getAllStyles } from "../services/ai-generation/image-styles";
 
 describe("みつける・たんけんの画像生成", () => {
   describe("buildImagePrompt", () => {

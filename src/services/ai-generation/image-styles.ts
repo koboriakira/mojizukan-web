@@ -1,4 +1,4 @@
-import type { ImageStyle } from "../types";
+import type { ImageStyle } from "../../types";
 
 interface StyleConfig {
   label: string;

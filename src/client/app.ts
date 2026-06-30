@@ -516,15 +516,15 @@ export const clientApp = `
         '<div style="font-size:16px;color:var(--sub);font-weight:700;">習得数: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + totalCount + '</span> 個</div>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:10px;">🔍🧭 みつける と たんけん</div>' +
-        '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">「みつける」で出る言葉を事前に準備できます。未準備の場合は自動で選ばれます。</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:10px;">🔍 「みつける」ことばの準備</div>' +
+        '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">「みつける」で出る言葉を事前に登録できます。未登録の場合は自動で選ばれます。</div>' +
         (s.prepared && s.prepared.length > 0 ?
           '<div style="background:#fff;border:1px solid var(--cbd);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
-            '<span style="font-size:14px;color:var(--sub);font-weight:700;">準備中のことば</span>' +
+            '<span style="font-size:14px;color:var(--sub);font-weight:700;">登録中のことば</span>' +
             '<span style="font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent3);">' + (s.prepared ? s.prepared.length : 0) + '</span>' +
           '</div>'
         : '') +
-        '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ 言葉を仕込む</button>' +
+        '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ 言葉を登録する</button>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ 設定</div>' +
@@ -868,7 +868,7 @@ export const clientApp = `
     var statusMeta = {
       ok:     { text: '発見OK',              tc: '#9c4d70', bg: '#fbeaf1' },
       rediscovery: { text: 'もういちど はっけん！', tc: '#2d7a2d', bg: '#e6f5e6' },
-      prepared: { text: '仕込み済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
+      prepared: { text: '登録済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
       dict:   { text: '辞書にあり・無料',    tc: '#3f7a52', bg: '#e6f1e9' },
       ng:     { text: 'この言葉は使えません', tc: '#b03a3a', bg: '#fbe6e6' }
     };
@@ -911,8 +911,8 @@ export const clientApp = `
         '</div>' +
       '</div>' +
       '<div style="position:sticky;bottom:0;background:var(--bg);padding:16px 18px 8px;">' +
-        '<button onclick="window.__openSeedConfirm()" style="width:100%;min-height:78px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">⭐ ' + okCount + '個 仕込む</button>' +
-        '<div style="text-align:center;font-size:12px;color:var(--sub);margin-top:8px;padding-bottom:12px;">仕込んだ言葉は ずかんに『?』で ならびます</div>' +
+        '<button onclick="window.__openSeedConfirm()" style="width:100%;min-height:78px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">⭐ ' + okCount + '個 登録する</button>' +
+        '<div style="text-align:center;font-size:12px;color:var(--sub);margin-top:8px;padding-bottom:12px;">登録した言葉は「みつける」で出題されます</div>' +
       '</div>' +
     '</div>';
   }
@@ -1031,15 +1031,15 @@ export const clientApp = `
         '<div class="sheet" onclick="event.stopPropagation()">' +
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
           '<div style="text-align:center;font-size:36px;">⭐🎟️</div>' +
-          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-top:8px;">' + selWords.length + '個 仕込みますか？</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-top:8px;">' + selWords.length + '個 登録しますか？</div>' +
           '<div style="display:flex;flex-wrap:wrap;justify-content:center;margin:16px 0;">' + wList + '</div>' +
           '<div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:8px;">チケットは…図鑑にできた時（生成成功時）に 1枚ずつ</div>' +
           '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent);margin-bottom:16px;">いま 🎟️ ' + (s.tickets || 0) + '</div>' +
           '<div style="display:flex;gap:12px;">' +
-            '<button onclick="window.__confirmSeed()" style="flex:1;min-height:64px;border-radius:18px;background:var(--accent3);color:#fff;font-size:18px;font-weight:900;box-shadow:0 4px 0 var(--accent3d);">⭐ 仕込む</button>' +
+            '<button onclick="window.__confirmSeed()" style="flex:1;min-height:64px;border-radius:18px;background:var(--accent3);color:#fff;font-size:18px;font-weight:900;box-shadow:0 4px 0 var(--accent3d);">⭐ 登録する</button>' +
             '<button onclick="window.__closeSheet()" style="flex:1;min-height:64px;border-radius:18px;background:var(--locked);color:var(--sub);font-size:18px;box-shadow:none;">やめる</button>' +
           '</div>' +
-          '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:12px;line-height:1.5;">仕込み・支払いは保護者メニューの中だけ。お子さまは課金画面に触れません</div>' +
+          '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:12px;line-height:1.5;">登録・支払いは保護者メニューの中だけ。お子さまは課金画面に触れません</div>' +
         '</div>';
     }
     if (s.sheet === 'style') {

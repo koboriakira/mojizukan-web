@@ -58,7 +58,7 @@ test("書く → 図鑑登録 → 詳細表示", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("保護者ゲート → メニュー → はっけん準備 → 仕込み", async ({
+test("保護者ゲート → メニュー → はっけん準備 → 登録", async ({
   page,
 }) => {
   const errors = collectErrors(page);
@@ -75,11 +75,11 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   });
   await expect(page.getByText("学習の記録")).toBeVisible();
 
-  // みつける・たんけんカード
-  await expect(page.getByText("みつける と たんけん")).toBeVisible();
+  // みつけることばの準備カード
+  await expect(page.getByText("「みつける」ことばの準備")).toBeVisible();
 
   // 未登録 → signup シート
-  await page.getByRole("button", { name: "言葉を仕込む" }).click();
+  await page.getByRole("button", { name: "言葉を登録する" }).click();
   await expect(page.getByText("じぶんの 図鑑を とっておこう")).toBeVisible();
 
   // 登録をモック（実際のAPI呼び出しはE2Eの範囲外）
@@ -93,8 +93,8 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   });
   await expect(page.getByText("学習の記録")).toBeVisible();
 
-  // 登録済みなので今度は prep へ遷移
-  await page.getByRole("button", { name: "言葉を仕込む" }).click();
+  // 認証済みなので今度は prep へ遷移
+  await page.getByRole("button", { name: "言葉を登録する" }).click();
 
   // prep 画面へ
   await expect(
@@ -102,17 +102,17 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   ).toBeVisible();
   await expect(page.getByText("🎟️ 5")).toBeVisible();
 
-  // 手動入力で仕込み
+  // 手動入力で登録
   await page.locator("#prep-input").fill("らいおん");
   await page.getByRole("button", { name: "＋" }).click();
   await expect(page.getByText("発見OK").first()).toBeVisible();
 
-  // 仕込み（prep 画面の「⭐ N こ 仕込む」ボタン）
-  await page.getByRole("button", { name: /個 仕込む/ }).click();
-  await expect(page.getByText("個 仕込みますか？")).toBeVisible();
+  // 登録（prep 画面の「⭐ N こ 登録する」ボタン）
+  await page.getByRole("button", { name: /個 登録する/ }).click();
+  await expect(page.getByText("個 登録しますか？")).toBeVisible();
 
-  // 確認して確定（prepconfirm シートの「⭐ 仕込む」ボタン）
-  await page.getByRole("button", { name: "⭐ 仕込む" }).click();
+  // 確認して確定（prepconfirm シートの「⭐ 登録する」ボタン）
+  await page.getByRole("button", { name: "⭐ 登録する" }).click();
   await expect(page.getByText("学習の記録")).toBeVisible();
 
   expect(errors).toEqual([]);

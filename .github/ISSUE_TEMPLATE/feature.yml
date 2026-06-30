@@ -40,3 +40,15 @@ body:
         - やらないこと2
     validations:
       required: false
+  - type: dropdown
+    id: context
+    attributes:
+      label: 影響する境界コンテキスト
+      description: docs/strategic/context-map.md 参照
+      multiple: true
+      options:
+        - ことばあつめ
+        - おはなし
+        - AI生成
+        - アカウント・経済
+        - わからない

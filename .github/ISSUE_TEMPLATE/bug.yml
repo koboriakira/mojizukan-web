@@ -1,0 +1,41 @@
+name: バグ報告
+description: 期待と異なる動作の報告
+labels: ["bug"]
+body:
+  - type: textarea
+    id: actual
+    attributes:
+      label: 起きたこと
+      description: 何が起きたか（スクリーンショットがあれば添付）
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する動作
+      description: 本来どうなるべきか
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      placeholder: |
+        1. 〜を開く
+        2. 〜をタップ
+        3. 〜が表示される
+
+  - type: dropdown
+    id: context
+    attributes:
+      label: 影響する境界コンテキスト
+      description: docs/strategic/context-map.md 参照
+      multiple: true
+      options:
+        - ことばあつめ
+        - おはなし
+        - AI生成
+        - アカウント・経済
+        - わからない

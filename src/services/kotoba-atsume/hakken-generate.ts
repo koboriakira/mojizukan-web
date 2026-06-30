@@ -6,7 +6,6 @@ import { generateJsonOpenAI } from "../ai-generation/ai";
 import { generateImage } from "../ai-generation/image";
 import { getCache, setCache } from "../ai-generation/shared-cache";
 import { DICTIONARY_WORDS } from "./dictionary-words";
-import { canHakkenToday, incrementDailyHakkenUsed } from "./daily-limit";
 
 export interface HakkenGenerateDeps {
   db: D1Database;
@@ -35,10 +34,6 @@ export async function executeHakkenGenerate(
   const isDictWord = DICTIONARY_WORDS.includes(word);
 
   if (!isRediscovery && !isDictWord) {
-    const canToday = await canHakkenToday(db, userId);
-    if (!canToday) {
-      throw new AppError(429, "きょうの たんけんは おしまい！");
-    }
     const balance = await getTicketBalance(db, userId);
     if (!canSpendTicket(balance)) {
       throw new AppError(402, "チケットが足りません");
@@ -94,9 +89,6 @@ export async function executeHakkenGenerate(
     .bind(userId, word, generated.description, imageUrl)
     .run();
 
-  if (!isRediscovery && !isDictWord) {
-    await incrementDailyHakkenUsed(db, userId);
-  }
   if (!isRediscovery) {
     await spendTicket(db, userId, `はっけん生成: ${word}`);
   }

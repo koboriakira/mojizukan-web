@@ -24,9 +24,6 @@ export const clientApp = `
       localStorage.setItem('mojizukan_discovered', JSON.stringify(state.hakkenWords));
       localStorage.setItem('mojizukan_handwriting', JSON.stringify(state.handwriting));
       localStorage.setItem('mojizukan_prepared', JSON.stringify(state.prepared));
-      localStorage.setItem('mojizukan_hakken_max', String(state.dailyHakkenMax));
-      localStorage.setItem('mojizukan_hakken_used', String(state.dailyHakkenUsed));
-      localStorage.setItem('mojizukan_hakken_date', new Date().toISOString().slice(0,10));
     } catch(e) {}
   }
 
@@ -37,12 +34,7 @@ export const clientApp = `
       var discovered = JSON.parse(localStorage.getItem('mojizukan_discovered') || '[]');
       var handwriting = JSON.parse(localStorage.getItem('mojizukan_handwriting') || '{}');
       var prepared = JSON.parse(localStorage.getItem('mojizukan_prepared') || '[]');
-      var hakkenMax = parseInt(localStorage.getItem('mojizukan_hakken_max') || '3', 10);
-      var hakkenUsed = parseInt(localStorage.getItem('mojizukan_hakken_used') || '0', 10);
-      var hakkenDate = localStorage.getItem('mojizukan_hakken_date') || '';
-      var today = new Date().toISOString().slice(0,10);
-      if (hakkenDate !== today) { hakkenUsed = 0; }
-      return { zukanWords: entries, hakkenWords: discovered, handwriting: handwriting, prepared: prepared, dailyHakkenMax: hakkenMax, dailyHakkenUsed: hakkenUsed };
+      return { zukanWords: entries, hakkenWords: discovered, handwriting: handwriting, prepared: prepared };
     } catch(e) {
       return {};
     }
@@ -88,8 +80,6 @@ export const clientApp = `
     tankenChars: [],
     tankenMsg: null,
     tankenMode: false,
-    dailyHakkenMax: saved.dailyHakkenMax || 3,
-    dailyHakkenUsed: saved.dailyHakkenUsed || 0,
     limitWord: '',
     drew: false,
     genCached: false,
@@ -313,9 +303,7 @@ export const clientApp = `
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">' +
           '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
           '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--accent);">🧭 たんけん</div>' +
-          '<div style="width:56px;display:flex;justify-content:center;gap:4px;">' +
-            (function() { var pips = ''; for (var pi = 0; pi < s.dailyHakkenMax; pi++) { pips += '<div style="width:10px;height:10px;border-radius:50%;background:' + (pi < s.dailyHakkenUsed ? 'var(--accent)' : 'var(--locked)') + ';"></div>'; } return pips; })() +
-          '</div>' +
+          '<div style="width:56px;"></div>' +
         '</div>' +
         '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:8px;">' + slots + '</div>' +
         '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:14px;">' +
@@ -628,15 +616,6 @@ export const clientApp = `
           '</div>'
         : '') +
         '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ 言葉を仕込む</button>' +
-        '<div style="background:#f5f0e8;border-radius:14px;padding:14px 16px;margin-bottom:8px;">' +
-          '<div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">🧭 たんけんの1日の回数</div>' +
-          '<div style="display:flex;align-items:center;justify-content:center;gap:16px;">' +
-            '<button onclick="window.__decDaily()" style="width:44px;height:44px;border-radius:50%;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 0 rgba(0,0,0,.06);color:var(--ink);">−</button>' +
-            '<div style="font-family:var(--fhead);font-weight:900;font-size:36px;color:var(--accent);min-width:48px;text-align:center;">' + (s.dailyHakkenMax || 3) + '</div>' +
-            '<button onclick="window.__incDaily()" style="width:44px;height:44px;border-radius:50%;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 0 rgba(0,0,0,.06);color:var(--ink);">＋</button>' +
-          '</div>' +
-          '<div style="font-size:12px;color:var(--sub);text-align:center;margin-top:8px;">0にするとたんけんをお休みできます</div>' +
-        '</div>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ 設定</div>' +
@@ -1882,16 +1861,6 @@ export const clientApp = `
     setState({ screen: 'parent', sheet: null });
   };
 
-  window.__incDaily = function() {
-    playSound('tap');
-    setState({ dailyHakkenMax: Math.min(9, (state.dailyHakkenMax || 3) + 1) });
-  };
-
-  window.__decDaily = function() {
-    playSound('tap');
-    setState({ dailyHakkenMax: Math.max(0, (state.dailyHakkenMax || 3) - 1) });
-  };
-
   window.__goPrep = function() {
     playSound('tap');
     if (!state.authed) {
@@ -2079,7 +2048,7 @@ export const clientApp = `
         setState({ sheet: 'signup', authReason: 'tanken' });
         return;
       }
-      if (state.authed && (state.dailyHakkenUsed >= state.dailyHakkenMax || (state.tickets || 0) <= 0)) {
+      if (state.authed && (state.tickets || 0) <= 0) {
         setState({ screen: 'tankenlimit', limitWord: word });
         return;
       }
@@ -2141,9 +2110,6 @@ export const clientApp = `
     if (!window.__hakkenCache) window.__hakkenCache = {};
     window.__hakkenCache[word] = { desc: desc, image_url: imageUrl || null };
 
-    var used = state.dailyHakkenUsed;
-    if (state.tankenMode) { used = used + 1; }
-
     setState({
       screen: 'reveal',
       zukanWords: col,
@@ -2152,7 +2118,6 @@ export const clientApp = `
       tickets: tickets,
       lastHakken: true,
       discovering: false,
-      dailyHakkenUsed: used,
       tankenMode: false
     });
   };

@@ -164,7 +164,7 @@ describe("clientApp", () => {
 
   it("詳細画面が PRESETS データ参照を含む", () => {
     expect(clientApp).toContain("s.detailWord");
-    expect(clientApp).toContain("preset.emoji");
+    expect(clientApp).toContain("preset.desc");
   });
 
   it("__openDetail グローバル関数が定義されている", () => {

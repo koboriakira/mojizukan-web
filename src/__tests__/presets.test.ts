@@ -20,8 +20,7 @@ describe("clientPresets", () => {
     }
   });
 
-  it("各エントリに emoji, cat, desc が含まれる", () => {
-    expect(clientPresets).toContain("emoji:");
+  it("各エントリに cat, desc が含まれる", () => {
     expect(clientPresets).toContain("cat:");
     expect(clientPresets).toContain("desc:");
   });

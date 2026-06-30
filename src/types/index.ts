@@ -5,7 +5,6 @@ export interface ZukanEntry {
   is_discovered: number;
   image_url: string | null;
   description: string | null;
-  emoji: string | null;
   created_at: string;
 }
 
@@ -20,7 +19,6 @@ export interface DiscoverEntryRequest {
 
 export interface PresetWord {
   word: string;
-  emoji: string;
   category: WordCategory;
   description: string;
 }
@@ -39,20 +37,19 @@ export type WordCategory =
 
 export interface CategoryInfo {
   name: WordCategory;
-  emoji: string;
 }
 
 export const CATEGORIES: CategoryInfo[] = [
-  { name: "どうぶつ", emoji: "🐾" },
-  { name: "たべもの", emoji: "🍎" },
-  { name: "のりもの", emoji: "🚗" },
-  { name: "しぜん", emoji: "🌍" },
-  { name: "むし", emoji: "🐛" },
-  { name: "からだ", emoji: "🖐️" },
-  { name: "いえのもの", emoji: "🏠" },
-  { name: "ふく", emoji: "👒" },
-  { name: "いろ", emoji: "🎨" },
-  { name: "その他", emoji: "📦" },
+  { name: "どうぶつ" },
+  { name: "たべもの" },
+  { name: "のりもの" },
+  { name: "しぜん" },
+  { name: "むし" },
+  { name: "からだ" },
+  { name: "いえのもの" },
+  { name: "ふく" },
+  { name: "いろ" },
+  { name: "その他" },
 ];
 
 export type ImageStyle =

@@ -110,6 +110,16 @@ bash bin/reset-db.sh --remote # リモート（ステージング）DB をリセ
 
 全テーブルを DROP してマイグレーションを再適用する。リモート実行時は確認プロンプトあり。
 
+## ドメインドキュメント
+
+ドメイン設計の詳細は `docs/` 以下を参照。コード変更前に関連ドキュメントを確認すること。
+
+- 用語定義: `docs/glossary.md`
+- 設計判断の記録: `docs/adr/`（ADR）— Accepted な ADR で否定された選択肢を再提案しない
+- コンテキスト境界: `docs/strategic/context-map.md`
+- 各コンテキストの概要: `docs/contexts/<ctx>/canvas.md`
+- 集約の不変条件: `docs/contexts/kotoba-atsume/aggregates/zukan-entry.md`
+
 ## Issue 実装フロー
 
 GitHub Issue の機能実装を開始するときは `/dev-pipeline start <Issue番号>` を実行する。

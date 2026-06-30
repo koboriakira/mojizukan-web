@@ -35,10 +35,14 @@ function createMockD1(): D1Database {
           return null;
         },
         run: async (): Promise<D1Result> => {
-          if (/UPDATE.*user_settings.*daily_hakken_max/.test(sql)) {
-            const [max, userId] = args as [number, string];
+          if (/INSERT INTO user_settings.*daily_hakken_max/.test(sql)) {
+            const [userId, max] = args as [string, number];
             const row = settings.find(s => s.id === userId);
-            if (row) row.daily_hakken_max = max;
+            if (row) {
+              row.daily_hakken_max = max;
+            } else {
+              settings.push({ id: userId, daily_hakken_max: max });
+            }
           }
           if (/INSERT.*daily_hakken_usage/.test(sql)) {
             const [userId, date] = args as [string, string];

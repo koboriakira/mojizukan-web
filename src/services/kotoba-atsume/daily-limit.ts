@@ -12,8 +12,8 @@ export async function setDailyHakkenMax(db: D1Database, userId: string, max: num
     throw new Error("daily_hakken_max は 0〜9 の範囲で設定してください");
   }
   await db.prepare(
-    "UPDATE user_settings SET daily_hakken_max = ? WHERE id = ?"
-  ).bind(max, userId).run();
+    "INSERT INTO user_settings (id, daily_hakken_max) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET daily_hakken_max = excluded.daily_hakken_max"
+  ).bind(userId, max).run();
 }
 
 export async function getDailyHakkenUsed(db: D1Database, userId: string): Promise<number> {

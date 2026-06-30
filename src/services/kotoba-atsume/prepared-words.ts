@@ -1,3 +1,5 @@
+import { AppError } from "../../middleware/error-handler";
+
 export interface PreparedWord {
   id: number;
   user_id: string;
@@ -10,7 +12,7 @@ export async function addPreparedWord(db: D1Database, userId: string, word: stri
     "SELECT id FROM prepared_words WHERE user_id = ? AND word = ?"
   ).bind(userId, word).first();
   if (existing) {
-    throw new Error("この言葉は既に仕込み済みです");
+    throw new AppError(409, "この言葉は既に仕込み済みです");
   }
   await db.prepare(
     "INSERT INTO prepared_words (user_id, word) VALUES (?, ?)"

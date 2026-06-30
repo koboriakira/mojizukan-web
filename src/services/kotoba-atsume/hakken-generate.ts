@@ -28,6 +28,23 @@ export async function executeHakkenGenerate(
 ): Promise<HakkenGenerateResult> {
   const { db, apiKey, bucket } = deps;
 
+  const existing = await db.prepare(
+    "SELECT word FROM hakken_entries WHERE user_id = ? AND word = ?"
+  ).bind(userId, word).first();
+  const isRediscovery = existing !== null;
+  const isDictWord = DICTIONARY_WORDS.includes(word);
+
+  if (!isRediscovery && !isDictWord) {
+    const canToday = await canHakkenToday(db, userId);
+    if (!canToday) {
+      throw new AppError(429, "きょうの たんけんは おしまい！");
+    }
+    const balance = await getTicketBalance(db, userId);
+    if (!canSpendTicket(balance)) {
+      throw new AppError(402, "チケットが足りません");
+    }
+  }
+
   const settings = await db.prepare(
     "SELECT image_style FROM user_settings WHERE id = ?"
   ).bind(userId).first<{ image_style: string }>();
@@ -71,34 +88,16 @@ export async function executeHakkenGenerate(
     await setCache(db, word, imageStyle, imageUrl, generated.description);
   }
 
-  const existing = await db.prepare(
-    "SELECT word FROM hakken_entries WHERE user_id = ? AND word = ?"
-  ).bind(userId, word).first();
-  const isRediscovery = existing !== null;
-
-  const isDictWord = DICTIONARY_WORDS.includes(word);
-
-  if (!isRediscovery && !isDictWord) {
-    const canToday = await canHakkenToday(db, userId);
-    if (!canToday) {
-      throw new AppError(429, "きょうの たんけんは おしまい！");
-    }
-    const balance = await getTicketBalance(db, userId);
-    if (!canSpendTicket(balance)) {
-      throw new AppError(402, "チケットが足りません");
-    }
-  }
-
   await db.prepare(
     "INSERT OR REPLACE INTO hakken_entries (user_id, word, description, image_url) VALUES (?, ?, ?, ?)"
   )
     .bind(userId, word, generated.description, imageUrl)
     .run();
 
+  if (!isRediscovery && !isDictWord) {
+    await incrementDailyHakkenUsed(db, userId);
+  }
   if (!isRediscovery) {
-    if (!isDictWord) {
-      await incrementDailyHakkenUsed(db, userId);
-    }
     await spendTicket(db, userId, `はっけん生成: ${word}`);
   }
 

@@ -157,8 +157,8 @@ hakken.get("/daily-limit", requireAuth, async (c) => {
 
 hakken.put("/daily-limit", requireAuth, async (c) => {
   const body = await c.req.json<{ max: number }>();
-  if (body.max === undefined || body.max === null) {
-    throw new AppError(400, "max は必須です");
+  if (typeof body.max !== "number" || !Number.isInteger(body.max)) {
+    throw new AppError(400, "max は整数で指定してください");
   }
   const userId = c.var.userId!;
   await setDailyHakkenMax(c.env.DB, userId, body.max);

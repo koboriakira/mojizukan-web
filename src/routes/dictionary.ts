@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { getAllDictionaryWords, getDictionaryWordsByCategory } from "../services/kotoba-atsume/word-dictionary";
-import { CATEGORIES } from "../types";
+import { CATEGORIES } from "../services/kotoba-atsume/types";
 
 export const dictionary = new Hono<AppEnv>();
 

@@ -1,14 +1,12 @@
 import { Hono } from "hono";
-import type { AppEnv, ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenGenerateRequest, HakkenGenerateResponse, ImageStyle } from "../types";
+import type { AppEnv } from "../types";
+import type { ClassifyRequest, ClassifyResponse, HakkenGenerateRequest } from "../services/kotoba-atsume/types";
 import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../services/kotoba-atsume/ng-words";
 import { DICTIONARY_WORDS } from "../services/kotoba-atsume/dictionary-words";
 import { HAKKEN_WORDS } from "../services/kotoba-atsume/hakken-words";
-import { spendTicket, getTicketBalance, canSpendTicket } from "../services/account/tickets";
-import { generateJsonOpenAI } from "../services/ai-generation/ai";
-import { generateImage } from "../services/ai-generation/image";
-import { getCache, setCache } from "../services/ai-generation/shared-cache";
+import { executeHakkenGenerate } from "../services/kotoba-atsume/hakken-generate";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -88,70 +86,11 @@ hakken.post("/generate", requireAuth, async (c) => {
     throw new AppError(400, "word は必須です");
   }
 
-  const settings = await c.env.DB.prepare(
-    "SELECT image_style FROM user_settings WHERE id = ?"
-  ).bind(userId).first<{ image_style: string }>();
-  const imageStyle = (settings?.image_style || "ehon") as ImageStyle;
+  const result = await executeHakkenGenerate(
+    { db: c.env.DB, apiKey: c.env.OPENAI_API_KEY, bucket: c.env.IMAGES },
+    userId,
+    body.word,
+  );
 
-  const cached = await getCache(c.env.DB, body.word, imageStyle);
-
-  let generated: HakkenGenerateResponse;
-  let imageUrl: string;
-
-  if (cached) {
-    generated = { description: cached.description };
-    imageUrl = cached.image_url;
-  } else {
-    const prompt = `「${body.word}」についての子ども向け図鑑エントリを作ってください。
-
-ルール:
-- 3〜4歳の子どもが理解できるやさしい言葉で説明する
-- ひらがなを中心に使う
-- ですます調・〜よ・〜ね のトーンで書く
-- 2文で書く（1文目と2文目を「。」で区切る）
-
-出力はJSON形式のみで返してください。コードブロックや説明文は不要です。
-{"description":"説明文（2文）"}`;
-
-    [generated, imageUrl] = await Promise.all([
-      generateJsonOpenAI<HakkenGenerateResponse>({
-        apiKey: c.env.OPENAI_API_KEY,
-        prompt,
-        model: "gpt-5.4",
-      }),
-      generateImage({
-        apiKey: c.env.OPENAI_API_KEY,
-        word: body.word,
-        userId,
-        bucket: c.env.IMAGES,
-        style: imageStyle,
-      }),
-    ]);
-
-    await setCache(c.env.DB, body.word, imageStyle, imageUrl, generated.description);
-  }
-
-  const existing = await c.env.DB.prepare(
-    "SELECT word FROM hakken_entries WHERE user_id = ? AND word = ?"
-  ).bind(userId, body.word).first();
-  const isRediscovery = existing !== null;
-
-  if (!isRediscovery) {
-    const balance = await getTicketBalance(c.env.DB, userId);
-    if (!canSpendTicket(balance)) {
-      throw new AppError(402, "チケットが足りません");
-    }
-  }
-
-  await c.env.DB.prepare(
-    "INSERT OR REPLACE INTO hakken_entries (user_id, word, description, image_url) VALUES (?, ?, ?, ?)"
-  )
-    .bind(userId, body.word, generated.description, imageUrl)
-    .run();
-
-  if (!isRediscovery) {
-    await spendTicket(c.env.DB, userId, `はっけん生成: ${body.word}`);
-  }
-
-  return c.json({ ...generated, image_url: imageUrl, cached: !!cached, rediscovery: isRediscovery });
+  return c.json(result);
 });

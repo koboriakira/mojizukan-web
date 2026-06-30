@@ -1,5 +1,6 @@
 import { Hono } from "hono";
-import type { AppEnv, ImageStyle } from "../types";
+import type { AppEnv } from "../types";
+import type { ImageStyle } from "../services/ai-generation/types";
 import { requireAuth } from "../middleware/auth";
 import { getAllStyles, getStyleConfig } from "../services/ai-generation/image-styles";
 

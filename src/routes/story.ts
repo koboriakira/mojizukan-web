@@ -1,5 +1,6 @@
 import { Hono } from "hono";
-import type { AppEnv, StoryRequest, StoryResponse, StoryPage } from "../types";
+import type { AppEnv } from "../types";
+import type { StoryRequest, StoryResponse, StoryPage } from "../services/ohanashi/types";
 import { AppError } from "../middleware/error-handler";
 import { generateJsonOpenAI, extractJson } from "../services/ai-generation/ai";
 import { buildStoryPrompt } from "../services/ohanashi/story-prompt";

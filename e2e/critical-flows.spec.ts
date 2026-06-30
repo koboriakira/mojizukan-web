@@ -42,6 +42,19 @@ test("書く → 図鑑登録 → 詳細表示", async ({ page }) => {
     page.locator("div").filter({ hasText: /^て$/ }).first()
   ).toBeVisible();
 
+  // ゲスト状態でたんけん → 辞書にない新語を組み立て → 認証ゲート（登録シート）
+  await page.evaluate(() => {
+    (window as any).__setState({
+      screen: "tanken",
+      authed: false,
+      tankenChars: ["ぷ", "る"],
+      tankenMsg: null,
+      hakkenWords: Array.from({ length: 10 }, (_, i) => `word${i}`),
+    });
+  });
+  await page.getByRole("button", { name: /これを かく/ }).click();
+  await expect(page.getByText("とうろくして つづきを あそぼう")).toBeVisible();
+
   expect(errors).toEqual([]);
 });
 
@@ -153,14 +166,25 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await page.getByRole("button", { name: "たんけんに でる" }).click();
   await expect(page.getByText("たんけん")).toBeVisible();
 
-  // 「て」を入力（辞書語・1文字なので2文字以上必要 → 一旦「て」+「ー」で伸ばす）
-  // PRESETS に「て」があるので辞書語として扱われる
-  // 代わりに「うし」を組み立てる（PRESETS に存在する辞書語）
+  // 重複チェック: zukanWords に「うし」が入っている状態で「うし」を組み立て
   await page.evaluate(() => {
     (window as any).__setState({
       screen: "tanken",
       tankenChars: ["う", "し"],
       tankenMsg: null,
+      zukanWords: ["うし"],
+    });
+  });
+  await page.getByRole("button", { name: /これを かく/ }).click();
+  await expect(page.getByText("もう ずかんに あるよ")).toBeVisible();
+
+  // 辞書語の正常フロー: 「うし」を zukanWords から外して再挑戦
+  await page.evaluate(() => {
+    (window as any).__setState({
+      screen: "tanken",
+      tankenChars: ["う", "し"],
+      tankenMsg: null,
+      zukanWords: [],
     });
   });
 

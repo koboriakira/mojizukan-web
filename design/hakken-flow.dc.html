@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#fdf6ec}
+  *{box-sizing:border-box}
+</style>
+</helmet>
+
+<div style="font-family:'Zen Kaku Gothic New',system-ui,sans-serif;background:#fdf6ec;color:#2a241d;padding:40px 32px 80px;display:flex;flex-direction:column;align-items:center;gap:26px;min-height:100vh">
+
+  <!-- ======== HEADER ======== -->
+  <header style="width:100%;max-width:1040px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+      <div style="font-size:46px;line-height:1">🔍✨</div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <h1 style="font-family:'Zen Maru Gothic',system-ui,sans-serif;font-weight:900;font-size:40px;margin:0;letter-spacing:.5px">はっけん 導線設計</h1>
+        <p style="margin:0;font-size:15px;font-weight:700;color:#9a8f7e">画面遷移 ・ 状態網羅 ・ おはなし接続 　／　もじずかん Web プロトタイプ</p>
+      </div>
+      <div style="margin-left:auto;display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+        <span style="font-size:12px;font-weight:700;color:#9a8f7e">2026/06/30 ・ v1</span>
+        <span style="font-size:11.5px;font-weight:700;color:#c2698f;background:#fbeaf1;border:1px solid #ecd0dd;padding:4px 11px;border-radius:99px">主要分岐に 2案 比較あり ↘</span>
+      </div>
+    </div>
+
+    <!-- nav -->
+    <nav style="display:flex;flex-wrap:wrap;gap:8px">
+      <a href="#s1" style="text-decoration:none;font-size:12.5px;font-weight:700;color:#2a241d;background:#fff8ee;border:1.5px solid #f0e4d0;padding:7px 13px;border-radius:99px">① ゲスト導線</a>
+      <a href="#s2" style="text-decoration:none;font-size:12.5px;font-weight:700;color:#2a241d;background:#fff8ee;border:1.5px solid #f0e4d0;padding:7px 13px;border-radius:99px">② 通常フロー</a>
+      <a href="#s3" style="text-decoration:none;font-size:12.5px;font-weight:700;color:#2a241d;background:#fff8ee;border:1.5px solid #f0e4d0;padding:7px 13px;border-radius:99px">③ チケット不足</a>
+      <a href="#s4" style="text-decoration:none;font-size:12.5px;font-weight:700;color:#2a241d;background:#fff8ee;border:1.5px solid #f0e4d0;padding:7px 13px;border-radius:99px">④ 再発見</a>
+      <a href="#s5" style="text-decoration:none;font-size:12.5px;font-weight:700;color:#2a241d;background:#fff8ee;border:1.5px solid #f0e4d0;padding:7px 13px;border-radius:99px">⑤ おはなし接続</a>
+      <a href="#matrix" style="text-decoration:none;font-size:12.5px;font-weight:700;color:#2a241d;background:#fff8ee;border:1.5px solid #f0e4d0;padding:7px 13px;border-radius:99px">画面×状態 表</a>
+    </nav>
+
+    <!-- legend -->
+    <sc-if value="{{ showLegend }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;background:#fff8ee;border:1.5px solid #f0e4d0;border-radius:16px;padding:13px 18px">
+      <span style="font-size:12px;font-weight:900;color:#9a8f7e;font-family:'Zen Maru Gothic',sans-serif">状態の色</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700"><i style="width:13px;height:13px;border-radius:4px;background:#9a8f7e;display:inline-block"></i>初期</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700"><i style="width:13px;height:13px;border-radius:4px;background:#e8714c;display:inline-block"></i>ローディング</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700"><i style="width:13px;height:13px;border-radius:4px;background:#5fb583;display:inline-block"></i>結果</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700"><i style="width:13px;height:13px;border-radius:4px;background:#d8694f;display:inline-block"></i>エラー</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700"><i style="width:13px;height:13px;border-radius:4px;background:#b9a98f;display:inline-block"></i>空状態</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700"><i style="width:13px;height:13px;border-radius:4px;background:#c2698f;display:inline-block"></i>認証/シート</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700"><i style="width:13px;height:13px;border-radius:4px;background:#2a241d;display:inline-block"></i>画面/ハブ</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700"><i style="width:13px;height:13px;border-radius:4px;background:#6f7aa6;display:inline-block"></i>保護者</span>
+    </div>
+    </sc-if>
+  </header>
+
+  <!-- ======== DOMAIN ALIGNMENT (ADR-0001) ======== -->
+  <section style="width:100%;max-width:1040px;background:#f4f1fa;border:1.5px solid #ddd3ef;border-radius:20px;padding:20px 24px 22px;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:900;color:#fff;background:#7a4fa0;padding:4px 11px;border-radius:99px">ADR-0001 整合</span>
+      <span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:16px;color:#5a3f7a">ドメインモデル ・ ユビキタス言語</span>
+    </div>
+    <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.7">本設計の語彙は ADR-0001（ドメインモデルとコンテキスト境界）に従う。<b>はっけん＝ずかんに未登録のことばを登録する行為</b>（みつける／たんけん 両経路で発生）。<b>みつける</b>＝保護者が準備したことばを子が選ぶ、<b>たんけん</b>＝子がかな文字で組み立てる。<b>共有キャッシュはインフラ層</b>で、はっけんの可否ではなく速さのみに影響する。<b>ことばあつめ → おはなし は一方通行</b>（Published Language：語一覧のみ提供）。チケット判定は アカウント・経済ドメインの <code style="background:#ece4f7;padding:1px 5px;border-radius:5px">canSpend</code> / <code style="background:#ece4f7;padding:1px 5px;border-radius:5px">spend</code> に集約。</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span style="font-size:11.5px;font-weight:700;color:#5a3f7a;background:#fff;border:1px solid #ddd3ef;padding:4px 11px;border-radius:99px">本書「再はっけん」＝ <b>再発見 / rediscovery</b></span>
+      <span style="font-size:11.5px;font-weight:700;color:#5a3f7a;background:#fff;border:1px solid #ddd3ef;padding:4px 11px;border-radius:99px">ひみつのことば＝ seededWord</span>
+      <span style="font-size:11.5px;font-weight:700;color:#5a3f7a;background:#fff;border:1px solid #ddd3ef;padding:4px 11px;border-radius:99px">なぞる＝ trace（旧 write）</span>
+      <span style="font-size:11.5px;font-weight:700;color:#5a3f7a;background:#fff;border:1px solid #ddd3ef;padding:4px 11px;border-radius:99px">collected→zukanWords ・ discovered→hakkenWords</span>
+      <span style="font-size:11.5px;font-weight:700;color:#9c6a26;background:#fdf6e6;border:1px solid #ecd58f;padding:4px 11px;border-radius:99px">⚠ 本番モデルは emoji／カテゴリ／プリセット語を廃止（プロトの名残）。図のカテゴリ表現は暫定</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1 : ゲスト導線 -->
+  <!-- ============================================================ -->
+  <section id="s1" style="width:100%;max-width:1040px;background:#fff;border:1px solid #efe3cf;border-radius:26px;padding:32px 30px 36px;box-shadow:0 6px 22px rgba(120,100,60,.07);display:flex;flex-direction:column;gap:22px;scroll-margin-top:20px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;color:#fff;background:#5fb583;width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center">1</span>
+      <div>
+        <h2 style="margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px">未ログイン（ゲスト）が はっけんに 触れるまで</h2>
+        <p style="margin:3px 0 0;font-size:13.5px;font-weight:700;color:#9a8f7e">みつける と ずかん はゲスト可。たんけん と おはなし はチケット機能＝登録ゲート。まず「触らせて価値を体験」→ 保存・拡張で登録へ。</p>
+      </div>
+    </div>
+
+    <p style="margin:0;font-size:13px;font-weight:700;color:#5fb583;font-family:'Zen Maru Gothic',sans-serif">▸ ゲストでも遊べる主導線（みつける → はっけん）</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="🏠" label="ホーム" state="init" caption="入口。認証状態で鍵バッジを出し分け。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;line-height:1.25;margin-bottom:3px">🔍 みつける<br>（ゲスト可）</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🔍" label="みつける 振分" state="hub" caption="出題プールから1語抽選。ひみつ語/プリセットを発見モードへ。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;line-height:1.25;margin-bottom:3px">正体を伏せて<br>出題</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="✏️" label="なぞり書き（発見）" state="init" caption="「なにが でるかな？」未描画はゲート。指でなぞると粒子＋音。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;line-height:1.25;margin-bottom:3px">最後の字を<br>確定</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🔎" label="はっけん中" state="loading" caption="生成演出。キャッシュで速さが変わる（②で詳細）。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;line-height:1.25;margin-bottom:3px">完成</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="⭐" label="のったよ（Reveal）" state="result" caption="絵・名前・説明が判明。自動読み上げ。ずかんへ。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <p style="margin:6px 0 0;font-size:13px;font-weight:700;color:#c2698f;font-family:'Zen Maru Gothic',sans-serif">▸ 鍵つき機能を押したとき（たんけん / おはなし）</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="🧭" label="たんけん / おはなし" state="hub" caption="ホームで 🔒 バッジつきのボタンをタップ。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;line-height:1.25;margin-bottom:3px">ゲスト判定<br>authReason</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="📝" label="登録シート" state="gate" caption="機能別コピーで登録/ログイン。登録で🎟️5枚。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;line-height:1.25;margin-bottom:3px">認証完了で<br>自動遷移</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🎯" label="目的の機能" state="result" caption="_afterAuth で たんけん/おはなしホームへ。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <!-- branch 1 -->
+    <div style="display:flex;flex-direction:column;gap:12px;background:#faf4ea;border:1.5px dashed #e7d9c2;border-radius:18px;padding:18px 18px 20px;margin-top:4px">
+      <span style="font-size:12.5px;font-weight:900;color:#9a8f7e;font-family:'Zen Maru Gothic',sans-serif">⚖ 分岐 1 ・ ゲストの登録ゲートの見せ方</span>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <div style="flex:1 1 320px;min-width:280px;background:#f1f8f2;border:2px solid #5fb583;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;position:relative">
+          <span style="position:absolute;top:-11px;left:16px;font-size:11px;font-weight:900;color:#fff;background:#5fb583;padding:3px 10px;border-radius:99px">★ 推奨</span>
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif;margin-top:4px">案A：機能別コピーの ボトムシート（現状）</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">押した文脈を保ったまま下から登録シート。「とうろくして つづきを あそぼう」等、機能別の理由提示。認証後その機能へ自動復帰。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#3f8e63">＋ 摩擦が低く離脱しにくい／文脈維持</span>
+        </div>
+        <sc-if value="{{ showAlt }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1 1 320px;min-width:280px;background:#fdf9ef;border:2px solid #f0e4d0;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif">案B：フル画面の ウェルカム（価値提示3点）</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">機能価値を3カードで見せてから登録。初回オンボーディング向き。ただし毎回は重く、遊びの勢いを止める。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#b88a4a">△ 初回1回のみ採用。常用ゲートには不向き</span>
+        </div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:2px 0 0;font-size:12px;font-weight:700;color:#9a8f7e;line-height:1.6">決定：案A を常用ゲートに。初回訪問時のみ案Bの価値提示要素を1度だけ差し込む（collected 到達トリガと統合）。</p>
+      </sc-if>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2 : 通常フロー -->
+  <!-- ============================================================ -->
+  <section id="s2" style="width:100%;max-width:1040px;background:#fff;border:1px solid #efe3cf;border-radius:26px;padding:32px 30px 36px;box-shadow:0 6px 22px rgba(120,100,60,.07);display:flex;flex-direction:column;gap:22px;scroll-margin-top:20px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;color:#fff;background:#e8714c;width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center">2</span>
+      <div>
+        <h2 style="margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px">ログイン済みの 通常フロー（みつける ＆ たんけん）</h2>
+        <p style="margin:3px 0 0;font-size:13.5px;font-weight:700;color:#9a8f7e">2つの入口がどちらも「なぞり → はっけん中 → のったよ」に合流。生成の速さは全体キャッシュで二分される。</p>
+      </div>
+    </div>
+
+    <p style="margin:0;font-size:13px;font-weight:700;color:#5fb583;font-family:'Zen Maru Gothic',sans-serif">▸ みつける（保護者が仕込んだ ひみつ語 ／ プリセット）</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="🔍" label="みつける 振分" state="hub" caption="mitsukePool：seeded 優先 → 未取得プリセット。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="✏️" label="なぞり書き" state="loading" caption="なぞり中：粒子・チャイム・🔊。描いたら確定で進行。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🔎" label="はっけん中" state="loading" caption="生成演出（下のキャッシュ分岐へ）。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="⭐" label="のったよ" state="result" caption="絵＋語＋説明＋🎨スタイルチップ。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;margin-bottom:3px">つぎも<br>かく ↺</span><span style="font-size:18px;color:#cdbca3">↺</span></div>
+      <dc-import name="FlowNode" emoji="📖" label="ずかん" state="result" caption="集めた語をカテゴリ別に。未取得は「？」。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <p style="margin:6px 0 0;font-size:13px;font-weight:700;color:#e8714c;font-family:'Zen Maru Gothic',sans-serif">▸ たんけん（子どもが 50音で 言葉を作る）</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="🧭" label="たんけん 50音" state="init" caption="空スロット。キー押下で1字＋読み上げ。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;margin-bottom:3px">これを<br>かく</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🧪" label="classifyTanken" state="hub" caption="NG/重複/辞書/新語 を判定。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">⤳</span></div>
+      <dc-import name="FlowNode" emoji="🙈" label="NG / 重複" state="error" caption="「使えないみたい」「もう ずかんに あるよ」で差し戻し。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">⤳</span></div>
+      <dc-import name="FlowNode" emoji="📗" label="辞書語（無料）" state="result" caption="チケット不要でそのまま なぞり書きへ。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">⤳</span></div>
+      <dc-import name="FlowNode" emoji="🌟" label="新語 → 上限/残高チェック" state="hub" caption="OK→なぞり→はっけん中。NG→③おしまい画面。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <!-- branch 2: cache loading -->
+    <div style="display:flex;flex-direction:column;gap:12px;background:#faf4ea;border:1.5px dashed #e7d9c2;border-radius:18px;padding:18px 18px 20px;margin-top:4px">
+      <span style="font-size:12.5px;font-weight:900;color:#9a8f7e;font-family:'Zen Maru Gothic',sans-serif">⚖ 分岐 2 ・ 「はっけん中」ローディングの段階（全体キャッシュ連動）</span>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <div style="flex:1 1 320px;min-width:280px;background:#f1f8f2;border:2px solid #5fb583;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;position:relative">
+          <span style="position:absolute;top:-11px;left:16px;font-size:11px;font-weight:900;color:#fff;background:#5fb583;padding:3px 10px;border-radius:99px">★ 採用（両方）</span>
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif;margin-top:4px">案A：ヒット＝1段（速い ~1.2s）</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">📖「ことばを よびだして いるよ」。同スタイル×同語の既生成データを即返却。退屈する前に Reveal。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#3f8e63">キー＝style|word。本番はキャッシュ照会の往復に置換。</span>
+        </div>
+        <div style="flex:1 1 320px;min-width:280px;background:#f1f8f2;border:2px solid #5fb583;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;position:relative">
+          <span style="position:absolute;top:-11px;left:16px;font-size:11px;font-weight:900;color:#fff;background:#5fb583;padding:3px 10px;border-radius:99px">★ 採用（両方）</span>
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif;margin-top:4px">案B：ミス＝2段（~6.6s）</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">🔍「さがして いるよ」→ ~2.7s で 🔎「むずかしい ことば！もっと しらべて いるよ」＋バッジ。待ち時間に変化をつけ退屈防止。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#3f8e63">新語/カスタム/スタイル変更は常にミス＝2段。</span>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:2px 0 0;font-size:12px;font-weight:700;color:#9a8f7e;line-height:1.6">決定：両方を keep。速さ差そのものを演出に使う方針（速い時は短く、遅い時のみ段階推移）。本番タイマーは実レスポンスへ置換。</p>
+      </sc-if>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3 : チケット不足 -->
+  <!-- ============================================================ -->
+  <section id="s3" style="width:100%;max-width:1040px;background:#fff;border:1px solid #efe3cf;border-radius:26px;padding:32px 30px 36px;box-shadow:0 6px 22px rgba(120,100,60,.07);display:flex;flex-direction:column;gap:22px;scroll-margin-top:20px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;color:#fff;background:#d8694f;width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center">3</span>
+      <div>
+        <h2 style="margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px">チケット不足時の 体験</h2>
+        <p style="margin:3px 0 0;font-size:13.5px;font-weight:700;color:#9a8f7e">原則：子ども画面に課金を出さない（402は閲覧維持・生成のみブロック）。残高管理と購入は保護者ゲートの先。</p>
+      </div>
+    </div>
+
+    <p style="margin:0;font-size:13px;font-weight:700;color:#e8714c;font-family:'Zen Maru Gothic',sans-serif">▸ たんけん新語で 残高0 / 本日の回数超過</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="🌟" label="新語を かく" state="hub" caption="dailyHakkenUsed≧Max または tickets≦0 を検知。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🌙" label="たんけん おしまい" state="empty" stateLabel="空/上限" caption="「あした はっけん できるよ。いまは みつけるで あそぼう」課金は出さない。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;margin-bottom:3px">遊びへ<br>回遊</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🔍" label="みつける へ / ホーム" state="result" caption="無料で遊べる導線へ逃がす。保護者には別途残数アラート。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <p style="margin:6px 0 0;font-size:13px;font-weight:700;color:#c2698f;font-family:'Zen Maru Gothic',sans-serif">▸ おはなし作成 / カスタムスタイル試作で 残高0（保護者文脈）</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="📖" label="つくる を押す" state="hub" caption="makeStory / startCsSession で tickets≦0 を検知。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🎟️" label="チケットシート" state="sheet" caption="5/15/40枚プラン（Stripe 買い切り）。残0を強調。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="✅" label="購入 → 続行" state="result" caption="残数加算後に元のアクションへ復帰。決済失敗はエラー再試行。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <!-- branch 3 -->
+    <div style="display:flex;flex-direction:column;gap:12px;background:#faf4ea;border:1.5px dashed #e7d9c2;border-radius:18px;padding:18px 18px 20px;margin-top:4px">
+      <span style="font-size:12.5px;font-weight:900;color:#9a8f7e;font-family:'Zen Maru Gothic',sans-serif">⚖ 分岐 3 ・ 子どもが残高0に当たったときの見せ方</span>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <div style="flex:1 1 320px;min-width:280px;background:#f1f8f2;border:2px solid #5fb583;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;position:relative">
+          <span style="position:absolute;top:-11px;left:16px;font-size:11px;font-weight:900;color:#fff;background:#5fb583;padding:3px 10px;border-radius:99px">★ 推奨</span>
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif;margin-top:4px">案A：子には「おしまい」だけ。課金は保護者メニュー内</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">子ども画面では金額・購入を一切見せず、無料の遊びへ誘導。保護者メニューに残数バッジ＋購入。子の誤課金リスク0。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#3f8e63">＋ 安全・ブランド方針と一致</span>
+        </div>
+        <sc-if value="{{ showAlt }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1 1 320px;min-width:280px;background:#fdf9ef;border:2px solid #f0e4d0;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif">案B：その場で保護者ゲート → 購入</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">残0の瞬間に保護者ゲート（長押し）を挟み購入へ。コンバージョンは高いが、遊びの最中に課金導線が出る＝方針と衝突。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#b88a4a">△ 却下。脚注「遊びの最中に課金画面は出さない」に反する</span>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4 : 再はっけん -->
+  <!-- ============================================================ -->
+  <section id="s4" style="width:100%;max-width:1040px;background:#fff;border:1px solid #efe3cf;border-radius:26px;padding:32px 30px 36px;box-shadow:0 6px 22px rgba(120,100,60,.07);display:flex;flex-direction:column;gap:22px;scroll-margin-top:20px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;color:#fff;background:#c2698f;width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center">4</span>
+      <div>
+        <h2 style="margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px">再発見（同じことばで 再生成 ・ rediscovery）の UI</h2>
+        <p style="margin:3px 0 0;font-size:13.5px;font-weight:700;color:#9a8f7e">気に入らない絵・別スタイルを試したいときの作り直し（ADR-0001：<b style="color:#7a4fa0">再発見 / rediscovery</b>）。ブリーフ前提では <b style="color:#c2698f">チケット不要</b>。ただしキャッシュヒット時の消費可否は ADR-0001 で「別途ビジネス判断」とされ未確定。新規はっけん（消費）とは UI で明確に区別する。</p>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="📔" label="しょうさい（Detail）" state="result" caption="登録済みの語。絵・カテゴリ・説明・🎨スタイル。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;margin-bottom:3px">🎨 べつの<br>えに する</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🔁" label="再生成 確認シート" state="sheet" caption="「チケットは つかわないよ」を明記。スタイル選択も可。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;margin-bottom:3px">つくり<br>なおす</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="🔎" label="はっけん中（再生成）" state="loading" caption="同語の再生成演出。同スタイルはキャッシュ即返却、別スタイルは新規。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="📔" label="しょうさい（更新）" state="result" caption="新しい絵で詳細を更新。図鑑件数は増えない。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="⚠️" label="生成 失敗" state="error" caption="再生成が失敗：元の絵を保持し「もういちど」を提示。チケット消費なしを維持。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <!-- branch 4 -->
+    <div style="display:flex;flex-direction:column;gap:12px;background:#faf4ea;border:1.5px dashed #e7d9c2;border-radius:18px;padding:18px 18px 20px;margin-top:4px">
+      <span style="font-size:12.5px;font-weight:900;color:#9a8f7e;font-family:'Zen Maru Gothic',sans-serif">⚖ 分岐 4 ・ 再生成のトリガー位置</span>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <div style="flex:1 1 320px;min-width:280px;background:#f1f8f2;border:2px solid #5fb583;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;position:relative">
+          <span style="position:absolute;top:-11px;left:16px;font-size:11px;font-weight:900;color:#fff;background:#5fb583;padding:3px 10px;border-radius:99px">★ 推奨</span>
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif;margin-top:4px">案A：しょうさい から明示的に再生成</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">発見の余韻（Reveal）を邪魔せず、あとから詳細で「べつの えに する」。意図的な作り直し操作＝迷いがない。チケット不要を確認シートで明示。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#3f8e63">＋ 新規発見(消費)と再生成(無料)が画面で分離</span>
+        </div>
+        <sc-if value="{{ showAlt }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1 1 320px;min-width:280px;background:#fdf9ef;border:2px solid #f0e4d0;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif">案B：のったよ 直後に毎回「これでOK / かきなおす」</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">発見直後に採否を選ばせる。やり直しは早いが、3〜6歳に毎回「判断」を強いて発見の喜びを削ぐ。離脱・混乱の懸念。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#b88a4a">△ 却下。発見体験を阻害</span>
+        </div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:2px 0 0;font-size:12px;font-weight:700;color:#9a8f7e;line-height:1.6">プロトタイプ反映：Detail に「🎨 べつの えに する」＋確認シート＋再生成（＝再発見 / rediscovery）パスを追加。finishHakken のチケット消費とは別経路（プロトは消費なし）。本番は ADR-0001 のキャッシュヒット時 spend ルール確定後に接続。</p>
+      </sc-if>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5 : おはなし接続 -->
+  <!-- ============================================================ -->
+  <section id="s5" style="width:100%;max-width:1040px;background:#fff;border:1px solid #efe3cf;border-radius:26px;padding:32px 30px 36px;box-shadow:0 6px 22px rgba(120,100,60,.07);display:flex;flex-direction:column;gap:22px;scroll-margin-top:20px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;color:#fff;background:#9c4d70;width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center">5</span>
+      <div>
+        <h2 style="margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px">はっけんで 集めた言葉 → おはなし への接続</h2>
+        <p style="margin:3px 0 0;font-size:13.5px;font-weight:700;color:#9a8f7e">集めた語を素材にAIが短い絵本を生成（🎟️1枚・登録必須）。生成は約1分の非同期。待ち時間は みつける/たんけん へ回遊。</p>
+      </div>
+    </div>
+
+    <p style="margin:0;font-size:13px;font-weight:700;color:#9c4d70;font-family:'Zen Maru Gothic',sans-serif">▸ 基本導線（ライブラリ起点）</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="📖" label="ずかん / ホーム" state="hub" caption="集めた語が貯まっている状態。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="📚" label="おはなしホーム" state="empty" stateLabel="一覧/空" caption="作るCTA＋作成済み＋執筆中。空時「まだ ないよ」。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="✅" label="ことばえらび" state="hub" caption="2〜5語選択（既定先頭3）。2未満はCTA無効。tickets0→シート。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;margin-bottom:3px">🎟️1枚<br>消費</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="✏️" label="執筆中（非同期）" state="loading" caption="即一覧へ戻る。執筆中カード＋バナーで遊びへ誘導。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;margin-bottom:3px">約1分後<br>完成</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="📕" label="よむ（Read）" state="result" caption="ページ送り。本文のモノ名を手書き文字画像に差替。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <p style="margin:6px 0 0;font-size:13px;font-weight:700;color:#5fb583;font-family:'Zen Maru Gothic',sans-serif">▸ ショートカット導線（発見直後の熱量を活かす ・ 追加）</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0">
+      <dc-import name="FlowNode" emoji="⭐" label="のったよ / しょうさい" state="result" caption="発見直後・詳細に「📚 この ことばで おはなし」を追加。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;align-self:center"><span style="font-size:9.5px;font-weight:700;color:#9a8f7e;text-align:center;margin-bottom:3px">この語を<br>プリセット</span><span style="font-size:20px;color:#cdbca3">→</span></div>
+      <dc-import name="FlowNode" emoji="✅" label="ことばえらび（プリセット済）" state="hub" caption="発見した語を選択済みで開始。あと1語足すだけ。ゲストは登録ゲート。" hint-size="168px,150px" style="width:168px;flex:0 0 168px"></dc-import>
+    </div>
+
+    <!-- branch 5 -->
+    <div style="display:flex;flex-direction:column;gap:12px;background:#faf4ea;border:1.5px dashed #e7d9c2;border-radius:18px;padding:18px 18px 20px;margin-top:4px">
+      <span style="font-size:12.5px;font-weight:900;color:#9a8f7e;font-family:'Zen Maru Gothic',sans-serif">⚖ 分岐 5 ・ おはなしへの入口</span>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <div style="flex:1 1 320px;min-width:280px;background:#f1f8f2;border:2px solid #5fb583;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;position:relative">
+          <span style="position:absolute;top:-11px;left:16px;font-size:11px;font-weight:900;color:#fff;background:#5fb583;padding:3px 10px;border-radius:99px">★ 基本</span>
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif;margin-top:4px">案A：ライブラリ起点（ずかん → おはなしホーム）</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">作成済み・執筆中を一覧で管理でき、計画的に作れる。お話を「資産」として育てる体験の中心。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#3f8e63">＋ 保存・読み返しと整合</span>
+        </div>
+        <div style="flex:1 1 320px;min-width:280px;background:#f1f8f2;border:2px solid #5fb583;border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;position:relative">
+          <span style="position:absolute;top:-11px;left:16px;font-size:11px;font-weight:900;color:#fff;background:#5fb583;padding:3px 10px;border-radius:99px">★ 併用（推奨）</span>
+          <span style="font-size:13.5px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif;margin-top:4px">案B：発見直後ショートカット（Reveal/Detail から）</span>
+          <p style="margin:0;font-size:12.5px;font-weight:500;color:#5a5145;line-height:1.6">「今 見つけた言葉で すぐ お話」。発見の喜びが高いその場で誘導でき、お話づくりの初動を作る。語をプリセットして摩擦を最小化。</p>
+          <span style="font-size:11.5px;font-weight:700;color:#3f8e63">＋ 回遊と発見→創作の橋渡し</span>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:2px 0 0;font-size:12px;font-weight:700;color:#9a8f7e;line-height:1.6">決定：両立。基本はA、Bショートカットを Reveal/Detail に追加（ゲストは登録ゲート経由、storySel をプリセットして storypick へ）。</p>
+      </sc-if>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MATRIX -->
+  <!-- ============================================================ -->
+  <section id="matrix" style="width:100%;max-width:1040px;background:#fff;border:1px solid #efe3cf;border-radius:26px;padding:32px 30px 36px;box-shadow:0 6px 22px rgba(120,100,60,.07);display:flex;flex-direction:column;gap:18px;scroll-margin-top:20px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:22px;color:#fff;background:#2a241d;padding:0 14px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center">▦</span>
+      <div>
+        <h2 style="margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px">画面 × 状態 マトリクス</h2>
+        <p style="margin:3px 0 0;font-size:13.5px;font-weight:700;color:#9a8f7e">各画面が網羅すべき状態。— は該当なし。</p>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto">
+    <div style="min-width:820px;display:flex;flex-direction:column;border:1.5px solid #f0e4d0;border-radius:14px;overflow:hidden">
+      <!-- header -->
+      <div style="display:grid;grid-template-columns:1.6fr 1fr 1.1fr 1fr 1fr 1fr;background:#2a241d">
+        <div style="padding:11px 13px;font-size:12.5px;font-weight:900;color:#fff;font-family:'Zen Maru Gothic',sans-serif">画面</div>
+        <div style="padding:11px 10px;font-size:12px;font-weight:900;color:#fff;text-align:center">初期</div>
+        <div style="padding:11px 10px;font-size:12px;font-weight:900;color:#fff;text-align:center">ローディング</div>
+        <div style="padding:11px 10px;font-size:12px;font-weight:900;color:#fff;text-align:center">結果</div>
+        <div style="padding:11px 10px;font-size:12px;font-weight:900;color:#fff;text-align:center">エラー</div>
+        <div style="padding:11px 10px;font-size:12px;font-weight:900;color:#fff;text-align:center">空</div>
+      </div>
+      <sc-for list="{{ matrixRows }}" as="row" hint-placeholder-count="15">
+        <div style="display:grid;grid-template-columns:1.6fr 1fr 1.1fr 1fr 1fr 1fr;border-top:1px solid #f0e4d0;background:{{ row.bg }}">
+          <div style="padding:10px 13px;font-size:12.5px;font-weight:900;color:#2a241d;display:flex;align-items:center;gap:6px"><span>{{ row.icon }}</span>{{ row.screen }}</div>
+          <sc-for list="{{ row.cells }}" as="c">
+            <div style="padding:9px 9px;font-size:11px;font-weight:600;line-height:1.4;text-align:center;color:{{ c.color }};border-left:1px solid #f4ead8">{{ c.t }}</div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+    </div>
+    <p style="margin:0;font-size:11.5px;font-weight:700;color:#b9a98f">※ 「はっけん中」のエラーは生成失敗→リトライ。「なぞり書き」は塗り率ゲート廃止＝描いたかどうかのみ。402（残高0）は閲覧維持・生成のみブロック。</p>
+  </section>
+
+  <footer style="width:100%;max-width:1040px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding-top:6px">
+    <span style="font-size:12px;font-weight:700;color:#b9a98f">もじずかん ・ はっけん導線設計 ・ 決定記録は DECISIONS-hakken-flow.md を参照</span>
+    <span style="font-size:12px;font-weight:700;color:#b9a98f">FlowNode.dc.html を部品として再利用</span>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1104,&quot;height&quot;:760},&quot;branchView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;both&quot;,&quot;recommended&quot;],&quot;default&quot;:&quot;both&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;表示&quot;},&quot;showLegend&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;表示&quot;},&quot;showNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;表示&quot;}}">
+class Component extends DCLogic {
+  renderVals(){
+    const G='#2f6b46', N='#c4b6a0';                 // present / absent text color
+    const PB='#eef7ef', AB='transparent';            // present cell bg via row? keep simple: color only
+    const cell=(t)=> t? {t, color:G} : {t:'—', color:N};
+    const row=(icon,screen,bg,a,b,c,d,e)=>({icon,screen,bg,cells:[cell(a),cell(b),cell(c),cell(d),cell(e)]});
+    const W='#ffffff', T='#fffaf2';
+    const matrixRows=[
+      row('🏠','ホーム',W,'入口・鍵分岐',null,null,null,null),
+      row('🔍','みつける 振分',T,'1語抽選',null,'Writeへ',null,'枯渇→復習/専用'),
+      row('✏️','なぞり書き',W,'未描画ゲート','なぞり中・粒子/音','確定→次/Reveal','—（描画ゲートのみ）',null),
+      row('🔎','はっけん中',T,null,'ヒット1段/ミス2段','Revealへ','生成失敗→再試行',null),
+      row('⭐','のったよ',W,'自動読上げ',null,'絵+語+説明',null,null),
+      row('📔','しょうさい',T,'自動読上げ','再生成中','絵+メタ+再発見','再生成失敗→元絵保持',null),
+      row('📖','ずかん',W,'カテゴリ/ひみつ',null,'取得セル',null,'ゲスト促し/0件'),
+      row('🧭','たんけん 50音',T,'空スロット','—（キー音）','判定→Write','NG/重複メッセージ','0文字CTA無効'),
+      row('🌙','たんけん おしまい',W,null,null,null,'上限/残高0','本日終了案内'),
+      row('📚','おはなしホーム',T,'作るCTA','執筆中カード/バナー','完成一覧',null,'「まだ ないよ」'),
+      row('✅','ことばえらび',W,'先頭3語選択',null,'つくる（2〜5）','2未満無効/0→シート','取得語0'),
+      row('📕','よむ',T,'1ページ目','ページめくり','手書き差替本文',null,null),
+      row('📝','登録/ログイン',W,'機能別コピー','認証中','目的画面へ自動','失敗→再試行',null),
+      row('🎟️','チケット',T,'3プラン','決済中','残数加算','決済失敗','残0強調'),
+      row('🛠️','保護者/準備',W,'今日の準備',null,'仕込み完了','NG/重複/辞書/不足','準備0件'),
+    ];
+    return {
+      matrixRows,
+      showLegend: this.props.showLegend!==false,
+      showNotes: this.props.showNotes!==false,
+      showAlt: (this.props.branchView||'both')!=='recommended'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -178,6 +178,14 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await page.getByRole("button", { name: /これを かく/ }).click();
   await expect(page.locator("canvas")).toBeVisible();
 
+  // 再発見のなぞり完了 → reveal 画面で「もういちど はっけん しよう！」バナー表示
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
+  await page.getByRole("button", { name: "なぞれたよ！" }).click();
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
+  await page.getByRole("button", { name: "できた！" }).click();
+  await expect(page.getByText("もういちど はっけん しよう！")).toBeVisible();
+
   // 辞書語の正常フロー: 「うし」を zukanWords から外して再挑戦
   await page.evaluate(() => {
     (window as any).__setState({

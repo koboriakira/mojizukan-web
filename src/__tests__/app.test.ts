@@ -249,8 +249,8 @@ describe("clientApp", () => {
 
   it("loadState で初期 state が設定される", () => {
     expect(clientApp).toContain("var saved = loadState()");
-    expect(clientApp).toContain("saved.collected ||");
-    expect(clientApp).toContain("saved.discovered ||");
+    expect(clientApp).toContain("saved.zukanWords ||");
+    expect(clientApp).toContain("saved.hakkenWords ||");
     expect(clientApp).toContain("saved.handwriting ||");
   });
 

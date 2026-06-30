@@ -28,15 +28,15 @@ STYLES[zukan]="A detailed encyclopedia-style scientific illustration of {subject
 # サンプル単語（日本語 → 英語）
 declare -A WORDS
 WORDS[いぬ]="dog"
-WORDS[ねこ]="cat"
+WORDS[うま]="horse"
 WORDS[くま]="bear"
-WORDS[ぱん]="bread"
-WORDS[ふね]="ship"
-WORDS[はな]="flower"
+WORDS[さかな]="fish"
+WORDS[すいか]="watermelon"
 WORDS[つき]="moon"
-WORDS[あり]="ant"
-WORDS[くつ]="shoes"
-WORDS[いす]="chair"
+WORDS[とり]="bird"
+WORDS[ねこ]="cat"
+WORDS[はな]="flower"
+WORDS[やま]="mountain"
 
 IMAGE_TOTAL=$(( ${#WORDS[@]} * ${#STYLES[@]} ))
 DESC_TOTAL=${#WORDS[@]}

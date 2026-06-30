@@ -57,7 +57,6 @@ export const clientApp = `
     authError: '',
     lastHakken: false,
     sheet: null,
-    hintWord: null,
     sfx: true,
     bgm: false,
     speak: true,
@@ -211,7 +210,7 @@ export const clientApp = `
     for (var i = 0; i < ngWords.length; i++) {
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
-    if (DICTIONARY[word]) return 'dict';
+    if (STARTER_WORDS[word]) return 'dict';
     if (state.zukanWords.indexOf(word) !== -1) return 'rediscovery';
     if (state.prepared.indexOf(word) !== -1) return 'prepared';
     return 'ok';
@@ -224,7 +223,7 @@ export const clientApp = `
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
     if (state.zukanWords.indexOf(word) !== -1 || state.hakkenWords.indexOf(word) !== -1) return 'rediscovery';
-    if (DICTIONARY[word]) return 'dict';
+    if (STARTER_WORDS[word]) return 'dict';
     return 'hakken';
   }
 
@@ -390,9 +389,9 @@ export const clientApp = `
 
   function renderReveal(s) {
     var word = s.word || '';
-    var preset = DICTIONARY[word] || (window.__hakkenCache && window.__hakkenCache[word] ?
-      { cat: 'はっけん', catIcon: '⭐', desc: window.__hakkenCache[word].desc, image_url: window.__hakkenCache[word].image_url } :
-      { cat: '', catIcon: '', desc: '', image_url: null });
+    var preset = STARTER_WORDS[word] || (window.__hakkenCache && window.__hakkenCache[word] ?
+      { desc: window.__hakkenCache[word].desc, image_url: window.__hakkenCache[word].image_url } :
+      { desc: '', image_url: null });
     var kind = s.revealKind || 'normal';
     var title;
     if (kind === 'review' || kind === 'tanken-rediscovery') {
@@ -411,7 +410,7 @@ export const clientApp = `
       reviewBanner = '<div style="background:linear-gradient(135deg,#fef9ef,#fdf3e0);border:2px solid var(--accent2);border-radius:18px;padding:16px;margin-top:20px;max-width:340px;text-align:left;">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent2);margin-bottom:8px;">もういちど はっけん しよう！</div>' +
         '<div style="font-size:14px;color:#5a5145;line-height:1.7;margin-bottom:10px;">なんども かけて すごい！<br>あたらしい ことばも かいて みたいね。</div>' +
-        '<div style="font-size:12px;color:var(--sub);line-height:1.6;border-top:1px solid rgba(0,0,0,.08);padding-top:8px;">おうちの方へ：あたらしい ことばを おぼえる チャンスです。「ひみつの ことば」を 図鑑に 追加して あげましょう。</div>' +
+        '<div style="font-size:12px;color:var(--sub);line-height:1.6;border-top:1px solid rgba(0,0,0,.08);padding-top:8px;">おうちの方へ：あたらしい ことばを おぼえる チャンスです。保護者メニューから ことばを 準備して あげましょう。</div>' +
       '</div>';
     }
 
@@ -422,8 +421,7 @@ export const clientApp = `
         '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
         '<button onclick="window.__speakWord()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
       '</div>' +
-      (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
-      '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;">' + preset.desc + '</div>' +
+      '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;margin-top:16px;">' + preset.desc + '</div>' +
       reviewBanner +
       '<div style="display:flex;gap:14px;margin-top:36px;width:100%;max-width:400px;">' +
         nextAction +
@@ -433,7 +431,8 @@ export const clientApp = `
   }
 
   function renderZukan(s) {
-    var count = s.zukanWords.length;
+    var allWords = (s.zukanWords || []).concat(s.hakkenWords || []);
+    var count = allWords.length;
 
     var header = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
       '<button onclick="window.__goHome()" style="width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:24px;padding:0;">←</button>' +
@@ -448,102 +447,30 @@ export const clientApp = `
       '</span>' +
     '</button>' : '');
 
-    var secretSection = '';
-    if (s.prepared && s.prepared.length > 0) {
-      secretSection += '<div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">' +
-        '<span style="font-size:22px;">⭐</span>' +
-        '<span style="font-family:var(--fhead);font-weight:900;font-size:20px;color:#9c4d70;">ひみつの ことば ' + s.prepared.length + 'こ</span>' +
-      '</div>';
-      secretSection += '<div style="font-size:14px;color:#9c4d70;margin-bottom:12px;">? を かいて はっけんしよう！</div>';
-      secretSection += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:26px;">';
-      for (var si = 0; si < s.prepared.length; si++) {
-        var sw = s.prepared[si];
-        secretSection += '<button onclick="window.__openSecret(\\'' + sw + '\\')" style="background:#fff;border:2px dashed #e3b8cd;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;cursor:pointer;">' +
-          '<span style="font-size:38px;font-weight:900;color:#c2698f;line-height:1;">?</span>' +
-          '<span style="font-size:11px;color:#c2698f;font-weight:700;">かいて みよう</span>' +
-        '</button>';
-      }
-      secretSection += '</div>';
-    } else if (s.authed) {
-      secretSection += '<button onclick="window.__showParentGate()" style="width:100%;text-align:left;background:linear-gradient(135deg,#fbeaf1,#f7dfe9);border:2px solid var(--accent3);border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:18px;box-shadow:none;">' +
-        '<span style="font-size:26px;">⭐</span>' +
-        '<span>' +
-          '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent3);display:block;">ひみつのことばを しこもう</span>' +
-          '<span style="font-size:12.5px;color:var(--sub);">おうちの ひと メニューから ことばを えらべるよ</span>' +
-        '</span>' +
-      '</button>';
-    }
-
     var sections = '';
-    for (var ci = 0; ci < CATEGORIES.length; ci++) {
-      var cat = CATEGORIES[ci];
-      var catWords = [];
-      for (var w in DICTIONARY) {
-        if (DICTIONARY[w].cat === cat.name) catWords.push(w);
-      }
-      if (catWords.length === 0) continue;
-
-      var gotCount = 0;
-      for (var j = 0; j < catWords.length; j++) {
-        if (s.zukanWords.indexOf(catWords[j]) !== -1) gotCount++;
-      }
-
-      if (gotCount === 0) continue;
-
-      sections += '<div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">' +
-        '<span style="font-size:22px;">' + cat.icon + '</span>' +
-        '<span style="font-family:var(--fhead);font-weight:900;font-size:20px;">' + cat.name + '</span>' +
-        '<span style="font-size:14px;color:var(--sub);font-weight:700;">' + gotCount + '/' + catWords.length + '</span>' +
-      '</div>';
-
+    if (count > 0) {
       sections += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:26px;">';
-      for (var k = 0; k < catWords.length; k++) {
-        var cw = catWords[k];
-        var preset = DICTIONARY[cw];
-        if (s.zukanWords.indexOf(cw) !== -1) {
-          sections += '<button onclick="window.__openDetail(\\'' + cw + '\\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
-            renderEmojiOrImage(getHakkenImageUrl(cw), 40) +
-            '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + cw + '</span>' +
-          '</button>';
-        } else {
-          sections += '<button onclick="window.__showHint(\\'' + cw + '\\')" style="background:var(--locked);border-radius:20px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:#c4b6a0;font-size:32px;font-weight:900;border:none;cursor:pointer;">?</button>';
-        }
-      }
-      sections += '</div>';
-    }
-
-    if (s.hakkenWords && s.hakkenWords.length > 0) {
-      sections += '<div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">' +
-        '<span style="font-size:22px;">⭐</span>' +
-        '<span style="font-family:var(--fhead);font-weight:900;font-size:20px;">はっけん</span>' +
-        '<span style="font-size:14px;color:var(--sub);font-weight:700;">' + s.hakkenWords.length + 'こ</span>' +
-      '</div>';
-      sections += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-bottom:26px;">';
-      for (var di = 0; di < s.hakkenWords.length; di++) {
-        var dw = s.hakkenWords[di];
-        var dImageUrl = getHakkenImageUrl(dw);
-        sections += '<button onclick="window.__openDetail(\\'' + dw + '\\')" style="background:var(--card);border:3px solid #f3dd9a;border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
-          renderEmojiOrImage(dImageUrl, 40) +
-          '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + dw + '</span>' +
-          '<span style="font-size:10px;color:var(--accent3);font-weight:700;">はっけん</span>' +
+      for (var i = 0; i < allWords.length; i++) {
+        var w = allWords[i];
+        sections += '<button onclick="window.__openDetail(\\'' + w + '\\')" style="background:var(--card);border:3px solid var(--cbd);border-radius:20px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;">' +
+          renderEmojiOrImage(getHakkenImageUrl(w), 40) +
+          '<span style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);">' + w + '</span>' +
         '</button>';
       }
       sections += '</div>';
-    }
-
-    if (count === 0) {
+    } else {
       sections += '<div style="text-align:center;padding:48px 0;color:var(--sub);font-size:18px;font-weight:700;">' +
         '<div style="font-size:48px;margin-bottom:16px;">📖</div>' +
         'まだ なにも あつめてないよ<br>「はじめる」で もじを かこう！' +
       '</div>';
     }
 
-    return '<div style="flex:1;padding:18px 0;">' + header + secretSection + sections + '</div>';
+    return '<div style="flex:1;padding:18px 0;">' + header + sections + '</div>';
   }
 
   function renderDetail(s) {
     var word = s.detailWord || '';
-    var preset = DICTIONARY[word] || { cat: '', catIcon: '', desc: '' };
+    var preset = STARTER_WORDS[word] || { desc: '' };
 
     return '<div style="flex:1;display:flex;flex-direction:column;padding-top:18px;">' +
       '<div style="display:flex;align-items:center;margin-bottom:8px;">' +
@@ -555,30 +482,13 @@ export const clientApp = `
           '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;">' + word + '</div>' +
           '<button onclick="window.__speakWord()" style="width:50px;height:50px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
         '</div>' +
-        (preset.cat ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;font-family:var(--fhead);font-weight:700;font-size:16px;padding:5px 14px;border-radius:20px;margin:12px 0 16px;">' + preset.catIcon + ' ' + preset.cat + '</div>' : '') +
-        '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:360px;font-weight:500;">' + preset.desc + '</div>' +
+        '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:360px;font-weight:500;margin-top:16px;">' + preset.desc + '</div>' +
       '</div>' +
     '</div>';
   }
 
   function renderParent(s) {
-    var catProgress = '';
-    for (var ci = 0; ci < CATEGORIES.length; ci++) {
-      var cat = CATEGORIES[ci];
-      var catWords = [];
-      for (var w in DICTIONARY) {
-        if (DICTIONARY[w].cat === cat.name) catWords.push(w);
-      }
-      if (catWords.length === 0) continue;
-      var gotCount = 0;
-      for (var j = 0; j < catWords.length; j++) {
-        if (s.zukanWords.indexOf(catWords[j]) !== -1) gotCount++;
-      }
-      catProgress += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cbd);">' +
-        '<span style="font-size:15px;">' + cat.icon + ' ' + cat.name + '</span>' +
-        '<span style="font-weight:700;color:var(--accent2);font-size:15px;">' + gotCount + '/' + catWords.length + '</span>' +
-      '</div>';
-    }
+    var totalCount = (s.zukanWords || []).length + (s.hakkenWords || []).length;
 
     var currentTheme = s.theme || 'A';
     var themes = ['A', 'B', 'C'];
@@ -603,19 +513,18 @@ export const clientApp = `
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:12px;">📖 学習の記録</div>' +
-        '<div style="font-size:16px;color:var(--sub);font-weight:700;margin-bottom:12px;">習得数: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + s.zukanWords.length + '</span> 個</div>' +
-        catProgress +
+        '<div style="font-size:16px;color:var(--sub);font-weight:700;">習得数: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + totalCount + '</span> 個</div>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:10px;">🔍🧭 みつける と たんけん</div>' +
-        '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">「みつける」は プリセット語を なぞって あつめるモード。「たんけん」は じぶんで ことばを つくって はっけんするモードです。</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:10px;">🔍 「みつける」ことばの準備</div>' +
+        '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">「みつける」で出る言葉を事前に登録できます。未登録の場合は自動で選ばれます。</div>' +
         (s.prepared && s.prepared.length > 0 ?
           '<div style="background:#fff;border:1px solid var(--cbd);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
-            '<span style="font-size:14px;color:var(--sub);font-weight:700;">⭐ 仕込み中の秘密のことば</span>' +
+            '<span style="font-size:14px;color:var(--sub);font-weight:700;">登録中のことば</span>' +
             '<span style="font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent3);">' + (s.prepared ? s.prepared.length : 0) + '</span>' +
           '</div>'
         : '') +
-        '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ 言葉を仕込む</button>' +
+        '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ 言葉を登録する</button>' +
       '</div>' +
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ 設定</div>' +
@@ -815,7 +724,7 @@ export const clientApp = `
     var cells = '';
     for (var i = 0; i < zukanList.length; i++) {
       var w = zukanList[i];
-      var preset = DICTIONARY[w] || {};
+      var preset = STARTER_WORDS[w] || {};
       var isSelected = sel.indexOf(w) !== -1;
       var border = isSelected ? '3px solid var(--accent3)' : '3px solid var(--cbd)';
       var hasHandwriting = s.handwriting && s.handwriting[w] && s.handwriting[w].length > 0;
@@ -959,8 +868,8 @@ export const clientApp = `
     var statusMeta = {
       ok:     { text: '発見OK',              tc: '#9c4d70', bg: '#fbeaf1' },
       rediscovery: { text: 'もういちど はっけん！', tc: '#2d7a2d', bg: '#e6f5e6' },
-      prepared: { text: '仕込み済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
-      dict:   { text: '辞書にあり・無料',    tc: '#3f7a52', bg: '#e6f1e9' },
+      prepared: { text: '登録済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
+      dict:   { text: 'すぐ はっけんできる',    tc: '#3f7a52', bg: '#e6f1e9' },
       ng:     { text: 'この言葉は使えません', tc: '#b03a3a', bg: '#fbe6e6' }
     };
 
@@ -1002,8 +911,8 @@ export const clientApp = `
         '</div>' +
       '</div>' +
       '<div style="position:sticky;bottom:0;background:var(--bg);padding:16px 18px 8px;">' +
-        '<button onclick="window.__openSeedConfirm()" style="width:100%;min-height:78px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">⭐ ' + okCount + '個 仕込む</button>' +
-        '<div style="text-align:center;font-size:12px;color:var(--sub);margin-top:8px;padding-bottom:12px;">仕込んだ言葉は ずかんに『?』で ならびます</div>' +
+        '<button onclick="window.__openSeedConfirm()" style="width:100%;min-height:78px;border-radius:22px;background:' + btnBg + ';box-shadow:' + btnShadow + ';font-size:22px;font-weight:900;color:#fff;">⭐ ' + okCount + '個 登録する</button>' +
+        '<div style="text-align:center;font-size:12px;color:var(--sub);margin-top:8px;padding-bottom:12px;">登録した言葉は「みつける」で出題されます</div>' +
       '</div>' +
     '</div>';
   }
@@ -1063,28 +972,6 @@ export const clientApp = `
   }
 
   function renderSheet(s) {
-    if (s.sheet === 'hint') {
-      var hw = s.hintWord || '';
-      var hpreset = DICTIONARY[hw] || { desc: '' };
-      var hdesc = hpreset.desc || '';
-      var hintText = hdesc.indexOf('。') !== -1 ? hdesc.slice(0, hdesc.indexOf('。') + 1) : hdesc;
-      var charBoxes = '';
-      for (var i = 0; i < hw.length; i++) {
-        if (i === 0) {
-          charBoxes += '<div style="width:48px;height:48px;border-radius:12px;background:var(--accent2);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--fhead);font-weight:900;font-size:24px;">' + hw[i] + '</div>';
-        } else {
-          charBoxes += '<div style="width:48px;height:48px;border-radius:12px;background:var(--locked);color:#c4b6a0;display:flex;align-items:center;justify-content:center;font-family:var(--fhead);font-weight:900;font-size:24px;">?</div>';
-        }
-      }
-      return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
-        '<div class="sheet">' +
-          '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
-          '<div style="text-align:center;">' + renderEmojiOrImage(getHakkenImageUrl(hw), 80) + '</div>' +
-          '<div style="display:flex;justify-content:center;gap:8px;margin:16px 0;">' + charBoxes + '</div>' +
-          '<div style="font-size:16px;color:#7a7060;text-align:center;margin:12px 0 20px;">' + hintText + '</div>' +
-          '<button onclick="window.__closeSheet()" style="width:100%;min-height:64px;border-radius:18px;background:var(--accent2);font-size:20px;box-shadow:0 6px 0 var(--accent2d);">わかった！</button>' +
-        '</div>';
-    }
     if (s.sheet === 'signup') {
       var zukanCount = s.zukanWords ? s.zukanWords.length : 0;
       var authMode = s.authMode || 'choose';
@@ -1144,15 +1031,15 @@ export const clientApp = `
         '<div class="sheet" onclick="event.stopPropagation()">' +
           '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
           '<div style="text-align:center;font-size:36px;">⭐🎟️</div>' +
-          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-top:8px;">' + selWords.length + '個 仕込みますか？</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:22px;margin-top:8px;">' + selWords.length + '個 登録しますか？</div>' +
           '<div style="display:flex;flex-wrap:wrap;justify-content:center;margin:16px 0;">' + wList + '</div>' +
           '<div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:8px;">チケットは…図鑑にできた時（生成成功時）に 1枚ずつ</div>' +
           '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent);margin-bottom:16px;">いま 🎟️ ' + (s.tickets || 0) + '</div>' +
           '<div style="display:flex;gap:12px;">' +
-            '<button onclick="window.__confirmSeed()" style="flex:1;min-height:64px;border-radius:18px;background:var(--accent3);color:#fff;font-size:18px;font-weight:900;box-shadow:0 4px 0 var(--accent3d);">⭐ 仕込む</button>' +
+            '<button onclick="window.__confirmSeed()" style="flex:1;min-height:64px;border-radius:18px;background:var(--accent3);color:#fff;font-size:18px;font-weight:900;box-shadow:0 4px 0 var(--accent3d);">⭐ 登録する</button>' +
             '<button onclick="window.__closeSheet()" style="flex:1;min-height:64px;border-radius:18px;background:var(--locked);color:var(--sub);font-size:18px;box-shadow:none;">やめる</button>' +
           '</div>' +
-          '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:12px;line-height:1.5;">仕込み・支払いは保護者メニューの中だけ。お子さまは課金画面に触れません</div>' +
+          '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:12px;line-height:1.5;">登録・支払いは保護者メニューの中だけ。お子さまは課金画面に触れません</div>' +
         '</div>';
     }
     if (s.sheet === 'style') {
@@ -1200,19 +1087,17 @@ export const clientApp = `
   }
 
   function nextWord() {
-    for (var i = 0; i < WORDPOOL.length; i++) {
-      if (state.zukanWords.indexOf(WORDPOOL[i]) === -1) return WORDPOOL[i];
+    var keys = Object.keys(STARTER_WORDS);
+    for (var i = 0; i < keys.length; i++) {
+      if (state.zukanWords.indexOf(keys[i]) === -1) return keys[i];
     }
-    return WORDPOOL[0];
+    return keys[0];
   }
 
   function mitsukePool(s) {
     var pool = [];
-    for (var i = 0; i < s.prepared.length; i++) {
-      pool.push(s.prepared[i]);
-    }
-    for (var w in DICTIONARY) {
-      if (s.zukanWords.indexOf(w) === -1 && pool.indexOf(w) === -1) {
+    for (var w in STARTER_WORDS) {
+      if (s.zukanWords.indexOf(w) === -1 && s.prepared.indexOf(w) === -1) {
         pool.push(w);
       }
     }
@@ -1609,19 +1494,23 @@ export const clientApp = `
 
   window.__goMitsukeru = function () {
     playSound('tap');
-    var pool = mitsukePool(state);
-    if (pool.length > 0) {
-      var pick = pool[Math.floor(Math.random() * pool.length)];
-      if (state.prepared.indexOf(pick) !== -1) {
-        window.__openSecret(pick);
-      } else {
-        window.__goWriteWord(pick, false, 'mitsuke');
-      }
-    } else if (state.zukanWords.length > 0) {
-      var reviewPick = state.zukanWords[Math.floor(Math.random() * state.zukanWords.length)];
-      window.__goWriteWord(reviewPick, false, 'review');
+    var unusedPrepared = state.prepared.filter(function(w) {
+      return state.zukanWords.indexOf(w) === -1;
+    });
+    if (unusedPrepared.length > 0) {
+      var pick = unusedPrepared[Math.floor(Math.random() * unusedPrepared.length)];
+      window.__openSecret(pick);
     } else {
-      setState({ screen: 'mitsukeru' });
+      var pool = mitsukePool(state);
+      if (pool.length > 0) {
+        var pick = pool[Math.floor(Math.random() * pool.length)];
+        window.__goWriteWord(pick, false, 'mitsuke');
+      } else if (state.zukanWords.length > 0) {
+        var reviewPick = state.zukanWords[Math.floor(Math.random() * state.zukanWords.length)];
+        window.__goWriteWord(reviewPick, false, 'review');
+      } else {
+        setState({ screen: 'mitsukeru' });
+      }
     }
   };
 
@@ -1699,11 +1588,6 @@ export const clientApp = `
     _pgStart = null;
     var bar = document.getElementById('pg-bar');
     if (bar) bar.style.width = '0%';
-  };
-
-  window.__showHint = function (word) {
-    playSound('tap');
-    setState({ sheet: 'hint', hintWord: word });
   };
 
   window.__setAuthMode = function (mode) {

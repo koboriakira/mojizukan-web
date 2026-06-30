@@ -1,6 +1,5 @@
 import type { ClassifyResponse } from "./types";
 import { isNgWord } from "./ng-words";
-import { DICTIONARY_WORDS } from "./dictionary-words";
 
 export interface ClassifyInput {
   word: string;
@@ -23,14 +22,11 @@ export function classifyWord({ word, collected, prepared, ngList }: ClassifyInpu
   if (effectiveNgList.some(ng => word.includes(ng)) || (ngList === undefined && isNgWord(word))) {
     return { status: 'ng', message: 'この ことばは つかえないよ' };
   }
-  if (DICTIONARY_WORDS.includes(word)) {
-    return { status: 'dict', message: 'じしょに あり・むりょう' };
-  }
   if (collected.includes(word)) {
     return { status: 'rediscovery', message: 'もういちど はっけん！' };
   }
   if (prepared.includes(word)) {
-    return { status: 'prepared', message: 'もう しこみずみ' };
+    return { status: 'prepared', message: 'もう 登録ずみ' };
   }
   return { status: 'ok', message: 'はっけんOK' };
 }

@@ -58,7 +58,7 @@ test("書く → 図鑑登録 → 詳細表示", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("保護者ゲート → メニュー → はっけん準備 → 仕込み", async ({
+test("保護者ゲート → メニュー → はっけん準備 → 登録", async ({
   page,
 }) => {
   const errors = collectErrors(page);
@@ -75,11 +75,11 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   });
   await expect(page.getByText("学習の記録")).toBeVisible();
 
-  // みつける・たんけんカード
-  await expect(page.getByText("みつける と たんけん")).toBeVisible();
+  // みつけることばの準備カード
+  await expect(page.getByText("「みつける」ことばの準備")).toBeVisible();
 
   // 未登録 → signup シート
-  await page.getByRole("button", { name: "言葉を仕込む" }).click();
+  await page.getByRole("button", { name: "言葉を登録する" }).click();
   await expect(page.getByText("じぶんの 図鑑を とっておこう")).toBeVisible();
 
   // 登録をモック（実際のAPI呼び出しはE2Eの範囲外）
@@ -93,8 +93,8 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   });
   await expect(page.getByText("学習の記録")).toBeVisible();
 
-  // 登録済みなので今度は prep へ遷移
-  await page.getByRole("button", { name: "言葉を仕込む" }).click();
+  // 認証済みなので今度は prep へ遷移
+  await page.getByRole("button", { name: "言葉を登録する" }).click();
 
   // prep 画面へ
   await expect(
@@ -102,42 +102,43 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   ).toBeVisible();
   await expect(page.getByText("🎟️ 5")).toBeVisible();
 
-  // 手動入力で仕込み
+  // 手動入力で登録
   await page.locator("#prep-input").fill("らいおん");
   await page.getByRole("button", { name: "＋" }).click();
   await expect(page.getByText("発見OK").first()).toBeVisible();
 
-  // 仕込み（prep 画面の「⭐ N こ 仕込む」ボタン）
-  await page.getByRole("button", { name: /個 仕込む/ }).click();
-  await expect(page.getByText("個 仕込みますか？")).toBeVisible();
+  // 登録（prep 画面の「⭐ N こ 登録する」ボタン）
+  await page.getByRole("button", { name: /個 登録する/ }).click();
+  await expect(page.getByText("個 登録しますか？")).toBeVisible();
 
-  // 確認して確定（prepconfirm シートの「⭐ 仕込む」ボタン）
-  await page.getByRole("button", { name: "⭐ 仕込む" }).click();
+  // 確認して確定（prepconfirm シートの「⭐ 登録する」ボタン）
+  await page.getByRole("button", { name: "⭐ 登録する" }).click();
   await expect(page.getByText("学習の記録")).toBeVisible();
 
   expect(errors).toEqual([]);
 });
 
-test("ひみつのことば → 発見モード → hakkengen 演出", async ({ page }) => {
+test("みつける → prepared 語が出題 → hakkengen 演出", async ({ page }) => {
   const errors = collectErrors(page);
 
   await page.goto("/");
 
-  // prepared 状態を注入（「かめ」= 2文字で短い）
+  // prepared 語の発見フローを直接注入（ランダム性を排除）
   await page.evaluate(() => {
     (window as any).__setState({
       authed: true,
       tickets: 3,
       prepared: ["かめ"],
+      screen: "trace",
+      word: "かめ",
+      charIndex: 0,
+      confirmed: [],
+      discovering: true,
+      revealKind: "mitsuke",
+      drew: false,
     });
   });
 
-  // ずかんへ（ホーム画面のボタンは「📖 ずかん」）
-  await page.getByRole("button", { name: "ずかん" }).click();
-  await expect(page.getByText("ひみつの ことば")).toBeVisible();
-
-  // ? マスをタップ → 発見モードで書く画面（語は伏せられる）
-  await page.getByRole("button", { name: "?" }).first().click();
   await expect(page.locator("canvas")).toBeVisible();
   await expect(page.getByText("なぞって みよう！なにが でるかな？")).toBeVisible();
 
@@ -149,7 +150,6 @@ test("ひみつのことば → 発見モード → hakkengen 演出", async ({ 
   await page.getByRole("button", { name: "できた！" }).click();
 
   // hakkengen → API フォールバック → Reveal
-  // requireAuth で 401 が即座に返るため、ローディング画面は一瞬で通過する
   await expect(page.getByText("みつけた！")).toBeVisible({
     timeout: 10_000,
   });
@@ -164,13 +164,13 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await page.getByRole("button", { name: "たんけんに でる" }).click();
   await expect(page.getByText("たんけん")).toBeVisible();
 
-  // 再発見: zukanWords に「うし」が入っている状態で「うし」を組み立て → ブロックされず書く画面へ
+  // 再発見: zukanWords に「いぬ」が入っている状態で「いぬ」を組み立て → ブロックされず書く画面へ
   await page.evaluate(() => {
     (window as any).__setState({
       screen: "tanken",
-      tankenChars: ["う", "し"],
+      tankenChars: ["い", "ぬ"],
       tankenMsg: null,
-      zukanWords: ["うし"],
+      zukanWords: ["いぬ"],
     });
   });
   await page.getByRole("button", { name: /これを かく/ }).click();
@@ -185,11 +185,11 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await expect(page.getByText("もういちど はっけん しよう！")).toBeVisible();
   await expect(page.getByRole("button", { name: "たんけんに もどる" })).toBeVisible();
 
-  // 辞書語の正常フロー: 「うし」を zukanWords から外して再挑戦
+  // 辞書語の正常フロー: 「いぬ」を zukanWords から外して再挑戦
   await page.evaluate(() => {
     (window as any).__setState({
       screen: "tanken",
-      tankenChars: ["う", "し"],
+      tankenChars: ["い", "ぬ"],
       tankenMsg: null,
       zukanWords: [],
     });
@@ -198,7 +198,7 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   // CTA をクリック
   await page.getByRole("button", { name: /これを かく/ }).click();
   await expect(page.locator("canvas")).toBeVisible();
-  await expect(page.getByText("「うし」を なぞろう")).toBeVisible();
+  await expect(page.getByText("「いぬ」を なぞろう")).toBeVisible();
 
   // drew ゲートを解除して2文字分確定
   await page.evaluate(() => { (window as any).__setState({ drew: true }); });

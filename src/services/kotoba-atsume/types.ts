@@ -52,7 +52,7 @@ export const CATEGORIES: CategoryInfo[] = [
   { name: "その他" },
 ];
 
-export type ClassifyStatus = 'ok' | 'rediscovery' | 'prepared' | 'dict' | 'ng';
+export type ClassifyStatus = 'ok' | 'rediscovery' | 'prepared' | 'ng';
 
 export interface ClassifyRequest {
   word: string;

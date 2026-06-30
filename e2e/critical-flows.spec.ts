@@ -166,7 +166,7 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   await page.getByRole("button", { name: "たんけんに でる" }).click();
   await expect(page.getByText("たんけん")).toBeVisible();
 
-  // 重複チェック: zukanWords に「うし」が入っている状態で「うし」を組み立て
+  // 再発見: zukanWords に「うし」が入っている状態で「うし」を組み立て → ブロックされず書く画面へ
   await page.evaluate(() => {
     (window as any).__setState({
       screen: "tanken",
@@ -176,7 +176,7 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
     });
   });
   await page.getByRole("button", { name: /これを かく/ }).click();
-  await expect(page.getByText("もう ずかんに あるよ")).toBeVisible();
+  await expect(page.locator("canvas")).toBeVisible();
 
   // 辞書語の正常フロー: 「うし」を zukanWords から外して再挑戦
   await page.evaluate(() => {

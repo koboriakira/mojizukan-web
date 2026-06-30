@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv, CreateEntryRequest } from "../types";
 import { AppError } from "../middleware/error-handler";
-import { findPresetWord } from "../lib/preset-dictionary";
+import { findDictionaryWord } from "../lib/word-dictionary";
 
 export const entries = new Hono<AppEnv>();
 
@@ -45,7 +45,7 @@ entries.post("/", async (c) => {
     throw new AppError(409, "This word is already registered");
   }
 
-  const preset = findPresetWord(body.word);
+  const preset = findDictionaryWord(body.word);
   const id = crypto.randomUUID();
   const isDiscovered = preset ? 0 : 1;
   const category = preset?.category ?? body.category ?? null;

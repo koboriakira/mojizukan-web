@@ -5,7 +5,7 @@ import type { AppEnv, Bindings } from "./types";
 import { errorHandler } from "./middleware/error-handler";
 import { optionalAuth } from "./middleware/auth";
 import { entries } from "./routes/entries";
-import { presets } from "./routes/presets";
+import { dictionary } from "./routes/dictionary";
 import { styles } from "./routes/styles";
 import { story } from "./routes/story";
 import { hakken } from "./routes/hakken";
@@ -27,7 +27,7 @@ app.get("/", (c) => {
 
 app.route("/api/auth", auth);
 app.route("/api/entries", entries);
-app.route("/api/presets", presets);
+app.route("/api/dictionary", dictionary);
 app.route("/api/styles", styles);
 app.route("/api/story", story);
 app.route("/api/hakken", hakken);

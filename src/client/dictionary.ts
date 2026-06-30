@@ -1,5 +1,5 @@
-export const clientPresets = `
-var PRESETS = {
+export const clientDictionary = `
+var DICTIONARY = {
   'うし':         { cat: 'どうぶつ', catIcon: '🐾', desc: 'おおきな からだで のんびり くさを たべるよ。「もー」と ないて おしえてくれるよ。' },
   'いぬ':         { cat: 'どうぶつ', catIcon: '🐾', desc: 'しっぽを ふって よろこぶよ。おさんぽが だいすきなんだ。' },
   'ねこ':         { cat: 'どうぶつ', catIcon: '🐾', desc: 'ふわふわの けがわが きもちいいよ。ごろごろ のどを ならすんだ。' },

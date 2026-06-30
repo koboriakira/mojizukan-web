@@ -1,4 +1,4 @@
-export const PRESET_WORDS: string[] = [
+export const DICTIONARY_WORDS: string[] = [
   'うし', 'いぬ', 'ねこ', 'きりん', 'ぞう', 'うさぎ', 'くま', 'ぱんだ',
   'りんご', 'ばなな', 'おにぎり', 'けーき', 'ぱん',
   'くるま', 'ひこうき', 'でんしゃ', 'ふね', 'ばす',

@@ -15,8 +15,8 @@ design/
 ## ワークフロー: Design ↔ Code 循環
 
 ```
-Claude Code が brief を生成/更新
-  → ユーザーが Claude Design に brief + 前回の dc.html を貼る
+Claude Code が brief を生成 + 参照ファイルと zip にまとめる
+  → ユーザーが zip を Claude Design にアップロード
   → Claude Design と対話しながらデザインを詰める
   → Claude Design が dc.html + decisions.md を出力
   → ユーザーが design/ に保存・コミット
@@ -24,6 +24,19 @@ Claude Code が brief を生成/更新
   → 実装中の発見を次の brief に反映
   → 次のサイクルへ
 ```
+
+### brief の zip 化
+
+brief 生成時に、brief 本体と参照ファイルを zip にまとめる。ユーザーはこの zip を Claude Design にアップロードするだけで文脈が渡る。
+
+含めるファイル:
+- brief 本体
+- 前回の decisions（brief の「参照」セクションに記載されたもの）
+- 関連する dc.html（`design/*.dc.html`）
+- `docs/glossary.md`
+- 関連する ADR（`docs/adr/*.md`、template 除く）
+
+zip は `design/sessions/YYYYMMDD_HHmm_brief.zip` として保存する（`.gitignore` 済み）。
 
 ## sessions/ の命名規則
 

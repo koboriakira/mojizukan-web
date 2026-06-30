@@ -14,9 +14,9 @@ describe("classifyWord", () => {
     expect(result.status).toBe("ng");
   });
 
-  it("プリセット辞書の言葉は dict を返す", () => {
+  it("辞書語もキャッシュ未確認なら ok を返す", () => {
     const result = classifyWord({ word: "いぬ", collected: [], prepared: [], ngList: [] });
-    expect(result.status).toBe("dict");
+    expect(result.status).toBe("ok");
   });
 
   it("既に収集済みの言葉は rediscovery を返す", () => {
@@ -34,7 +34,7 @@ describe("classifyWord", () => {
     expect(result.status).toBe("ok");
   });
 
-  it("ng チェックは dict チェックより優先される", () => {
+  it("ng チェックは ok より優先される", () => {
     const result = classifyWord({ word: "いぬ", collected: [], prepared: [], ngList: ["いぬ"] });
     expect(result.status).toBe("ng");
   });

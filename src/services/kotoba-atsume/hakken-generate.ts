@@ -5,7 +5,6 @@ import { spendTicket, getTicketBalance, canSpendTicket } from "../account/ticket
 import { generateJsonOpenAI } from "../ai-generation/ai";
 import { generateImage } from "../ai-generation/image";
 import { getCache, setCache } from "../ai-generation/shared-cache";
-import { DICTIONARY_WORDS } from "./dictionary-words";
 
 export interface HakkenGenerateDeps {
   db: D1Database;
@@ -31,14 +30,6 @@ export async function executeHakkenGenerate(
     "SELECT word FROM hakken_entries WHERE user_id = ? AND word = ?"
   ).bind(userId, word).first();
   const isRediscovery = existing !== null;
-  const isDictWord = DICTIONARY_WORDS.includes(word);
-
-  if (!isRediscovery && !isDictWord) {
-    const balance = await getTicketBalance(db, userId);
-    if (!canSpendTicket(balance)) {
-      throw new AppError(402, "チケットが足りません");
-    }
-  }
 
   const settings = await db.prepare(
     "SELECT image_style FROM user_settings WHERE id = ?"
@@ -46,6 +37,13 @@ export async function executeHakkenGenerate(
   const imageStyle = (settings?.image_style || "ehon") as ImageStyle;
 
   const cached = await getCache(db, word, imageStyle);
+
+  if (!isRediscovery && !cached) {
+    const balance = await getTicketBalance(db, userId);
+    if (!canSpendTicket(balance)) {
+      throw new AppError(402, "チケットが足りません");
+    }
+  }
 
   let generated: HakkenGenerateResponse;
   let imageUrl: string;
@@ -89,7 +87,7 @@ export async function executeHakkenGenerate(
     .bind(userId, word, generated.description, imageUrl)
     .run();
 
-  if (!isRediscovery) {
+  if (!isRediscovery && !cached) {
     await spendTicket(db, userId, `はっけん生成: ${word}`);
   }
 

@@ -69,8 +69,8 @@ hakken.post("/prepared", requireAuth, async (c) => {
   }
   const userId = c.var.userId!;
   const result = classifyWord({ word: body.word, collected: [], prepared: [] });
-  if (result.status !== "ok" && result.status !== "dict") {
-    throw new AppError(400, `この言葉は仕込めません: ${result.message}`);
+  if (result.status !== "ok") {
+    throw new AppError(400, `この言葉は登録できません: ${result.message}`);
   }
   await addPreparedWord(c.env.DB, userId, body.word);
   return c.json({ ok: true });

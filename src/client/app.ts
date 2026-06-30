@@ -869,7 +869,7 @@ export const clientApp = `
       ok:     { text: '発見OK',              tc: '#9c4d70', bg: '#fbeaf1' },
       rediscovery: { text: 'もういちど はっけん！', tc: '#2d7a2d', bg: '#e6f5e6' },
       prepared: { text: '登録済み',          tc: '#8a6d1e', bg: '#fdf3d6' },
-      dict:   { text: '辞書にあり・無料',    tc: '#3f7a52', bg: '#e6f1e9' },
+      dict:   { text: 'すぐ はっけんできる',    tc: '#3f7a52', bg: '#e6f1e9' },
       ng:     { text: 'この言葉は使えません', tc: '#b03a3a', bg: '#fbe6e6' }
     };
 

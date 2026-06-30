@@ -3,7 +3,7 @@ import { setCookie } from "hono/cookie";
 import type { AppEnv } from "../types";
 import { hashPassword } from "../lib/password";
 import { createSession, SESSION_MAX_AGE_SEC } from "../lib/session";
-import { getTicketBalance, addTicket } from "../lib/tickets";
+import { getTicketBalance, grantTicket } from "../lib/tickets";
 
 export const dev = new Hono<AppEnv>();
 
@@ -43,7 +43,7 @@ dev.get("/auto-login", async (c) => {
 
   const balance = await getTicketBalance(c.env.DB, user.id);
   if (balance < ticketCount) {
-    await addTicket(c.env.DB, user.id, ticketCount - balance, "dev-auto-login");
+    await grantTicket(c.env.DB, user.id, ticketCount - balance, "dev-auto-login");
   }
 
   const token = await createSession(c.env.DB, user.id);

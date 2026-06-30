@@ -16,7 +16,7 @@ describe("clientApp", () => {
   });
 
   it("全画面の switch case が含まれる", () => {
-    const screens = ["home", "write", "reveal", "zukan", "detail", "mitsukeru"];
+    const screens = ["home", "trace", "reveal", "zukan", "detail", "mitsukeru"];
     for (const s of screens) {
       expect(clientApp).toContain(`case '${s}'`);
     }

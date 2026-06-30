@@ -5,7 +5,7 @@ import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../lib/ng-words";
 import { PRESET_WORDS } from "../lib/preset-words";
 import { HAKKEN_WORDS } from "../lib/hakken-words";
-import { addTicket, getTicketBalance, canSpendTicket } from "../lib/tickets";
+import { spendTicket, getTicketBalance, canSpendTicket } from "../lib/tickets";
 import { generateJsonOpenAI } from "../lib/ai";
 import { generateImage } from "../lib/image";
 import { getCache, setCache } from "../lib/shared-cache";
@@ -150,7 +150,7 @@ hakken.post("/generate", requireAuth, async (c) => {
     .run();
 
   if (!isRediscovery) {
-    await addTicket(c.env.DB, userId, -1, `はっけん生成: ${body.word}`);
+    await spendTicket(c.env.DB, userId, `はっけん生成: ${body.word}`);
   }
 
   return c.json({ ...generated, image_url: imageUrl, cached: !!cached, rediscovery: isRediscovery });

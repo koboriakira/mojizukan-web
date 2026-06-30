@@ -189,7 +189,7 @@ export const clientApp = `
     if (s.screen === 'reveal' || s.screen === 'detail') {
       speakText(s.word || s.detailWord || '');
     }
-    if (s.screen === 'write') {
+    if (s.screen === 'trace') {
       setTimeout(setupCanvas, 0);
     }
   }
@@ -197,7 +197,7 @@ export const clientApp = `
   function renderScreen(s) {
     switch (s.screen) {
       case 'home':      return renderHome(s);
-      case 'write':     return renderWrite(s);
+      case 'trace':     return renderWrite(s);
       case 'reveal':    return renderReveal(s);
       case 'zukan':     return renderZukan(s);
       case 'detail':    return renderDetail(s);
@@ -1660,13 +1660,13 @@ export const clientApp = `
   window.__goWriteWord = function (word, discovering, kind) {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal', drew: false });
+    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal', drew: false });
   };
 
   window.__goWrite = function () {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal', drew: false });
+    setState({ screen: 'trace', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal', drew: false });
   };
 
   window.__goZukan = function () {
@@ -1995,7 +1995,7 @@ export const clientApp = `
     }
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'write', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false });
+    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false });
   };
 
   window.__tkAdd = function(ch) {

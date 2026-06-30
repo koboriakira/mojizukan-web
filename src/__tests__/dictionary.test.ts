@@ -20,8 +20,7 @@ describe("clientDictionary", () => {
     }
   });
 
-  it("各エントリに cat, desc が含まれる", () => {
-    expect(clientDictionary).toContain("cat:");
+  it("各エントリに desc が含まれる", () => {
     expect(clientDictionary).toContain("desc:");
   });
 

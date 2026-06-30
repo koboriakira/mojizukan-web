@@ -61,7 +61,6 @@ describe("clientApp", () => {
   it("復習モード (revealKind='review') のタイトルとバナーがある", () => {
     expect(clientApp).toContain("また かけたね");
     expect(clientApp).toContain("もういちど はっけん しよう！");
-    expect(clientApp).toContain("ひみつの ことば");
   });
 
   it("goMitsukeru が pool=0 & collected あり で復習モードに遷移する", () => {
@@ -140,8 +139,7 @@ describe("clientApp", () => {
     expect(clientApp).toContain("_canvasWired");
   });
 
-  it("図鑑画面が CATEGORIES グリッドを含む", () => {
-    expect(clientApp).toContain("CATEGORIES");
+  it("図鑑画面がグリッドレイアウトを含む", () => {
     expect(clientApp).toContain("grid-template-columns");
   });
 
@@ -244,16 +242,6 @@ describe("clientApp", () => {
 
   it("ゲストモードでは D1 POST をスキップする", () => {
     expect(clientApp).toContain("if (state.authed)");
-  });
-
-  it("ヒントシート (sheet === 'hint') の表示ロジックが含まれる", () => {
-    expect(clientApp).toContain("s.sheet === 'hint'");
-    expect(clientApp).toContain("hintWord");
-    expect(clientApp).toContain("わかった！");
-  });
-
-  it("__showHint グローバル関数が定義されている", () => {
-    expect(clientApp).toContain("window.__showHint");
   });
 
   it("サインアップシート (sheet === 'signup') に認証フォームが含まれる", () => {

@@ -118,26 +118,27 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   expect(errors).toEqual([]);
 });
 
-test("ひみつのことば → 発見モード → hakkengen 演出", async ({ page }) => {
+test("みつける → prepared 語が出題 → hakkengen 演出", async ({ page }) => {
   const errors = collectErrors(page);
 
   await page.goto("/");
 
-  // prepared 状態を注入（「かめ」= 2文字で短い）
+  // prepared 語の発見フローを直接注入（ランダム性を排除）
   await page.evaluate(() => {
     (window as any).__setState({
       authed: true,
       tickets: 3,
       prepared: ["かめ"],
+      screen: "trace",
+      word: "かめ",
+      charIndex: 0,
+      confirmed: [],
+      discovering: true,
+      revealKind: "mitsuke",
+      drew: false,
     });
   });
 
-  // ずかんへ（ホーム画面のボタンは「📖 ずかん」）
-  await page.getByRole("button", { name: "ずかん" }).click();
-  await expect(page.getByText("ひみつの ことば")).toBeVisible();
-
-  // ? マスをタップ → 発見モードで書く画面（語は伏せられる）
-  await page.getByRole("button", { name: "?" }).first().click();
   await expect(page.locator("canvas")).toBeVisible();
   await expect(page.getByText("なぞって みよう！なにが でるかな？")).toBeVisible();
 
@@ -149,7 +150,6 @@ test("ひみつのことば → 発見モード → hakkengen 演出", async ({ 
   await page.getByRole("button", { name: "できた！" }).click();
 
   // hakkengen → API フォールバック → Reveal
-  // requireAuth で 401 が即座に返るため、ローディング画面は一瞬で通過する
   await expect(page.getByText("みつけた！")).toBeVisible({
     timeout: 10_000,
   });

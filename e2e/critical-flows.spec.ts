@@ -103,10 +103,9 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
   ).toBeVisible();
   await expect(page.getByText("🎟️ 5")).toBeVisible();
 
-  // ランダム候補
-  await page
-    .getByRole("button", { name: "ランダム候補を3つ出す" })
-    .click();
+  // 手動入力で仕込み
+  await page.locator("#prep-input").fill("らいおん");
+  await page.getByRole("button", { name: "＋" }).click();
   await expect(page.getByText("発見OK").first()).toBeVisible();
 
   // 仕込み（prep 画面の「⭐ N こ 仕込む」ボタン）

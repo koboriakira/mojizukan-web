@@ -133,6 +133,7 @@ bash bin/reset-db.sh --remote # リモート（ステージング）DB をリセ
 - **decisions の読み取り**: 実装時に `design/sessions/*_decisions.md` を読み、ユーザータイプ別フローと画面状態一覧に基づいて実装する
 - **E2E テストの設計**: decisions のユーザータイプ別フローから E2E テストケースを導出する
 - **brief への差分反映**: decisions の「brief からの変更点」を次セッションの brief に反映する
+- **デザイン再相談の促し**: 実装中にユーザーフロー・画面遷移・状態管理に大きな変更が必要になった場合、コードで解決する前に Claude Design への再相談をユーザーに提案する。変更内容は `design/sessions/` に追補として記録し、次の brief に反映する
 
 ### E2E テストと decisions の対応
 

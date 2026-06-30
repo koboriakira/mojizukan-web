@@ -60,7 +60,7 @@ export function getRandomWords({ n, collected, prepared }: RandomInput): { words
     const reviewPool = [...collected].sort(() => Math.random() - 0.5);
     const needed = n - result.length;
     result.push(...reviewPool.slice(0, needed));
-    return { words: result, mode: result.length === needed ? "review" : "normal" };
+    return { words: result, mode: shuffledPrepared.length === 0 ? "review" : "normal" };
   }
 
   if (result.length > 0) {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildStoryPrompt } from "../routes/story";
+import { buildStoryPrompt } from "../lib/story-prompt";
 
 describe("buildStoryPrompt", () => {
   it("指定した言葉がプロンプトに含まれる", () => {

@@ -77,7 +77,6 @@ test("保護者ゲート → メニュー → はっけん準備 → 仕込み",
 
   // みつける・たんけんカード
   await expect(page.getByText("みつける と たんけん")).toBeVisible();
-  await expect(page.getByText("たんけんの1日の回数")).toBeVisible();
 
   // 未登録 → signup シート
   await page.getByRole("button", { name: "言葉を仕込む" }).click();

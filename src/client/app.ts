@@ -82,7 +82,8 @@ export const clientApp = `
     limitWord: '',
     drew: false,
     genCached: false,
-    genPhase: 1
+    genPhase: 1,
+    cacheWords: []
   };
 
   var _lastPromptCount = 0;
@@ -1101,6 +1102,12 @@ export const clientApp = `
         pool.push(w);
       }
     }
+    for (var i = 0; i < s.cacheWords.length; i++) {
+      var cw = s.cacheWords[i];
+      if (s.zukanWords.indexOf(cw) === -1 && s.prepared.indexOf(cw) === -1 && pool.indexOf(cw) === -1) {
+        pool.push(cw);
+      }
+    }
     for (var j = pool.length - 1; j > 0; j--) {
       var k = Math.floor(Math.random() * (j + 1));
       var tmp = pool[j]; pool[j] = pool[k]; pool[k] = tmp;
@@ -1977,6 +1984,10 @@ export const clientApp = `
       tankenMode: false
     });
   };
+
+  fetch('/api/hakken/cache-words').then(function(r) { return r.json(); }).then(function(data) {
+    setState({ cacheWords: data.words || [] });
+  }).catch(function() {});
 
   fetch('/api/auth/me').then(function (res) {
     return res.json();

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { getCache, setCache } from "../services/ai-generation/shared-cache";
+import { getCache, setCache, listCacheWords } from "../services/ai-generation/shared-cache";
 
 interface CacheRow {
   image_url: string;
@@ -13,7 +13,7 @@ function createMockD1(): D1Database {
     prepare: (sql: string) => ({
       bind: (...args: unknown[]) => ({
         first: async <T = unknown>(): Promise<T | null> => {
-          if (/SELECT/.test(sql)) {
+          if (/SELECT/.test(sql) && !/DISTINCT/.test(sql)) {
             const [word, style] = args as [string, string];
             const row = store.get(`${word}:${style}`);
             return (row ?? null) as T | null;
@@ -27,7 +27,21 @@ function createMockD1(): D1Database {
           }
           return { success: true, meta: {} as D1Result["meta"], results: [] };
         },
+        all: async <T = unknown>(): Promise<D1Result<T>> => {
+          if (/SELECT DISTINCT word/.test(sql)) {
+            const words = [...new Set([...store.keys()].map(k => k.split(":")[0]))].sort();
+            return { success: true, meta: {} as D1Result["meta"], results: words.map(w => ({ word: w })) as T[] };
+          }
+          return { success: true, meta: {} as D1Result["meta"], results: [] };
+        },
       }),
+      all: async <T = unknown>(): Promise<D1Result<T>> => {
+        if (/SELECT DISTINCT word/.test(sql)) {
+          const words = [...new Set([...store.keys()].map(k => k.split(":")[0]))].sort();
+          return { success: true, meta: {} as D1Result["meta"], results: words.map(w => ({ word: w })) as T[] };
+        }
+        return { success: true, meta: {} as D1Result["meta"], results: [] };
+      },
     }),
   } as unknown as D1Database;
 }
@@ -57,6 +71,18 @@ describe("shared-cache", () => {
     await expect(
       setCache(db, "いぬ", "pop", "shared/pop/いぬ.png", "いぬは げんきに はしるよ。")
     ).resolves.not.toThrow();
+  });
+
+  it("listCacheWords はキャッシュ済みの単語一覧を返す", async () => {
+    const empty = await listCacheWords(db);
+    expect(empty).toEqual([]);
+
+    await setCache(db, "ねこ", "ehon", "url1", "desc1");
+    await setCache(db, "いぬ", "pop", "url2", "desc2");
+    await setCache(db, "ねこ", "pop", "url3", "desc3");
+
+    const words = await listCacheWords(db);
+    expect(words).toEqual(["いぬ", "ねこ"]);
   });
 
   it("word が同じでも style が異なれば別エントリになる", async () => {

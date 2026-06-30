@@ -6,6 +6,7 @@ import { requireAuth } from "../middleware/auth";
 import { classifyWord, getRandomWords } from "../services/kotoba-atsume/hakken-logic";
 import { executeHakkenGenerate } from "../services/kotoba-atsume/hakken-generate";
 import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
+import { listCacheWords } from "../services/ai-generation/shared-cache";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -54,6 +55,11 @@ hakken.post("/generate", requireAuth, async (c) => {
   );
 
   return c.json(result);
+});
+
+hakken.get("/cache-words", async (c) => {
+  const words = await listCacheWords(c.env.DB);
+  return c.json({ words });
 });
 
 hakken.get("/prepared", requireAuth, async (c) => {

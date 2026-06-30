@@ -1,5 +1,6 @@
 import { Hono } from "hono";
-import type { AppEnv, CreateEntryRequest } from "../types";
+import type { AppEnv } from "../types";
+import type { CreateEntryRequest } from "../services/kotoba-atsume/types";
 import { AppError } from "../middleware/error-handler";
 import { findDictionaryWord } from "../services/kotoba-atsume/word-dictionary";
 

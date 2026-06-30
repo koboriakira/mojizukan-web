@@ -1,5 +1,5 @@
 import { AppError } from "../../middleware/error-handler";
-import type { ImageStyle } from "../../types";
+import type { ImageStyle } from "./types";
 import { buildImagePrompt } from "./image-styles";
 
 export function buildR2Key(userId: string, word: string): string {

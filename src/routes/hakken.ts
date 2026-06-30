@@ -1,5 +1,7 @@
 import { Hono } from "hono";
-import type { AppEnv, ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenGenerateRequest, HakkenGenerateResponse, ImageStyle } from "../types";
+import type { AppEnv } from "../types";
+import type { ClassifyRequest, ClassifyResponse, ClassifyStatus, HakkenGenerateRequest, HakkenGenerateResponse } from "../services/kotoba-atsume/types";
+import type { ImageStyle } from "../services/ai-generation/types";
 import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
 import { isNgWord } from "../services/kotoba-atsume/ng-words";

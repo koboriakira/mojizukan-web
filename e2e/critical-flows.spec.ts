@@ -65,7 +65,11 @@ test("保護者ゲート → メニュー → はっけん準備 → 登録", as
 
   await page.goto("/");
 
+  // ログイン済みユーザーとして保護者ゲートへ（ゲストのログインガードは auth.spec.ts で検証）
   // 保護者ゲート（長押し1.2sはE2Eでflaky → evaluateでバイパス）
+  await page.evaluate(() => {
+    (window as any).__setState({ authed: true, userId: "test-user", tickets: 5 });
+  });
   await page
     .getByRole("button", { name: "おうちの ひとは こちら" })
     .click();
@@ -78,22 +82,7 @@ test("保護者ゲート → メニュー → はっけん準備 → 登録", as
   // ことばを準備するセクション
   await expect(page.getByText("ことばを 準備する")).toBeVisible();
 
-  // 未登録 → signup シート
-  await page.getByRole("button", { name: "ことばを 登録する" }).click();
-  await expect(page.getByText("じぶんの 図鑑を とっておこう")).toBeVisible();
-
-  // 登録をモック（実際のAPI呼び出しはE2Eの範囲外）
-  await page.evaluate(() => {
-    (window as any).__setState({
-      authed: true,
-      userId: "test-user",
-      tickets: 5,
-      sheet: null,
-    });
-  });
-  await expect(page.getByText("学習の記録")).toBeVisible();
-
-  // 認証済みなので今度は prep へ遷移
+  // 認証済みなので prep へ直接遷移
   await page.getByRole("button", { name: "ことばを 登録する" }).click();
 
   // prep 画面へ
@@ -161,6 +150,10 @@ test("たんけん → 辞書語を組み立て → なぞり → ずかん登�
   const errors = collectErrors(page);
 
   await page.goto("/");
+  // ログイン済みユーザーとしてたんけんへ（ゲストのログインガードは auth.spec.ts で検証）
+  await page.evaluate(() => {
+    (window as any).__setState({ authed: true, userId: "test-user" });
+  });
   await page.getByRole("button", { name: "たんけんに でる" }).click();
   await expect(page.getByText("たんけん")).toBeVisible();
 

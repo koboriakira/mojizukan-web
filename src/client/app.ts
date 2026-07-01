@@ -626,6 +626,18 @@ export const clientApp = `
         '</div>';
     }
 
+    var redirectBanner = '';
+    if (anyWriting) {
+      redirectBanner =
+        '<div style="background:#fff4e6;border-radius:20px;padding:18px;text-align:center;">' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--ink);margin-bottom:12px;">おはなしが できるまで あそんで まとう！</div>' +
+          '<div style="display:flex;gap:10px;justify-content:center;">' +
+            '<button onclick="window.__goMitsukeru()" style="min-height:44px;padding:0 18px;border-radius:14px;background:var(--accent2);box-shadow:0 3px 0 var(--accent2d);font-size:15px;font-weight:900;color:#fff;">🔍 みつける</button>' +
+            '<button onclick="window.__goHome()" style="min-height:44px;padding:0 18px;border-radius:14px;background:var(--accent);box-shadow:0 3px 0 var(--accentd);font-size:15px;font-weight:900;color:#fff;">🏠 ホームへ</button>' +
+          '</div>' +
+        '</div>';
+    }
+
     var listHtml = '';
     if (storyList.length === 0) {
       listHtml =
@@ -677,6 +689,7 @@ export const clientApp = `
       '</div>' +
       '<div style="flex:1;padding:0 18px 28px;display:flex;flex-direction:column;gap:12px;">' +
         listHtml +
+        redirectBanner +
       '</div>' +
     '</div>';
   }

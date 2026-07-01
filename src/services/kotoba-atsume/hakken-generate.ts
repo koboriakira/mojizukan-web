@@ -21,10 +21,23 @@ export interface HakkenGenerateResult {
 
 export async function executeHakkenGenerate(
   deps: HakkenGenerateDeps,
-  userId: string,
+  userId: string | null,
   word: string,
 ): Promise<HakkenGenerateResult> {
   const { db, apiKey, bucket } = deps;
+
+  if (userId === null) {
+    const cached = await getCache(db, word, "ehon");
+    if (!cached) {
+      throw new AppError(401, "ログインが必要です");
+    }
+    return {
+      description: cached.description,
+      image_url: cached.image_url,
+      cached: true,
+      rediscovery: false,
+    };
+  }
 
   const existing = await db.prepare(
     "SELECT word FROM hakken_entries WHERE user_id = ? AND word = ?"

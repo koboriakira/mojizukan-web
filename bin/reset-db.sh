@@ -17,12 +17,22 @@ if [[ -z "$TABLES" ]]; then
 else
   echo "以下のテーブルを削除します:"
   echo "$TABLES"
-  for table in $TABLES; do
-    npx wrangler d1 execute mojizukan-db \
-      --command "DROP TABLE IF EXISTS \"$table\";" 2>/dev/null
-    echo "  ✓ $table"
+  for attempt in 1 2 3; do
+    REMAINING=""
+    for table in $TABLES; do
+      npx wrangler d1 execute mojizukan-db \
+        --command "DROP TABLE IF EXISTS \"$table\";" 2>/dev/null \
+        && echo "  ✓ $table" \
+        || REMAINING="${REMAINING} ${table}"
+    done
+    TABLES="$REMAINING"
+    if [[ -z "$TABLES" ]]; then break; fi
+    echo "  Retry (attempt $((attempt+1))): $TABLES"
   done
 fi
+
+npx wrangler d1 execute mojizukan-db \
+  --command "DELETE FROM d1_migrations;" 2>/dev/null
 
 echo ""
 echo "マイグレーションを適用中..."

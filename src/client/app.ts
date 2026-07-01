@@ -456,7 +456,12 @@ export const clientApp = `
   }
 
   function renderZukan(s) {
-    var allWords = (s.zukanWords || []).slice().reverse().concat(s.hakkenWords || []);
+    var merged = (s.zukanWords || []).slice().reverse().concat(s.hakkenWords || []);
+    var seen = {};
+    var allWords = [];
+    for (var ui = 0; ui < merged.length; ui++) {
+      if (!seen[merged[ui]]) { seen[merged[ui]] = true; allWords.push(merged[ui]); }
+    }
     var count = allWords.length;
 
     var header = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
@@ -1107,10 +1112,12 @@ export const clientApp = `
         pool.push(w);
       }
     }
-    for (var i = 0; i < s.cacheWords.length; i++) {
-      var cw = s.cacheWords[i];
-      if (s.zukanWords.indexOf(cw) === -1 && s.prepared.indexOf(cw) === -1 && pool.indexOf(cw) === -1) {
-        pool.push(cw);
+    if (s.authed) {
+      for (var i = 0; i < s.cacheWords.length; i++) {
+        var cw = s.cacheWords[i];
+        if (s.zukanWords.indexOf(cw) === -1 && s.prepared.indexOf(cw) === -1 && pool.indexOf(cw) === -1) {
+          pool.push(cw);
+        }
       }
     }
     for (var j = pool.length - 1; j > 0; j--) {
@@ -1418,7 +1425,7 @@ export const clientApp = `
       var pool = mitsukePool(state);
       if (pool.length > 0) {
         var pick = pool[Math.floor(Math.random() * pool.length)];
-        window.__goWriteWord(pick, false, 'mitsuke');
+        window.__goWriteWord(pick, true, 'mitsuke');
       } else if (state.zukanWords.length > 0) {
         var reviewPick = state.zukanWords[Math.floor(Math.random() * state.zukanWords.length)];
         window.__goWriteWord(reviewPick, false, 'review');
@@ -1430,19 +1437,28 @@ export const clientApp = `
 
   window.__goTanken = function () {
     playSound('tap');
+    if (!state.authed) {
+      setState({ sheet: 'signup', authReason: 'tanken' });
+      return;
+    }
     setState({ screen: 'tanken', tankenChars: [], tankenMsg: null });
   };
 
   window.__goWriteWord = function (word, discovering, kind) {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal', drew: false });
+    var hw = Object.assign({}, state.handwriting);
+    hw[word] = [];
+    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: discovering, revealKind: kind || 'normal', drew: false, handwriting: hw });
   };
 
   window.__goWrite = function () {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'trace', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal', drew: false });
+    var w = nextWord();
+    var hw = Object.assign({}, state.handwriting);
+    hw[w] = [];
+    setState({ screen: 'trace', word: w, charIndex: 0, confirmed: [], revealKind: 'normal', drew: false, handwriting: hw });
   };
 
   window.__goZukan = function () {
@@ -1464,11 +1480,15 @@ export const clientApp = `
   };
 
   window.__showLogin = function () {
-    setState({ sheet: 'signup', authMode: 'email-login' });
+    setState({ sheet: 'signup', authMode: 'choose' });
   };
 
   window.__showParentGate = function () {
     playSound('tap');
+    if (!state.authed) {
+      setState({ sheet: 'signup', authReason: 'parent' });
+      return;
+    }
     setState({ sheet: 'parentGate' });
   };
 
@@ -1532,6 +1552,7 @@ export const clientApp = `
         var afterScreen = state.authReason === 'story' ? 'storyhome' : (state.authReason === 'tanken' ? 'tanken' : null);
         var newState = { authed: true, userId: data.id, tickets: data.tickets || 0, sheet: null, authMode: 'choose', authError: '', authReason: null };
         if (afterScreen) newState.screen = afterScreen;
+        if (state.authReason === 'parent') newState.sheet = 'parentGate';
         setState(newState);
         if (afterScreen === 'storyhome') { fetchStories(); }
       });
@@ -1650,7 +1671,8 @@ export const clientApp = `
             body: JSON.stringify({ word: word })
           });
         }
-        setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', zukanWords: col, lastHakken: false, handwriting: hw });
+        var revealSheet = (!state.authed && state.revealKind === 'review') ? 'signup' : null;
+        setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', zukanWords: col, lastHakken: false, handwriting: hw, sheet: revealSheet });
       }
     } else {
       playSound('confirm');
@@ -1752,7 +1774,9 @@ export const clientApp = `
     }
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false });
+    var hw = Object.assign({}, state.handwriting);
+    hw[word] = [];
+    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false, handwriting: hw });
   };
 
   window.__tkAdd = function(ch) {
@@ -1862,9 +1886,6 @@ export const clientApp = `
       body: JSON.stringify({ word: word })
     })
     .then(function(res) {
-      if (res.status === 401) {
-        return { description: 'あたらしく はっけんした ことばだよ！', image_url: null, cached: false };
-      }
       if (res.status === 402) {
         clearTimeout(phaseTimer);
         setState({ screen: 'tankenlimit', limitWord: word });

@@ -31,14 +31,14 @@ dev.get("/auto-login", async (c) => {
         "INSERT INTO auth_users (id, email, password_hash) VALUES (?, ?, ?)"
       ).bind(id, TEST_EMAIL, passwordHash),
       c.env.DB.prepare(
-        "INSERT OR IGNORE INTO user_settings (id) VALUES (?)"
+        "INSERT OR IGNORE INTO user_settings (id, image_style) VALUES (?, 'ehon')"
       ).bind(id),
     ]);
     user = { id };
   }
 
   await c.env.DB.prepare(
-    "INSERT OR IGNORE INTO user_settings (id) VALUES (?)"
+    "INSERT OR IGNORE INTO user_settings (id, image_style) VALUES (?, 'ehon')"
   ).bind(user.id).run();
 
   const balance = await getTicketBalance(c.env.DB, user.id);

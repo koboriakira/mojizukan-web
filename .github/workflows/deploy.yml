@@ -45,7 +45,7 @@ jobs:
       - name: Compute preview name
         id: slug
         run: |
-          BRANCH_SLUG=$(echo "${{ github.head_ref }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-28)
+          BRANCH_SLUG=$(echo "${{ github.head_ref }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-28 | sed 's/-*$//')
           PREVIEW_NAME="mojizukan-pre-${BRANCH_SLUG}"
           echo "name=${PREVIEW_NAME}" >> "$GITHUB_OUTPUT"
 
@@ -129,7 +129,7 @@ jobs:
             DESC=$(python3 -c "import json; d=json.load(open('$desc_file')); print(d['description'].replace(\"'\",\"''\"))")
             for STYLE in $STYLES; do
               if [ -f "cache-samples/images/${STYLE}_${WORD}.webp" ]; then
-                SQL="${SQL}INSERT OR IGNORE INTO shared_cache (word, style, image_url, description) VALUES ('${WORD}', '${STYLE}', '/images/cache/${STYLE}_${WORD}.webp', '${DESC}');"
+                SQL="${SQL}INSERT OR REPLACE INTO shared_cache (word, style, image_url, description) VALUES ('${WORD}', '${STYLE}', '/api/images/cache/${STYLE}_${WORD}.webp', '${DESC}');"
               fi
             done
           done
@@ -187,7 +187,7 @@ jobs:
             DESC=$(python3 -c "import json; d=json.load(open('$desc_file')); print(d['description'].replace(\"'\",\"''\"))")
             for STYLE in $STYLES; do
               if [ -f "cache-samples/images/${STYLE}_${WORD}.webp" ]; then
-                SQL="${SQL}INSERT OR IGNORE INTO shared_cache (word, style, image_url, description) VALUES ('${WORD}', '${STYLE}', '/images/cache/${STYLE}_${WORD}.webp', '${DESC}');"
+                SQL="${SQL}INSERT OR REPLACE INTO shared_cache (word, style, image_url, description) VALUES ('${WORD}', '${STYLE}', '/api/images/cache/${STYLE}_${WORD}.webp', '${DESC}');"
               fi
             done
           done

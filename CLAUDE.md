@@ -162,6 +162,16 @@ decisions のユーザータイプ別フローが E2E テストの骨格にな�
 - 各コンテキストの概要: `docs/contexts/<ctx>/canvas.md`
 - 集約の不変条件: `docs/contexts/kotoba-atsume/aggregates/zukan-entry.md`
 
+## 開発の進め方
+
+ユーザーからの要望・議論に対して、以下の順序で進める。
+
+1. **docs 更新の要否を判定する** — グロッサリー・ADR・Canvas・集約定義など、ドメインナレッジに影響があるか確認し、先に更新する
+2. **要件・受入条件を整理して Issue を作成する** — 実装スコープを明確にする
+3. **実装に進む** — docs と Issue が整った状態で着手する
+
+`docs/` 以下のナレッジの更新・最新化を最重要視すること。コードより先にドメインモデルを正しくする。
+
 ## Issue 実装フロー
 
 GitHub Issue の機能実装を開始するときは `/dev-pipeline start <Issue番号>` を実行する。

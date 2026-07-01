@@ -80,12 +80,23 @@ jobs:
             echo "No tables to drop"
           else
             echo "Dropping tables: $TABLES"
-            for table in $TABLES; do
-              npx wrangler d1 execute mojizukan-db --remote \
-                --command "DROP TABLE IF EXISTS \"$table\";" 2>/dev/null
-              echo "  ✓ $table"
+            for attempt in 1 2 3; do
+              REMAINING=""
+              for table in $TABLES; do
+                npx wrangler d1 execute mojizukan-db --remote \
+                  --command "DROP TABLE IF EXISTS \"$table\";" 2>/dev/null \
+                  && echo "  ✓ $table" \
+                  || REMAINING="${REMAINING} ${table}"
+              done
+              TABLES="$REMAINING"
+              if [ -z "$TABLES" ]; then break; fi
+              echo "  Retry (attempt $((attempt+1))): $TABLES"
             done
           fi
+
+          echo "Clearing migration history..."
+          npx wrangler d1 execute mojizukan-db --remote \
+            --command "DELETE FROM d1_migrations;"
 
           echo "Applying migrations..."
           npx wrangler d1 migrations apply mojizukan-db --remote

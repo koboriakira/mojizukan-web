@@ -129,7 +129,7 @@ jobs:
             DESC=$(python3 -c "import json; d=json.load(open('$desc_file')); print(d['description'].replace(\"'\",\"''\"))")
             for STYLE in $STYLES; do
               if [ -f "cache-samples/images/${STYLE}_${WORD}.webp" ]; then
-                SQL="${SQL}INSERT OR IGNORE INTO shared_cache (word, style, image_url, description) VALUES ('${WORD}', '${STYLE}', '/images/cache/${STYLE}_${WORD}.webp', '${DESC}');"
+                SQL="${SQL}INSERT OR REPLACE INTO shared_cache (word, style, image_url, description) VALUES ('${WORD}', '${STYLE}', '/api/images/cache/${STYLE}_${WORD}.webp', '${DESC}');"
               fi
             done
           done
@@ -189,7 +189,7 @@ jobs:
             DESC=$(python3 -c "import json; d=json.load(open('$desc_file')); print(d['description'].replace(\"'\",\"''\"))")
             for STYLE in $STYLES; do
               if [ -f "cache-samples/images/${STYLE}_${WORD}.webp" ]; then
-                SQL="${SQL}INSERT OR IGNORE INTO shared_cache (word, style, image_url, description) VALUES ('${WORD}', '${STYLE}', '/images/cache/${STYLE}_${WORD}.webp', '${DESC}');"
+                SQL="${SQL}INSERT OR REPLACE INTO shared_cache (word, style, image_url, description) VALUES ('${WORD}', '${STYLE}', '/api/images/cache/${STYLE}_${WORD}.webp', '${DESC}');"
               fi
             done
           done

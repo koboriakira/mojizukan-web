@@ -75,11 +75,11 @@ test("保護者ゲート → メニュー → はっけん準備 → 登録", as
   });
   await expect(page.getByText("学習の記録")).toBeVisible();
 
-  // みつけることばの準備カード
-  await expect(page.getByText("「みつける」ことばの準備")).toBeVisible();
+  // ことばを準備するセクション
+  await expect(page.getByText("ことばを 準備する")).toBeVisible();
 
   // 未登録 → signup シート
-  await page.getByRole("button", { name: "言葉を登録する" }).click();
+  await page.getByRole("button", { name: "ことばを 登録する" }).click();
   await expect(page.getByText("じぶんの 図鑑を とっておこう")).toBeVisible();
 
   // 登録をモック（実際のAPI呼び出しはE2Eの範囲外）
@@ -94,7 +94,7 @@ test("保護者ゲート → メニュー → はっけん準備 → 登録", as
   await expect(page.getByText("学習の記録")).toBeVisible();
 
   // 認証済みなので今度は prep へ遷移
-  await page.getByRole("button", { name: "言葉を登録する" }).click();
+  await page.getByRole("button", { name: "ことばを 登録する" }).click();
 
   // prep 画面へ
   await expect(

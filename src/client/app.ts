@@ -440,7 +440,7 @@ export const clientApp = `
     }
 
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
-      '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:#5a5145;">' + title + '</div>' +
       '<div style="margin:14px 0 4px;">' + renderEmojiOrImage(preset.image_url || getHakkenImageUrl(word), 130) + '</div>' +
       '<div style="display:flex;align-items:center;justify-content:center;gap:8px;">' +
         renderWordWithHandwriting(word, s.handwriting) +

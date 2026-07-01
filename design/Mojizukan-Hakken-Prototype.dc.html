@@ -87,11 +87,23 @@
     <!-- ===== REVEAL ===== -->
     <sc-if value="{{ isReveal }}" hint-placeholder-val="{{ true }}">
     <div data-screen-label="のったよ" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-      <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:30px;color:var(--accent,#e8714c);">{{ revealTitle }}</div>
-      <div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;font-size:120px;margin-top:20px;overflow:hidden;background:{{ frameBg }};border:{{ frameBorder }};border-radius:{{ frameRadius }};box-shadow:{{ frameShadow }};transform:rotate({{ frameRotate }});animation:pop .4s cubic-bezier(.2,.9,.3,1.2);"><span style="filter:{{ frameFilter }};line-height:1;">{{ revealEmoji }}</span></div>
+      <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:30px;color:#5a5145;">{{ revealTitle }}</div>
+
+      <!-- 主役：じぶんで かいた もじ -->
+      <div style="margin-top:18px;display:flex;flex-direction:column;align-items:center;">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:#fff4d6;border:1.5px solid #f0d896;color:#a9791f;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:14px;padding:6px 16px;border-radius:99px;box-shadow:0 3px 0 rgba(0,0,0,.05);">✏️ じぶんで かけたよ！</div>
+        <div style="margin-top:12px;background:#fff;border:3px solid #efe6d4;border-radius:26px;box-shadow:0 8px 22px rgba(120,100,60,.16);padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:132px;animation:pop .4s cubic-bezier(.2,.9,.3,1.2);">{{ revealHwEls }}</div>
+      </div>
+
       <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:46px;margin-top:16px;">{{ revealWord }}</div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;">
-        <div style="display:inline-flex;align-items:center;gap:5px;background:#fff;border:1.5px solid var(--cbd,#f0e4d0);color:#8a7a58;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:700;font-size:13px;padding:5px 12px;border-radius:99px;">🎨 {{ styleName }}</div>
+
+      <!-- ふろく：AIが えに してくれた -->
+      <div style="display:flex;align-items:center;gap:12px;margin-top:14px;background:#fbf7ef;border:1px solid var(--cbd,#f0e4d0);border-radius:18px;padding:10px 14px;">
+        <div style="width:60px;height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;background:{{ frameBg }};border:{{ frameBorder }};border-radius:{{ frameRadius }};box-shadow:{{ frameShadow }};transform:rotate({{ frameRotate }});"><span style="filter:{{ frameFilter }};line-height:1;">{{ revealEmoji }}</span></div>
+        <div style="text-align:left;">
+          <div style="font-size:12px;color:#9a8f7e;font-weight:700;">AIが えに してくれたよ</div>
+          <div style="display:inline-flex;align-items:center;gap:5px;background:#fff;border:1.5px solid var(--cbd,#f0e4d0);color:#8a7a58;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:700;font-size:12.5px;padding:4px 11px;border-radius:99px;margin-top:5px;">🎨 {{ styleName }}</div>
+        </div>
       </div>
       <div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;margin-top:14px;">{{ revealDesc }}</div>
       <sc-if value="{{ isReviewReveal }}">
@@ -638,7 +650,7 @@
         <div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>
         <div style="text-align:center;font-size:46px;">🎨</div>
         <div style="text-align:center;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:23px;margin-top:8px;">「{{ regenWord }}」の えを つくりなおす？</div>
-        <div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">いまの「🎨 {{ styleName }}」スタイルで もういちど 生成します。<br><b style="color:var(--accent3d,#9c4d70);">チケットは つかいません。</b></div>
+        <div style="text-align:center;font-size:14px;color:#7a7060;line-height:1.7;margin-top:8px;">いまの「🎨 {{ styleName }}」スタイルで もういちど 生成します。<br><b style="color:{{ regenCostColor }};">{{ regenCostText }}</b></div>
         <div style="background:#faf4ea;border:1px dashed #e7d9c2;border-radius:14px;padding:12px 14px;margin-top:16px;font-size:12.5px;color:#8a7a58;font-weight:700;line-height:1.6;text-align:center;">スタイルを かえてから つくりなおすと、あたらしい タッチで 生成されます（保護者メニューの「えの スタイル」）。</div>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
           <button class="tap" onClick="{{ confirmRegen }}" style="min-height:64px;border-radius:18px;background:var(--accent3,#c2698f);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:18px;box-shadow:0 5px 0 var(--accent3d,#9c4d70);">🔁 つくりなおす</button>
@@ -657,26 +669,11 @@
         <div style="min-width:56px;height:40px;border-radius:20px;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;gap:4px;padding:0 10px;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;">🎟️ {{ tickets }}</div>
       </div>
 
-      <!-- 編集セッション状態 -->
-      <sc-if value="{{ csActive }}">
-        <div style="display:flex;align-items:center;gap:12px;background:linear-gradient(100deg,#e3f0e6,#eef9f0);border:1.5px solid #bcdcc6;border-radius:16px;padding:12px 16px;margin:6px 0 14px;">
-          <span style="font-size:24px;">⏱️</span>
-          <div style="flex:1;">
-            <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;color:#3f7a52;">サンプル画像を生成できます</div>
-            <div style="font-size:12px;color:#6b8a72;font-weight:700;margin-top:1px;">この時間内は何度でも試し生成が可能です</div>
-          </div>
-          <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:26px;color:#3f7a52;font-variant-numeric:tabular-nums;letter-spacing:.02em;">{{ csClock }}</div>
-        </div>
-      </sc-if>
-      <sc-if value="{{ csExpired }}">
-        <div style="display:flex;align-items:center;gap:12px;background:#f5f1ea;border:1.5px solid #e0d6c5;border-radius:16px;padding:12px 16px;margin:6px 0 14px;">
-          <span style="font-size:24px;">✏️</span>
-          <div style="flex:1;">
-            <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;color:#7a6b54;">編集はいつでも可能です</div>
-            <div style="font-size:12px;color:#9a8f7e;font-weight:700;margin-top:1px;">サンプル生成にはチケットが1枚必要です</div>
-          </div>
-        </div>
-      </sc-if>
+      <!-- 案内：編集・保存は無料／生成のみ🎟️1 -->
+      <div style="display:flex;align-items:center;gap:11px;background:#f3edfa;border:1.5px solid #ddccef;border-radius:16px;padding:12px 15px;margin:6px 0 14px;">
+        <span style="font-size:22px;">💡</span>
+        <div style="font-size:12.5px;color:#6b5a86;font-weight:700;line-height:1.6;">プロンプトの へんしゅう・ほぞんは いつでも 無料。<b style="color:#7a4fa0;">サンプルを 生成する ときだけ 🎟️1枚</b> つかいます。</div>
+      </div>
 
       <!-- スタイル名 -->
       <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:14px;color:#6b6256;margin-bottom:6px;">スタイル名</div>
@@ -691,7 +688,10 @@
 
       <!-- サンプル生成 -->
       <div style="background:var(--card,#fff8ee);border:1px solid var(--cbd,#f0e4d0);border-radius:18px;padding:16px;margin-top:16px;">
-        <div style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;color:#6b6256;margin-bottom:10px;">サンプル</div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:15px;color:#6b6256;">サンプル</span>
+          <span style="font-size:11.5px;color:#9a8f7e;font-weight:700;">「{{ csSampleWord }}」で ためします</span>
+        </div>
 
         <sc-if value="{{ csGenerating }}">
           <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:22px 0;">
@@ -713,12 +713,9 @@
           <div style="text-align:center;font-size:11px;color:#b6ab9a;font-weight:700;margin-top:8px;">このプロンプトで生成したサンプルです</div>
         </sc-if>
 
-        <sc-if value="{{ csActive }}">
-          <button class="tap" onClick="{{ csGenerate }}" style="width:100%;min-height:58px;border-radius:14px;background:{{ csGenBg }};color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:16px;box-shadow:0 4px 0 {{ csGenSh }};margin-top:14px;">🎨 サンプルを生成</button>
-        </sc-if>
-        <sc-if value="{{ csExpired }}">
-          <button class="tap" onClick="{{ startCsSession }}" style="width:100%;min-height:58px;border-radius:14px;background:var(--accent3,#c2698f);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:16px;box-shadow:0 4px 0 var(--accent3d,#9c4d70);margin-top:14px;">🎟️ チケットを使って15分間サンプルを試す</button>
-          <div style="text-align:center;font-size:11px;color:#9a8f7e;font-weight:700;margin-top:8px;line-height:1.5;">チケットを1枚使うと、15分間サンプル生成を何度でもお試しいただけます。</div>
+        <sc-if value="{{ csShowGenBtn }}">
+          <button class="tap" onClick="{{ csGenerate }}" style="width:100%;min-height:58px;border-radius:14px;background:{{ csGenBg }};color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:16px;box-shadow:0 4px 0 {{ csGenSh }};margin-top:14px;">{{ csGenLabel }}</button>
+          <div style="text-align:center;font-size:11px;color:#9a8f7e;font-weight:700;margin-top:8px;line-height:1.5;">{{ csGenHint }}</div>
         </sc-if>
       </div>
 
@@ -784,10 +781,10 @@
       <div onClick="{{ stop }}" style="width:100%;max-width:560px;background:#fff;border-radius:28px 28px 0 0;padding:26px 24px 32px;animation:sheetUp .28s cubic-bezier(.2,.8,.2,1);">
         <div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>
         <div style="text-align:center;font-size:40px;">🎟️</div>
-        <div style="text-align:center;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:20px;margin-top:8px;">チケットを1枚使用します</div>
-        <p style="text-align:center;font-size:13.5px;color:#6b6256;line-height:1.8;margin:10px 0 4px;">これから <b style="color:#7a4fa0;">15分間</b>、プロンプトのサンプルを何度でも生成できます。<br>15分を過ぎると編集は引き続き可能ですが、サンプル生成はできなくなります。</p>
+        <div style="text-align:center;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:20px;margin-top:8px;">サンプルを 1まい 生成します</div>
+        <p style="text-align:center;font-size:13.5px;color:#6b6256;line-height:1.8;margin:10px 0 4px;">「{{ csSampleWord }}」を いまの プロンプトで 生成します。<br><b style="color:#7a4fa0;">🎟️1枚 つかいます。</b>（オリジナルは まいかい 生成します）<br>生成の あと <b style="color:#7a4fa0;">60びょう</b> は つづけて 生成できません。</p>
         <div style="text-align:center;font-size:12px;color:#9a8f7e;font-weight:700;margin:10px 0 20px;">残りチケット：🎟️ {{ tickets }} 枚</div>
-        <button class="tap" onClick="{{ confirmCsStart }}" style="width:100%;min-height:62px;border-radius:16px;background:var(--accent3,#c2698f);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:17px;box-shadow:0 5px 0 var(--accent3d,#9c4d70);">使用して始める</button>
+        <button class="tap" onClick="{{ confirmCsStart }}" style="width:100%;min-height:62px;border-radius:16px;background:var(--accent3,#c2698f);color:#fff;font-family:var(--fhead,'Zen Maru Gothic'),sans-serif;font-weight:900;font-size:17px;box-shadow:0 5px 0 var(--accent3d,#9c4d70);">🎟️1枚 つかって 生成</button>
         <button class="tap" onClick="{{ closeSheet }}" style="width:100%;min-height:48px;color:#9a8f7e;font-weight:700;font-size:15px;margin-top:8px;">キャンセル</button>
       </div>
     </div>
@@ -826,7 +823,7 @@ class Component extends DCLogic {
       handwriting:{}, storySel:[], stories:[], storyPage:0, readingStoryId:null, authReason:null,
       mode:'omakase', seeded:['きりん','つき'], discovering:false, prepInput:'', prepSel:[],
       tankenChars:[], tankenMsg:null, dailyHakkenMax:3, dailyHakkenUsed:0, tankenMode:false, revealKind:'normal', limitWord:'', imgStyle:'ehon',
-      customStyle:null, csName:'', csPrompt:'', editSessionEnd:null, csGenerating:false, csSamples:[],
+      customStyle:null, csName:'', csPrompt:'', csCooldownEnd:0, csGenerating:false, csSamples:[],
       genCached:false, genPhase:1, genRegen:false };
     this._lastPromptCount=0;
     this._wimgs=[];
@@ -892,26 +889,33 @@ class Component extends DCLogic {
   openStyleSheet(){ this.setState({sheet:'style'}); }
   pickStyle(k){ this.setState({imgStyle:k}); }
   // ----- カスタムスタイル（保護者が自作） -----
-  get EDIT_MS(){ return 15*60*1000; }
+  get COOLDOWN_MS(){ return 60000; }
+  get CS_SAMPLE_WORD(){ return 'ねこ'; }
   customFrame(){ const cs=this.state.customStyle; return {
     name: cs? cs.name : 'カスタム', desc: cs? 'じぶんで つくった プロンプト' : 'プロンプトから せいせい',
     bg:'linear-gradient(135deg,#efe6ff 0%,#fff2f7 50%,#e6f6ff 100%)', border:'2px dashed #c2a8e0',
     shadow:'0 10px 26px rgba(150,120,200,.28)', swShadow:'0 4px 12px rgba(150,120,200,.28)',
     radius:'30px', swRadius:'16px', filter:'saturate(1.05)', rotate:'0deg' }; }
-  get csRemainMs(){ const e=this.state.editSessionEnd; return e? Math.max(0, e-Date.now()) : 0; }
-  get csActive(){ return this.csRemainMs>0; }
+  get csCoolMs(){ return Math.max(0, (this.state.csCooldownEnd||0) - Date.now()); }
+  get csCooling(){ return this.csCoolMs>0; }
   goCustomStyle(){ const cs=this.state.customStyle;
-    this.setState({ sheet:null, screen:'customstyle', csGenerating:false, csSamples:[],
+    this.setState({ sheet:null, screen:'customstyle', csGenerating:false, csSamples:[], csCooldownEnd:0,
       csName: cs? cs.name : '',
       csPrompt: cs? cs.prompt : '' }); }
   csNameChange(e){ this.setState({csName:e.target.value}); }
   csPromptChange(e){ this.setState({csPrompt:e.target.value}); }
-  startCsSession(){ if(this.state.tickets<=0){ this.setState({sheet:'tickets'}); return; } this.setState({sheet:'customstart'}); }
-  confirmCsStart(){ this.setState({ sheet:null, tickets:this.state.tickets-1, editSessionEnd:Date.now()+this.EDIT_MS, csSamples:[] }); }
-  csGenerate(){ if(!this.csActive || this.state.csGenerating) return;
-    this.setState({csGenerating:true, csSamples:[]});
+  // 生成のたびに🎟️1枚。生成直後は60秒クールダウン（多重リクエスト＝AI費用増を抑止）
+  csGenerate(){ if(this.state.csGenerating || this.csCooling) return;
+    if(this.state.tickets<=0){ this.setState({sheet:'tickets'}); return; }
+    this.setState({sheet:'customstart'}); }
+  confirmCsStart(){ if(this.state.tickets<=0){ this.setState({sheet:'tickets'}); return; }
+    this.setState({ sheet:null, tickets:this.state.tickets-1, csGenerating:true });
     clearTimeout(this._csT);
-    this._csT=setTimeout(()=>{ this.setState({csGenerating:false, csSamples:[{e:'🦊'},{e:'🌙'},{e:'🍎'}]}); }, 1700); }
+    this._csT=setTimeout(()=>{
+      const smp={e:(this.PRESETS[this.CS_SAMPLE_WORD]||{}).e || '🐱'};
+      const next=[...this.state.csSamples, smp].slice(-3);
+      this.setState({csGenerating:false, csSamples:next, csCooldownEnd:Date.now()+this.COOLDOWN_MS});
+    }, 1700); }
   saveCustomStyle(){ const name=(this.state.csName||'').trim()||'カスタム';
     this.setState({ customStyle:{name, prompt:(this.state.csPrompt||'').trim()}, imgStyle:'custom', screen:'parent' }); }
   get ROWS(){ return [['あ','い','う','え','お'],['か','き','く','け','こ'],['さ','し','す','せ','そ'],['た','ち','つ','て','と'],['な','に','ぬ','ね','の'],['は','ひ','ふ','へ','ほ'],['ま','み','む','め','も'],['や','','ゆ','','よ'],['ら','り','る','れ','ろ'],['わ','','ん','','を']]; }
@@ -935,7 +939,7 @@ class Component extends DCLogic {
   }; }
 
   componentDidMount(){ this.applyTheme(); if(this.state.screen==='write') this.setupCanvas();
-    this._csTick=setInterval(()=>{ if(this.state.editSessionEnd && this.state.screen==='customstyle') this.forceUpdate(); }, 1000); }
+    this._csTick=setInterval(()=>{ if(this.state.screen==='customstyle' && this.csCooling) this.forceUpdate(); }, 1000); }
   componentWillUnmount(){ clearInterval(this._csTick); clearTimeout(this._csT); clearTimeout(this._hk); clearTimeout(this._hk2); }
   componentDidUpdate(){
     this.applyTheme();
@@ -1169,8 +1173,11 @@ class Component extends DCLogic {
     }
   }
   // 再はっけん（同じ言葉で 再生成・チケット不要）：詳細から実行し、詳細へ戻る
-  openRegen(){ this.setState({sheet:'regen'}); }
-  confirmRegen(){ const w=this.state.detailWord; this.setState({ sheet:null, screen:'hakkengen', word:w, genRegen:true }, ()=>this.startHakkenGen()); }
+  regenCharges(){ const w=this.state.detailWord; return this.state.imgStyle==='custom' || !this._imgCache.has(this.cacheKey(w)); }
+  openRegen(){ if(this.regenCharges() && this.state.tickets<=0){ this.setState({sheet:'tickets'}); return; } this.setState({sheet:'regen'}); }
+  confirmRegen(){ const w=this.state.detailWord; const charge=this.regenCharges();
+    if(charge && this.state.tickets<=0){ this.setState({sheet:'tickets'}); return; }
+    this.setState({ sheet:null, screen:'hakkengen', word:w, genRegen:true, tickets: charge? this.state.tickets-1 : this.state.tickets }, ()=>this.startHakkenGen()); }
   // おはなしショートカット：いま発見/表示中の語を選択済みで ことばえらびへ（ゲストは登録ゲート）
   storyFromWord(w){ if(!w) return; if(!this.state.authed){ this.setState({sheet:'signup', authReason:'story'}); return; } this.setState({screen:'storypick', storySel:[w], sheet:null}); }
   finishHakken(){
@@ -1289,9 +1296,12 @@ class Component extends DCLogic {
       onPick:()=>this.pickStyle(k) }; });
     // ----- カスタムスタイル -----
     const cf=this.customFrame();
-    const csRemain=this.csRemainMs, csActive=csRemain>0;
-    const csMin=Math.floor(csRemain/60000), csSec=Math.floor((csRemain%60000)/1000);
-    const csClock=String(csMin).padStart(2,'0')+':'+String(csSec).padStart(2,'0');
+    const csCoolMs=this.csCoolMs, csCooling=csCoolMs>0, csCoolSec=Math.ceil(csCoolMs/1000);
+    const regenCharge = s.imgStyle==='custom' || !this._imgCache.has(this.cacheKey(s.detailWord));
+    const revealHwImgs = (s.handwriting[word]||[]);
+    const revealHwEls = revealHwImgs.length
+      ? revealHwImgs.map((src,i)=>React.createElement('img',{key:i,src,alt:'',style:{height:'104px',width:'104px',objectFit:'contain',display:'block'}}))
+      : React.createElement('span',{style:{fontSize:'92px',lineHeight:1,filter:sf.filter}}, cur.e||this.HAKKEN_EMOJI[word]||'⭐');
     return {
       styleName:sf.name, sheetStyle:s.sheet==='style', styleOptions,
       openStyleSheet:()=>this.openStyleSheet(),
@@ -1302,17 +1312,21 @@ class Component extends DCLogic {
       goCustomStyle:()=>this.goCustomStyle(),
       isCustomStyle:s.screen==='customstyle',
       csName:s.csName, csPrompt:s.csPrompt, csNameChange:(e)=>this.csNameChange(e), csPromptChange:(e)=>this.csPromptChange(e),
-      csActive, csClock, csExpired:!csActive,
+      csSampleWord:this.CS_SAMPLE_WORD,
       csGenerating:s.csGenerating, csSamples:s.csSamples, hasCsSamples:s.csSamples.length>0,
-      csCanGen: csActive && !s.csGenerating,
-      csGenBg: (csActive&&!s.csGenerating)?'var(--accent3,#c2698f)':'#d8cfc0', csGenSh:(csActive&&!s.csGenerating)?'var(--accent3d,#9c4d70)':'#bfb6a6',
-      startCsSession:()=>this.startCsSession(), csGenerate:()=>this.csGenerate(), saveCustomStyle:()=>this.saveCustomStyle(),
+      csShowGenBtn: !s.csGenerating,
+      csGenLabel: csCooling? ('つぎは あと '+csCoolSec+'びょう') : '🎨 サンプルを生成（🎟️1）',
+      csGenHint: csCooling? 'れんぞくの 生成を ふせぐため 60びょう まってね。' : '生成のたびに 🎟️1枚。ためした え は のこして 見くらべできます。',
+      csGenBg: csCooling?'#d8cfc0':'var(--accent3,#c2698f)', csGenSh: csCooling?'#bfb6a6':'var(--accent3d,#9c4d70)',
+      csGenerate:()=>this.csGenerate(), saveCustomStyle:()=>this.saveCustomStyle(),
       sheetCustomstart:s.sheet==='customstart', confirmCsStart:()=>this.confirmCsStart(),
+      revealHwEls,
       frameBg:sf.bg, frameBorder:sf.border, frameShadow:sf.shadow, frameRadius:sf.radius, frameFilter:sf.filter, frameRotate:sf.rotate,
       rootRef:this.rootRef, canvasRef:this.canvasRef, gateBarRef:this.gateBarRef,
       isHome:s.screen==='home', isWrite:s.screen==='write', isReveal:s.screen==='reveal', isZukan:s.screen==='zukan', isDetail:s.screen==='detail', isParent:s.screen==='parent',
       isStoryPick:s.screen==='storypick', isStoryHome:s.screen==='storyhome', isStoryRead:s.screen==='storyread',
       openRegen:()=>this.openRegen(), confirmRegen:()=>this.confirmRegen(), sheetRegen:s.sheet==='regen', regenWord:s.detailWord,
+      regenCostText: regenCharge? '🎟️1まい つかいます。' : 'チケットは つかいません。', regenCostColor: regenCharge? 'var(--accent3d,#9c4d70)' : '#3f7a52',
       storyFromReveal:()=>this.storyFromWord(s.word), storyFromDetail:()=>this.storyFromWord(s.detailWord),
       isPrep:s.screen==='prep', isHakkenGen:s.screen==='hakkengen',
       genHit:s.genCached, genMiss:!s.genCached, genMiss1:!s.genCached&&s.genPhase===1, genMiss2:!s.genCached&&s.genPhase===2,

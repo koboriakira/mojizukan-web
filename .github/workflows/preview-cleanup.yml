@@ -7,6 +7,9 @@ on:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -14,12 +17,27 @@ jobs:
           node-version: "22"
           cache: "npm"
       - run: npm ci
-      - name: Delete preview worker
+
+      - name: Compute preview name
+        id: slug
         run: |
-          BRANCH_SLUG=$(echo "${{ github.head_ref }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-20)
-          PREVIEW_NAME="mojizukan-preview-${BRANCH_SLUG}"
-          echo "Deleting preview worker: ${PREVIEW_NAME}"
-          npx wrangler delete --name "${PREVIEW_NAME}" --force 2>&1 || echo "Worker not found or already deleted"
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BRANCH_SLUG=$(echo "${{ github.head_ref }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-28)
+          PREVIEW_NAME="mojizukan-pre-${BRANCH_SLUG}"
+          echo "name=${PREVIEW_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Delete preview Worker
+        run: |
+          echo "Deleting Worker: ${{ steps.slug.outputs.name }}"
+          npx wrangler delete --name "${{ steps.slug.outputs.name }}" --force 2>&1 || echo "Worker not found or already deleted"
+
+      - name: Delete preview D1
+        run: |
+          DB_NAME="${{ steps.slug.outputs.name }}-db"
+          echo "Deleting D1: ${DB_NAME}"
+          npx wrangler d1 delete "${DB_NAME}" --skip-confirmation 2>&1 || echo "D1 not found or already deleted"
+
+      - name: Delete preview R2 bucket
+        run: |
+          BUCKET_NAME="${{ steps.slug.outputs.name }}-images"
+          echo "Deleting R2 bucket: ${BUCKET_NAME}"
+          npx wrangler r2 bucket delete "${BUCKET_NAME}" 2>&1 || echo "R2 bucket not found or already deleted"

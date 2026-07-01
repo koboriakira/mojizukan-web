@@ -40,11 +40,14 @@ auth.post("/signup", async (c) => {
 
   const id = crypto.randomUUID();
   const passwordHash = await hashPassword(password);
-  await c.env.DB.prepare(
-    "INSERT INTO auth_users (id, email, password_hash) VALUES (?, ?, ?)"
-  )
-    .bind(id, email.toLowerCase(), passwordHash)
-    .run();
+  await c.env.DB.batch([
+    c.env.DB.prepare(
+      "INSERT INTO auth_users (id, email, password_hash) VALUES (?, ?, ?)"
+    ).bind(id, email.toLowerCase(), passwordHash),
+    c.env.DB.prepare(
+      "INSERT OR IGNORE INTO user_settings (id, image_style) VALUES (?, 'ehon')"
+    ).bind(id),
+  ]);
 
   await grantTicket(c.env.DB, id, SIGNUP_BONUS_TICKETS, "登録ボーナス");
 
@@ -212,11 +215,14 @@ auth.get("/google/callback", async (c) => {
       user = emailUser;
     } else {
       const id = crypto.randomUUID();
-      await c.env.DB.prepare(
-        "INSERT INTO auth_users (id, email, google_sub) VALUES (?, ?, ?)"
-      )
-        .bind(id, userInfo.email.toLowerCase(), userInfo.sub)
-        .run();
+      await c.env.DB.batch([
+        c.env.DB.prepare(
+          "INSERT INTO auth_users (id, email, google_sub) VALUES (?, ?, ?)"
+        ).bind(id, userInfo.email.toLowerCase(), userInfo.sub),
+        c.env.DB.prepare(
+          "INSERT OR IGNORE INTO user_settings (id, image_style) VALUES (?, 'ehon')"
+        ).bind(id),
+      ]);
       await grantTicket(c.env.DB, id, SIGNUP_BONUS_TICKETS, "登録ボーナス");
       user = { id };
     }

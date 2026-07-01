@@ -311,14 +311,8 @@ describe("clientApp", () => {
   });
 
   it("絵本ビュー画面のレンダリングロジックが含まれる", () => {
-    expect(clientApp).toContain("function renderStory");
-    expect(clientApp).toContain("storyPages");
+    expect(clientApp).toContain("function renderStoryRead");
     expect(clientApp).toContain("storyPage");
-  });
-
-  it("絵本のローディング表示が含まれる", () => {
-    expect(clientApp).toContain("AIが おはなしを かいているよ");
-    expect(clientApp).toContain("dotpulse");
   });
 
   it("絵本ページのトークン描画ロジックが含まれる", () => {
@@ -332,14 +326,8 @@ describe("clientApp", () => {
   });
 
   it("ページめくり操作関数が定義されている", () => {
-    expect(clientApp).toContain("window.__storyPrev");
-    expect(clientApp).toContain("window.__storyNext");
-    expect(clientApp).toContain("window.__storyRestart");
-  });
-
-  it("goStory が API を呼び出す", () => {
-    expect(clientApp).toContain("fetch('/api/story/stream'");
-    expect(clientApp).toContain("storyLoading: true");
+    expect(clientApp).toContain("window.__storyReadPrev");
+    expect(clientApp).toContain("window.__storyReadNext");
   });
 
   it("最終ページに もういちど と できた ボタンがある", () => {

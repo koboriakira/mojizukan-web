@@ -7,7 +7,7 @@
 - **ランタイム**: Cloudflare Workers
 - **フレームワーク**: Hono
 - **DB**: D1 (SQLite)
-- **画像ストレージ**: R2（未実装）
+- **画像ストレージ**: R2
 - **決済**: Stripe チケット制（未実装）
 - **言語**: TypeScript
 
@@ -102,14 +102,28 @@ npm run dev
 
 `wrangler.toml` の `database_id` は本番 D1 の UUID だが、`--local` / `wrangler dev` ではローカル SQLite が使われるため影響しない。
 
+## 環境構成
+
+wrangler environments で環境を分離する（構成A: 1アカウント方式）。
+
+| 環境 | Worker 名 | D1 | R2 | 用途 |
+|------|-----------|----|----|------|
+| root（将来の本番） | `mojizukan-web` | `mojizukan-db` | `mojizukan-images` | 本番用（当面未使用） |
+| staging | `mojizukan-web-staging` | `mojizukan-db-staging` | `mojizukan-images-staging` | 開発・検証用 |
+| preview | `mojizukan-pre-*` | エフェメラル | エフェメラル | PR ごとの使い捨て環境 |
+
+- bindings は環境間で継承されない。各環境で全 bindings を明示定義する
+- staging の secrets は `wrangler secret put <KEY> --env staging` で設定する
+- main マージで staging に自動デプロイされる
+
 ## マイグレーション
 
 ```bash
 # ローカル適用
 npx wrangler d1 migrations apply mojizukan-db --local
 
-# リモート適用（本番）
-npx wrangler d1 migrations apply mojizukan-db --remote
+# staging 適用
+npx wrangler d1 migrations apply mojizukan-db-staging --env staging --remote
 ```
 
 新しいマイグレーションは `migrations/NNNN_名前.sql` として追加する。
@@ -117,8 +131,8 @@ npx wrangler d1 migrations apply mojizukan-db --remote
 ### DB リセット
 
 ```bash
-bash bin/reset-db.sh          # ローカル DB をリセット
-bash bin/reset-db.sh --remote # リモート（ステージング）DB をリセット
+bash bin/reset-db.sh              # ローカル DB をリセット
+bash bin/reset-db.sh --env staging # staging DB をリセット
 ```
 
 全テーブルを DROP してマイグレーションを再適用する。リモート実行時は確認プロンプトあり。
@@ -162,8 +176,8 @@ PR 作成前に `/dev-pipeline finish <Issue番号>` を実行してスコープ
 
 ## デプロイ
 
-main ブランチへのマージで GitHub Actions が自動デプロイする。
-手動デプロイは `npm run deploy`。
+main ブランチへのマージで GitHub Actions が staging に自動デプロイする。
+手動デプロイは `npx wrangler deploy --env staging`。
 
 ### 必要なシークレット
 

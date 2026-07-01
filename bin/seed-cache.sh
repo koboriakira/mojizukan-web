@@ -1,17 +1,32 @@
 #!/bin/bash
 # 共有キャッシュの初期データを D1 + R2 に投入するスクリプト
 # 使い方:
-#   bash bin/seed-cache.sh                     # ローカル
-#   bash bin/seed-cache.sh --remote             # リモート（ステージング/本番）
-#   bash bin/seed-cache.sh --remote --name XXX  # 指定 Worker の R2 に投入
+#   bash bin/seed-cache.sh              # ローカル
+#   bash bin/seed-cache.sh --env staging # staging 環境
 set -euo pipefail
 
 REMOTE=""
-WORKER_NAME=""
+ENV_FLAG=""
+DB_NAME="mojizukan-db"
+BUCKET_NAME="mojizukan-images"
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --remote) REMOTE="--remote"; shift ;;
-    --name) WORKER_NAME="$2"; shift 2 ;;
+    --env)
+      ENV_FLAG="--env $2"
+      REMOTE="--remote"
+      DB_NAME="mojizukan-db-$2"
+      BUCKET_NAME="mojizukan-images-$2"
+      shift 2
+      ;;
+    --remote)
+      echo "⚠️  --remote は非推奨です。--env staging を使ってください"
+      ENV_FLAG="--env staging"
+      REMOTE="--remote"
+      DB_NAME="mojizukan-db-staging"
+      BUCKET_NAME="mojizukan-images-staging"
+      shift
+      ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -24,7 +39,7 @@ fi
 
 echo "=== 共有キャッシュ シード ==="
 echo "モード: ${REMOTE:-local}"
-[ -n "$WORKER_NAME" ] && echo "Worker: $WORKER_NAME"
+echo "DB: $DB_NAME / R2: $BUCKET_NAME"
 
 # --- R2 に画像をアップロード ---
 echo ""
@@ -38,7 +53,7 @@ for img in "$CACHE_DIR/images/"*.webp; do
   R2_KEY="cache/$FILENAME"
 
   echo "[$IMG_COUNT/$IMG_TOTAL] $FILENAME → $R2_KEY"
-  npx wrangler r2 object put "mojizukan-images/$R2_KEY" --file "$img" --content-type "image/webp" $REMOTE 2>/dev/null
+  npx wrangler r2 object put "$BUCKET_NAME/$R2_KEY" --file "$img" --content-type "image/webp" $REMOTE 2>/dev/null
 done
 
 # --- D1 に shared_cache レコードを投入 ---
@@ -69,7 +84,7 @@ with open('$CACHE_DIR/descriptions/$word.json') as f:
   done
 done
 
-echo -e "$SQL_STATEMENTS" | npx wrangler d1 execute mojizukan-db --command "$(echo -e "$SQL_STATEMENTS")" $REMOTE
+echo -e "$SQL_STATEMENTS" | npx wrangler d1 execute "$DB_NAME" --command "$(echo -e "$SQL_STATEMENTS")" $REMOTE
 
 echo ""
 echo "=== 完了 ==="

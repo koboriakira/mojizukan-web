@@ -431,13 +431,7 @@ export const clientApp = `
       : '<button onclick="window.__goMitsukeru()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🔍 つぎも みつける</button>';
 
     var reviewBanner = '';
-    if ((kind === 'review' || kind === 'tanken-rediscovery') && !s.authed) {
-      reviewBanner = '<div style="background:linear-gradient(135deg,#fef9ef,#fdf3e0);border:2px solid var(--accent);border-radius:18px;padding:16px;margin-top:20px;max-width:340px;text-align:center;">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent);margin-bottom:8px;">もっと あそぼう！</div>' +
-        '<div style="font-size:14px;color:#5a5145;line-height:1.7;margin-bottom:12px;">とうろくすると あたらしい ことばを はっけんできるよ。<br>たんけんや おはなしも たのしめるよ！</div>' +
-        '<button onclick="window.__showSignup()" style="width:100%;min-height:52px;border-radius:16px;background:var(--accent);font-size:18px;font-weight:900;box-shadow:0 4px 0 var(--accentd);">🔑 とうろくして つづきを あそぶ</button>' +
-      '</div>';
-    } else if (kind === 'review' || kind === 'tanken-rediscovery') {
+    if (kind === 'review' || kind === 'tanken-rediscovery') {
       reviewBanner = '<div style="background:linear-gradient(135deg,#fef9ef,#fdf3e0);border:2px solid var(--accent2);border-radius:18px;padding:16px;margin-top:20px;max-width:340px;text-align:left;">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:16px;color:var(--accent2);margin-bottom:8px;">もういちど はっけん しよう！</div>' +
         '<div style="font-size:14px;color:#5a5145;line-height:1.7;margin-bottom:10px;">なんども かけて すごい！<br>あたらしい ことばも かいて みたいね。</div>' +
@@ -1677,7 +1671,8 @@ export const clientApp = `
             body: JSON.stringify({ word: word })
           });
         }
-        setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', zukanWords: col, lastHakken: false, handwriting: hw });
+        var revealSheet = (!state.authed && state.revealKind === 'review') ? 'signup' : null;
+        setState({ confirmed: nc, charIndex: idx + 1, screen: 'reveal', zukanWords: col, lastHakken: false, handwriting: hw, sheet: revealSheet });
       }
     } else {
       playSound('confirm');

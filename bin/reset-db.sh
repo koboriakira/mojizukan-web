@@ -30,12 +30,15 @@ if [[ -z "$TABLES" ]]; then
 else
   echo "以下のテーブルを削除します:"
   echo "$TABLES"
+  DROP_SQL="PRAGMA foreign_keys = OFF;"
   for table in $TABLES; do
-    npx wrangler d1 execute mojizukan-db $REMOTE_FLAG \
-      --command "DROP TABLE IF EXISTS \"$table\";" 2>/dev/null
-    echo "  ✓ $table"
+    DROP_SQL="${DROP_SQL} DROP TABLE IF EXISTS \"${table}\";"
   done
+  npx wrangler d1 execute mojizukan-db $REMOTE_FLAG --command "$DROP_SQL"
 fi
+
+npx wrangler d1 execute mojizukan-db $REMOTE_FLAG \
+  --command "DELETE FROM d1_migrations;" 2>/dev/null
 
 echo ""
 echo "マイグレーションを適用中..."

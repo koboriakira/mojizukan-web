@@ -80,12 +80,16 @@ jobs:
             echo "No tables to drop"
           else
             echo "Dropping tables: $TABLES"
+            DROP_SQL="PRAGMA foreign_keys = OFF;"
             for table in $TABLES; do
-              npx wrangler d1 execute mojizukan-db --remote \
-                --command "DROP TABLE IF EXISTS \"$table\";" 2>/dev/null
-              echo "  ✓ $table"
+              DROP_SQL="${DROP_SQL} DROP TABLE IF EXISTS \"${table}\";"
             done
+            npx wrangler d1 execute mojizukan-db --remote --command "$DROP_SQL"
           fi
+
+          echo "Clearing migration history..."
+          npx wrangler d1 execute mojizukan-db --remote \
+            --command "DELETE FROM d1_migrations;"
 
           echo "Applying migrations..."
           npx wrangler d1 migrations apply mojizukan-db --remote

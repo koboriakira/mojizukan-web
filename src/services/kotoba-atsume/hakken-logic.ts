@@ -3,26 +3,26 @@ import { isNgWord } from "./ng-words";
 
 export interface ClassifyInput {
   word: string;
-  collected: string[];
+  zukanWords: string[];
   prepared: string[];
   ngList?: string[];
 }
 
 export interface RandomInput {
   n: number;
-  collected: string[];
+  zukanWords: string[];
   prepared: string[];
 }
 
 export type RandomMode = "normal" | "review" | "exhausted";
 
-export function classifyWord({ word, collected, prepared, ngList }: ClassifyInput): ClassifyResponse {
+export function classifyWord({ word, zukanWords, prepared, ngList }: ClassifyInput): ClassifyResponse {
   const effectiveNgList = ngList ?? [];
 
   if (effectiveNgList.some(ng => word.includes(ng)) || (ngList === undefined && isNgWord(word))) {
     return { status: 'ng', message: 'この ことばは つかえないよ' };
   }
-  if (collected.includes(word)) {
+  if (zukanWords.includes(word)) {
     return { status: 'rediscovery', message: 'もういちど はっけん！' };
   }
   if (prepared.includes(word)) {
@@ -31,9 +31,9 @@ export function classifyWord({ word, collected, prepared, ngList }: ClassifyInpu
   return { status: 'ok', message: 'はっけんOK' };
 }
 
-export function getRandomWords({ n, collected, prepared }: RandomInput): { words: string[]; mode: RandomMode } {
-  const collectedSet = new Set(collected);
-  const uncollectedPrepared = prepared.filter(w => !collectedSet.has(w));
+export function getRandomWords({ n, zukanWords, prepared }: RandomInput): { words: string[]; mode: RandomMode } {
+  const zukanSet = new Set(zukanWords);
+  const uncollectedPrepared = prepared.filter(w => !zukanSet.has(w));
   const shuffledPrepared = [...uncollectedPrepared].sort(() => Math.random() - 0.5);
 
   if (shuffledPrepared.length >= n) {
@@ -42,8 +42,8 @@ export function getRandomWords({ n, collected, prepared }: RandomInput): { words
 
   const result = shuffledPrepared.slice();
 
-  if (result.length < n && collected.length > 0) {
-    const reviewPool = [...collected].sort(() => Math.random() - 0.5);
+  if (result.length < n && zukanWords.length > 0) {
+    const reviewPool = [...zukanWords].sort(() => Math.random() - 0.5);
     const needed = n - result.length;
     result.push(...reviewPool.slice(0, needed));
     return { words: result, mode: shuffledPrepared.length === 0 ? "review" : "normal" };

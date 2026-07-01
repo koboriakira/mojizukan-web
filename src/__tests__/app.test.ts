@@ -63,7 +63,7 @@ describe("clientApp", () => {
     expect(clientApp).toContain("もういちど はっけん しよう！");
   });
 
-  it("goMitsukeru が pool=0 & collected あり で復習モードに遷移する", () => {
+  it("goMitsukeru が pool=0 & zukanWords あり で復習モードに遷移する", () => {
     expect(clientApp).toContain("'review'");
     expect(clientApp).toContain("reviewPick");
   });
@@ -166,8 +166,8 @@ describe("clientApp", () => {
     expect(clientApp).toContain("mojizukan_entries");
   });
 
-  it("mojizukan_discovered キーが定義されている", () => {
-    expect(clientApp).toContain("mojizukan_discovered");
+  it("mojizukan_hakken キーが定義されている", () => {
+    expect(clientApp).toContain("mojizukan_hakken");
   });
 
   it("mojizukan_handwriting キーが localStorage に保存される", () => {

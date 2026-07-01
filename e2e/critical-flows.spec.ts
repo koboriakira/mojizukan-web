@@ -121,6 +121,23 @@ test("保護者ゲート → メニュー → はっけん準備 → 登録", as
 test("みつける → prepared 語が出題 → hakkengen 演出", async ({ page }) => {
   const errors = collectErrors(page);
 
+  // ローカル E2E ではセッション Cookie を持たないため、実際の /api/hakken/generate は
+  // 401 を返す（Issue #193 でゲスト 401 フォールバックを廃止したため、モックせずに
+  // 呼ぶとエラー画面に遷移してしまう）。ログイン済みユーザーの生成成功パスを
+  // 決定論的に検証するため、レスポンスをモックする。
+  await page.route("**/api/hakken/generate", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        description: "みずべに くらす かめだよ。こうらが かたいんだ。",
+        image_url: "/images/mock-kame.webp",
+        cached: false,
+        rediscovery: false,
+      }),
+    });
+  });
+
   await page.goto("/");
 
   // prepared 語の発見フローを直接注入（ランダム性を排除）
@@ -149,10 +166,49 @@ test("みつける → prepared 語が出題 → hakkengen 演出", async ({ pag
   await page.evaluate(() => { (window as any).__setState({ drew: true }); });
   await page.getByRole("button", { name: "できた！" }).click();
 
-  // hakkengen → API フォールバック → Reveal
+  // hakkengen → generate API（モック） → Reveal
   await expect(page.getByText("みつけた！")).toBeVisible({
     timeout: 10_000,
   });
+
+  expect(errors).toEqual([]);
+});
+
+test("みつける → ゲストの generate 401 はフォールバックせずエラー画面へ (Issue #193)", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+
+  await page.goto("/");
+
+  // ゲスト（authed:false, セッション Cookie なし）が mitsuke 語をなぞり切ると
+  // discovering:true になり実際に /api/hakken/generate を呼ぶ。ローカルサーバーは
+  // セッションを持たないため 401 を返す。以前はここで image_url:null の即席
+  // オブジェクトにフォールバックしていたが、Issue #193 で廃止しエラー画面に
+  // 遷移するようになった。
+  await page.evaluate(() => {
+    (window as any).__setState({
+      authed: false,
+      screen: "trace",
+      word: "て",
+      charIndex: 0,
+      confirmed: [],
+      discovering: true,
+      revealKind: "mitsuke",
+      drew: true,
+    });
+  });
+
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.getByRole("button", { name: "できた！" }).click();
+
+  await expect(page.getByText("つくれなかったよ")).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(page.getByRole("button", { name: "もう いちど" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "ホームに もどる" })
+  ).toBeVisible();
 
   expect(errors).toEqual([]);
 });

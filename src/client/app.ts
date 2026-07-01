@@ -62,9 +62,7 @@ export const clientApp = `
     speak: true,
     theme: 'A',
     storySel: [],
-    storyPages: null,
     storyPage: 0,
-    storyLoading: false,
     storyFade: '',
     stories: [],
     readingStoryId: null,
@@ -218,7 +216,6 @@ export const clientApp = `
       case 'prep':        return renderPrep(s);
       case 'hakkengen': return renderHakkenGen(s);
       case 'hakkengenError': return renderHakkenGenError(s);
-      case 'story':     return renderStory(s);
       default:          return '<p>不明な画面: ' + s.screen + '</p>';
     }
   }
@@ -820,90 +817,6 @@ export const clientApp = `
     '</div>';
   }
 
-  function renderStory(s) {
-    if (s.storyLoading || !s.storyPages) {
-      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
-        '<div style="font-size:64px;animation:bob 2s ease-in-out infinite;">✏️</div>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--ink);margin:16px 0 12px;">AIが おはなしを かいているよ</div>' +
-        '<div style="display:flex;gap:8px;justify-content:center;">' +
-          '<div style="width:10px;height:10px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out infinite;"></div>' +
-          '<div style="width:10px;height:10px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .2s infinite;"></div>' +
-          '<div style="width:10px;height:10px;border-radius:50%;background:var(--accent3);animation:dotpulse 1.2s ease-in-out .4s infinite;"></div>' +
-        '</div>' +
-      '</div>';
-    }
-
-    var pages = s.storyPages;
-    var idx = s.storyPage || 0;
-    var page = pages[idx] || { hero: [], tokens: [] };
-    var tints = ['var(--story-tint-0)', 'var(--story-tint-1)', 'var(--story-tint-2)'];
-    var tint = tints[idx % tints.length];
-    var fadeStyle = s.storyFade ? 'animation:fade .28s ease;' : '';
-
-    var heroEmojis = '';
-    for (var hi = 0; hi < page.hero.length; hi++) {
-      heroEmojis += renderEmojiOrImage(getHakkenImageUrl(page.hero[hi]), 72);
-    }
-
-    var body = '';
-    for (var ti = 0; ti < page.tokens.length; ti++) {
-      var tok = page.tokens[ti];
-      if (tok.t === 'word' && tok.w) {
-        var hw = s.handwriting && s.handwriting[tok.w];
-        if (hw && hw.length) {
-          for (var hwi = 0; hwi < hw.length; hwi++) {
-            body += '<img src="' + hw[hwi] + '" style="height:34px;vertical-align:middle;display:inline-block;margin:0 2px;" />';
-          }
-        } else {
-          body += '<span style="color:var(--accent3);font-weight:900;">' + tok.w + '</span>';
-        }
-      } else {
-        body += '<span>' + (tok.s || '') + '</span>';
-      }
-    }
-
-    var isFirst = idx === 0;
-    var isLast = idx === pages.length - 1;
-    var prevOpacity = isFirst ? '0.3' : '1';
-    var nextOpacity = isLast ? '0.3' : '1';
-
-    var dots = '';
-    for (var di = 0; di < pages.length; di++) {
-      var dotBg = di === idx ? 'var(--accent3)' : '#d8cfc0';
-      dots += '<div style="width:10px;height:10px;border-radius:50%;background:' + dotBg + ';"></div>';
-    }
-
-    var isError = pages.length === 1 && page.hero.length === 0;
-    var bottomButtons = isLast
-      ? '<div style="display:flex;gap:14px;width:100%;max-width:400px;margin-top:16px;">' +
-          '<button onclick="window.__storyRestart()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent3);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent3d);color:#fff;">🔄 もういちど</button>' +
-          (isError ? '' : '<button onclick="window.__goHome()" style="flex:1;min-height:64px;border-radius:20px;background:var(--accent2);font-size:20px;font-weight:900;box-shadow:0 6px 0 var(--accent2d);">できた！</button>') +
-        '</div>'
-      : '';
-
-    return '<div style="flex:1;display:flex;flex-direction:column;padding:18px;">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">' +
-        '<button onclick="window.__goHome()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">←</button>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;color:var(--accent3);">📖 おはなし</div>' +
-        '<div style="width:48px;"></div>' +
-      '</div>' +
-      '<div onclick="window.__storyNext()" style="flex:1;display:flex;flex-direction:column;background:#fffdf7;border-radius:28px;box-shadow:0 4px 16px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;' + fadeStyle + '" id="story-card">' +
-        '<div style="flex:1;display:flex;align-items:center;justify-content:center;background:' + tint + ';padding:24px;gap:8px;">' +
-          heroEmojis +
-        '</div>' +
-        '<div style="padding:20px 22px;font-size:24px;line-height:2;font-weight:500;color:#5a5145;">' +
-          body +
-        '</div>' +
-      '</div>' +
-      '<div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-top:14px;">' +
-        '<button onclick="window.__storyPrev()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;opacity:' + prevOpacity + ';">‹</button>' +
-        '<div style="display:flex;gap:6px;">' + dots + '</div>' +
-        '<button onclick="window.__storyNext()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;opacity:' + nextOpacity + ';">›</button>' +
-      '</div>' +
-      bottomButtons +
-    '</div>';
-  }
-
   function renderPrep(s) {
     var prepSel = s.prepSel || [];
     var okCount = 0;
@@ -1386,104 +1299,6 @@ export const clientApp = `
     } else if (sel.length < 5) {
       setState({ storySel: sel.concat([word]) });
     }
-  };
-
-  window.__goStory = function () {
-    var words = state.storySel || [];
-    if (words.length < 2) return;
-    playSound('tap');
-    setState({ screen: 'story', storyLoading: true, storyPages: null, storyPage: 0 });
-
-    var errorPages = [{ hero: [], tokens: [{ t: 'text', s: 'おはなしを つくれませんでした。もういちど ためしてね。' }] }];
-    function fallbackFetch() {
-      fetch('/api/story', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ words: words })
-      }).then(function(r) {
-          if (!r.ok) throw new Error('API error');
-          return r.json();
-        })
-        .then(function(data) {
-          if (!data.pages || !data.pages.length) throw new Error('No pages');
-          setState({ storyPages: data.pages, storyLoading: false });
-        })
-        .catch(function() {
-          setState({ storyLoading: false, storyPages: errorPages });
-        });
-    }
-
-    fetch('/api/story/stream', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ words: words })
-    }).then(function(r) {
-      if (!r.ok || !r.body || !r.body.getReader) { fallbackFetch(); return; }
-      var reader = r.body.getReader();
-      var decoder = new TextDecoder();
-      var buf = '';
-      var pages = [];
-      function read() {
-        reader.read().then(function(result) {
-          if (result.done) {
-            if (pages.length === 0) fallbackFetch();
-            else setState({ storyLoading: false });
-            return;
-          }
-          buf += decoder.decode(result.value, { stream: true });
-          var events = buf.split('\\n\\n');
-          buf = events.pop() || '';
-          for (var i = 0; i < events.length; i++) {
-            var lines = events[i].split('\\n');
-            var eventType = '';
-            var data = '';
-            for (var j = 0; j < lines.length; j++) {
-              if (lines[j].indexOf('event: ') === 0) eventType = lines[j].slice(7);
-              if (lines[j].indexOf('data: ') === 0) data = lines[j].slice(6);
-            }
-            if (eventType === 'page' && data) {
-              try {
-                var page = JSON.parse(data);
-                pages.push(page);
-                setState({ storyPages: pages.slice(), storyLoading: false });
-              } catch(e) {}
-            } else if (eventType === 'error') {
-              setState({ storyLoading: false, storyPages: errorPages });
-              return;
-            }
-          }
-          read();
-        }).catch(function() {
-          if (pages.length === 0) fallbackFetch();
-          else setState({ storyLoading: false });
-        });
-      }
-      read();
-    }).catch(function() { fallbackFetch(); });
-  };
-
-  window.__storyPrev = function () {
-    var idx = state.storyPage || 0;
-    if (idx > 0) {
-      playSound('tap');
-      setState({ storyPage: idx - 1, storyFade: 'prev' });
-      setTimeout(function() { setState({ storyFade: '' }); }, 300);
-    }
-  };
-
-  window.__storyNext = function () {
-    var idx = state.storyPage || 0;
-    var pages = state.storyPages || [];
-    if (idx < pages.length - 1) {
-      playSound('tap');
-      setState({ storyPage: idx + 1, storyFade: 'next' });
-      setTimeout(function() { setState({ storyFade: '' }); }, 300);
-    }
-  };
-
-  window.__storyRestart = function () {
-    playSound('tap');
-    setState({ storyPage: 0, storyFade: '' });
   };
 
   function fetchStories() {

@@ -1461,7 +1461,10 @@ export const clientApp = `
   window.__goWrite = function () {
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'trace', word: nextWord(), charIndex: 0, confirmed: [], revealKind: 'normal', drew: false });
+    var w = nextWord();
+    var hw = Object.assign({}, state.handwriting);
+    hw[w] = [];
+    setState({ screen: 'trace', word: w, charIndex: 0, confirmed: [], revealKind: 'normal', drew: false, handwriting: hw });
   };
 
   window.__goZukan = function () {
@@ -1776,7 +1779,9 @@ export const clientApp = `
     }
     playSound('tap');
     _canvasWired = null;
-    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false });
+    var hw = Object.assign({}, state.handwriting);
+    hw[word] = [];
+    setState({ screen: 'trace', word: word, charIndex: 0, confirmed: [], discovering: true, revealKind: 'mitsuke', drew: false, handwriting: hw });
   };
 
   window.__tkAdd = function(ch) {

@@ -83,7 +83,8 @@ export const clientApp = `
     drew: false,
     genCached: false,
     genPhase: 1,
-    cacheWords: []
+    cacheWords: [],
+    parentStats: { total: 0, thisWeek: 0, recentWords: [] }
   };
 
   var _lastPromptCount = 0;
@@ -148,10 +149,26 @@ export const clientApp = `
     } catch(e) {}
   }
 
+  function fetchParentStats() {
+    if (!state.authed) return;
+    fetch('/api/entries/stats').then(function(r) {
+      if (!r.ok) return;
+      return r.json();
+    }).then(function(data) {
+      if (data) {
+        setState({ parentStats: { total: data.total || 0, thisWeek: data.thisWeek || 0, recentWords: data.recentWords || [] } });
+      }
+    }).catch(function() {});
+  }
+
   function setState(partial) {
+    var prevScreen = state.screen;
     Object.assign(state, partial);
     render(state);
     saveState();
+    if (state.screen === 'parent' && prevScreen !== 'parent') {
+      fetchParentStats();
+    }
   }
 
   function updateWriteUI() {
@@ -494,17 +511,15 @@ export const clientApp = `
   }
 
   function renderParent(s) {
-    var totalCount = (s.zukanWords || []).length + (s.hakkenWords || []).length;
-
-    var currentTheme = s.theme || 'A';
-    var themes = ['A', 'B', 'C'];
-    var themeButtons = '';
-    for (var ti = 0; ti < themes.length; ti++) {
-      var t = themes[ti];
-      var active = currentTheme === t;
-      themeButtons += '<button onclick="window.__setTheme(\\'' + t + '\\')" style="flex:1;min-height:52px;border-radius:14px;font-size:16px;font-weight:700;' +
-        (active ? 'background:var(--accent);color:#fff;box-shadow:0 4px 0 var(--accentd);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
-        'Theme ' + t + '</button>';
+    var stats = s.parentStats || { total: 0, thisWeek: 0, recentWords: [] };
+    var recentWords = stats.recentWords || [];
+    var recentHtml = '';
+    if (recentWords.length > 0) {
+      recentHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">';
+      for (var ri = 0; ri < recentWords.length; ri++) {
+        recentHtml += '<span style="background:var(--locked);border-radius:10px;padding:4px 10px;font-size:14px;font-weight:700;color:var(--sub);">' + recentWords[ri] + '</span>';
+      }
+      recentHtml += '</div>';
     }
 
     return '<div style="flex:1;padding:18px;overflow-y:auto;">' +
@@ -513,26 +528,60 @@ export const clientApp = `
         '<div style="font-family:var(--fhead);font-weight:900;font-size:20px;">おうちの方メニュー</div>' +
         '<div style="width:56px;"></div>' +
       '</div>' +
-      '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-between;">' +
-        '<div style="font-weight:700;font-size:17px;">チケット</div>' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:26px;color:var(--accent);">🎟️ ' + (s.tickets || 0) + '</div>' +
-      '</div>' +
+
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:12px;">📖 学習の記録</div>' +
-        '<div style="font-size:16px;color:var(--sub);font-weight:700;">習得数: <span style="font-size:28px;color:var(--accent);font-family:var(--fhead);">' + totalCount + '</span> 個</div>' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:14px;">📖 学習の記録</div>' +
+        '<div style="display:flex;gap:12px;margin-bottom:4px;">' +
+          '<div style="flex:1;background:#f7f4f0;border-radius:14px;padding:12px 14px;text-align:center;">' +
+            '<div style="font-size:12px;color:var(--sub);font-weight:700;margin-bottom:4px;">習得数</div>' +
+            '<div style="font-family:var(--fhead);font-size:30px;font-weight:900;color:var(--accent);">' + stats.total + '</div>' +
+            '<div style="font-size:12px;color:var(--sub);">個</div>' +
+          '</div>' +
+          '<div style="flex:1;background:#f7f4f0;border-radius:14px;padding:12px 14px;text-align:center;">' +
+            '<div style="font-size:12px;color:var(--sub);font-weight:700;margin-bottom:4px;">今週</div>' +
+            '<div style="font-family:var(--fhead);font-size:30px;font-weight:900;color:var(--accent2);">' + stats.thisWeek + '</div>' +
+            '<div style="font-size:12px;color:var(--sub);">個</div>' +
+          '</div>' +
+        '</div>' +
+        (recentWords.length > 0 ?
+          '<div style="margin-top:12px;">' +
+            '<div style="font-size:13px;color:var(--sub);font-weight:700;margin-bottom:6px;">最近のことば</div>' +
+            recentHtml +
+          '</div>'
+        : (!s.authed ? '<div style="font-size:13px;color:var(--sub);margin-top:10px;">ログインすると記録が表示されます</div>' : '')) +
       '</div>' +
+
       '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:10px;">🔍 「みつける」ことばの準備</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;">🎟️ はっけんチケット</div>' +
+          '<div style="font-family:var(--fhead);font-weight:900;font-size:26px;color:var(--accent);">' + (s.tickets || 0) + ' 枚</div>' +
+        '</div>' +
+        '<button disabled style="width:100%;min-height:48px;border-radius:14px;background:var(--locked);color:var(--sub);font-size:15px;font-weight:700;box-shadow:none;cursor:default;">チケット購入（準備中）</button>' +
+      '</div>' +
+
+      '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+          '<div>' +
+            '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;">🖼️ えのスタイル</div>' +
+            '<div style="font-size:12px;color:var(--sub);margin-top:2px;">はっけん時の絵のタッチを選べます</div>' +
+          '</div>' +
+          '<button onclick="window.__openStylePicker()" style="min-width:100px;min-height:40px;border-radius:20px;font-size:14px;font-weight:700;background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);">' + (window.__STYLE_LABELS && window.__STYLE_LABELS[s.imgStyle] || s.imgStyle) + ' ›</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:10px;">🔍 ことばを 準備する</div>' +
         '<div style="font-size:13px;color:#6b6256;margin-bottom:12px;">「みつける」で出る言葉を事前に登録できます。未登録の場合は自動で選ばれます。</div>' +
         (s.prepared && s.prepared.length > 0 ?
-          '<div style="background:#fff;border:1px solid var(--cbd);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
+          '<div style="background:#f7f4f0;border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
             '<span style="font-size:14px;color:var(--sub);font-weight:700;">登録中のことば</span>' +
             '<span style="font-family:var(--fhead);font-weight:900;font-size:18px;color:var(--accent3);">' + (s.prepared ? s.prepared.length : 0) + '</span>' +
           '</div>'
         : '') +
-        '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;margin-bottom:14px;box-shadow:none;">＋ 言葉を登録する</button>' +
+        '<button onclick="window.__goPrep()" style="width:100%;min-height:52px;border-radius:14px;background:var(--accent3);color:#fff;font-size:15px;font-weight:900;box-shadow:none;">＋ ことばを 登録する</button>' +
       '</div>' +
-      '<div style="background:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
+
+      '<div style="background:#fff;border-radius:18px;padding:16px 20px;margin-bottom:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);">' +
         '<div style="font-family:var(--fhead);font-weight:900;font-size:18px;margin-bottom:16px;">⚙️ 設定</div>' +
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
           '<div><span style="font-size:16px;font-weight:700;">🗣️ 読み上げ</span><div style="font-size:12px;color:var(--sub);margin-top:2px;">まだ字が読めないお子さま向け</div></div>' +
@@ -546,22 +595,14 @@ export const clientApp = `
             (s.sfx !== false ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
             (s.sfx !== false ? 'ON' : 'OFF') + '</button>' +
         '</div>' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">' +
           '<span style="font-size:16px;font-weight:700;">🎵 BGM</span>' +
           '<button onclick="window.__toggleBgm()" style="min-width:72px;min-height:40px;border-radius:20px;font-size:15px;font-weight:700;' +
             (s.bgm ? 'background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);' : 'background:var(--locked);color:var(--sub);box-shadow:none;') + '">' +
             (s.bgm ? 'ON' : 'OFF') + '</button>' +
         '</div>' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cbd);">' +
-          '<div><span style="font-size:16px;font-weight:700;">🖼️ イラストスタイル</span><div style="font-size:12px;color:var(--sub);margin-top:2px;">はっけん時の絵のタッチを選べます</div></div>' +
-          '<button onclick="window.__openStylePicker()" style="min-width:100px;min-height:40px;border-radius:20px;font-size:14px;font-weight:700;background:var(--accent2);color:#fff;box-shadow:0 3px 0 var(--accent2d);">' + (window.__STYLE_LABELS && window.__STYLE_LABELS[s.imgStyle] || s.imgStyle) + ' ›</button>' +
-        '</div>' +
-        '<div style="padding:12px 0 0;">' +
-          '<div style="font-size:16px;font-weight:700;margin-bottom:10px;">🎨 配色テーマ</div>' +
-          '<div style="display:flex;gap:10px;">' + themeButtons + '</div>' +
-        '</div>' +
         (s.authed ?
-          '<div style="padding:16px 0 0;border-top:1px solid var(--cbd);margin-top:16px;">' +
+          '<div style="padding:16px 0 0;border-top:1px solid var(--cbd);margin-top:4px;">' +
             '<button onclick="window.__logout()" style="width:100%;min-height:44px;border-radius:14px;background:transparent;border:1px solid #c44;color:#c44;font-size:14px;font-weight:700;box-shadow:none;">ログアウト</button>' +
           '</div>'
         : '') +

@@ -84,6 +84,31 @@ describe("clientApp", () => {
     expect(clientApp).toContain("__goWriteWord(pick");
   });
 
+  it("mitsukePool から選ばれた語は discovering:true で generate API を呼ぶ (Issue #193)", () => {
+    expect(clientApp).toContain("window.__goWriteWord(pick, true, 'mitsuke')");
+  });
+
+  it("mitsukePool はゲスト（authed:false）では shared_cache 語を含めない (Issue #193)", () => {
+    const start = clientApp.indexOf("function mitsukePool");
+    const end = clientApp.indexOf("function buildMask");
+    const body = clientApp.slice(start, end);
+    const authedIdx = body.indexOf("if (s.authed)");
+    const cacheWordsIdx = body.indexOf("s.cacheWords.length");
+    expect(authedIdx).toBeGreaterThan(-1);
+    expect(cacheWordsIdx).toBeGreaterThan(authedIdx);
+  });
+
+  it("ゲストの 401 フォールバックが削除され、エラー画面に遷移する (Issue #193)", () => {
+    expect(clientApp).not.toContain("res.status === 401");
+    expect(clientApp).not.toContain("あたらしく はっけんした ことばだよ");
+    // 401 は !res.ok に該当し throw → catch → hakkengenError へ遷移する
+    const genFnStart = clientApp.indexOf("window.__startHakkenGen = function");
+    const genFnEnd = clientApp.indexOf("window.__finishHakken = function");
+    const genFnBody = clientApp.slice(genFnStart, genFnEnd);
+    expect(genFnBody).toContain("if (!res.ok) throw new Error");
+    expect(genFnBody).toContain("screen: 'hakkengenError'");
+  });
+
   it("たんけん画面の switch case が含まれる", () => {
     expect(clientApp).toContain("case 'tanken'");
     expect(clientApp).toContain("renderTanken");

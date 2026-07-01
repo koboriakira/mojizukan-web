@@ -1432,6 +1432,10 @@ export const clientApp = `
 
   window.__goTanken = function () {
     playSound('tap');
+    if (!state.authed) {
+      setState({ sheet: 'signup', authReason: 'tanken' });
+      return;
+    }
     setState({ screen: 'tanken', tankenChars: [], tankenMsg: null });
   };
 
@@ -1471,6 +1475,10 @@ export const clientApp = `
 
   window.__showParentGate = function () {
     playSound('tap');
+    if (!state.authed) {
+      setState({ sheet: 'signup', authReason: 'parent' });
+      return;
+    }
     setState({ sheet: 'parentGate' });
   };
 
@@ -1534,6 +1542,7 @@ export const clientApp = `
         var afterScreen = state.authReason === 'story' ? 'storyhome' : (state.authReason === 'tanken' ? 'tanken' : null);
         var newState = { authed: true, userId: data.id, tickets: data.tickets || 0, sheet: null, authMode: 'choose', authError: '', authReason: null };
         if (afterScreen) newState.screen = afterScreen;
+        if (state.authReason === 'parent') newState.sheet = 'parentGate';
         setState(newState);
         if (afterScreen === 'storyhome') { fetchStories(); }
       });

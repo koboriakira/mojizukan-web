@@ -30,11 +30,18 @@ if [[ -z "$TABLES" ]]; then
 else
   echo "以下のテーブルを削除します:"
   echo "$TABLES"
-  DROP_SQL="PRAGMA foreign_keys = OFF;"
-  for table in $TABLES; do
-    DROP_SQL="${DROP_SQL} DROP TABLE IF EXISTS \"${table}\";"
+  for attempt in 1 2 3; do
+    REMAINING=""
+    for table in $TABLES; do
+      npx wrangler d1 execute mojizukan-db $REMOTE_FLAG \
+        --command "DROP TABLE IF EXISTS \"$table\";" 2>/dev/null \
+        && echo "  ✓ $table" \
+        || REMAINING="${REMAINING} ${table}"
+    done
+    TABLES="$REMAINING"
+    if [[ -z "$TABLES" ]]; then break; fi
+    echo "  Retry (attempt $((attempt+1))): $TABLES"
   done
-  npx wrangler d1 execute mojizukan-db $REMOTE_FLAG --command "$DROP_SQL"
 fi
 
 npx wrangler d1 execute mojizukan-db $REMOTE_FLAG \

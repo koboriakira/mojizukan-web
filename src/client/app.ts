@@ -236,7 +236,7 @@ export const clientApp = `
         '<button onclick="window.__goMitsukeru()" style="min-height:90px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:28px;font-weight:900;border-radius:22px;">🔍 みつける</button>' +
         '<div style="position:relative;">' +
           '<button onclick="window.__goTanken()" style="min-height:90px;width:100%;background:var(--accent);box-shadow:0 6px 0 var(--accentd);font-size:28px;font-weight:900;border-radius:22px;">🧭 たんけんに でる</button>' +
-          '<div style="position:absolute;top:-8px;right:8px;background:#fff;color:var(--accent);font-size:11px;font-weight:900;padding:2px 8px;border-radius:4px;transform:rotate(6deg);font-family:var(--fhead);pointer-events:none;border:1.5px solid var(--accent);">NEW</div>' +
+          (!s.authed ? '<div style="position:absolute;top:-6px;right:6px;font-size:16px;pointer-events:none;">🔒</div>' : '<div style="position:absolute;top:-8px;right:8px;background:#fff;color:var(--accent);font-size:11px;font-weight:900;padding:2px 8px;border-radius:4px;transform:rotate(6deg);font-family:var(--fhead);pointer-events:none;border:1.5px solid var(--accent);">NEW</div>') +
         '</div>' +
         '<div style="display:flex;gap:14px;">' +
           '<button onclick="window.__goZukan()" style="flex:1;min-height:72px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:22px;font-weight:900;border-radius:22px;">📖 ずかん</button>' +
@@ -431,7 +431,7 @@ export const clientApp = `
   }
 
   function renderZukan(s) {
-    var allWords = (s.zukanWords || []).concat(s.hakkenWords || []);
+    var allWords = (s.zukanWords || []).slice().reverse().concat(s.hakkenWords || []);
     var count = allWords.length;
 
     var header = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +

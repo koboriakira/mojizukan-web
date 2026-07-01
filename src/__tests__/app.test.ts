@@ -116,7 +116,7 @@ describe("clientApp", () => {
   it("tankenlimit 画面の switch case が含まれる", () => {
     expect(clientApp).toContain("case 'tankenlimit'");
     expect(clientApp).toContain("renderTankenlimit");
-    expect(clientApp).toContain("きょうの たんけんは おしまい");
+    expect(clientApp).toContain("チケットが なくなったよ");
   });
 
   it("日次制限 state が定義されている", () => {

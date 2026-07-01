@@ -1604,6 +1604,16 @@ export const clientApp = `
       playSound('success');
       console.log('[parent-gate] passed');
       setState({ screen: 'parent', sheet: null });
+      if (state.authed) {
+        fetch('/api/entries/stats').then(function(r) {
+          if (!r.ok) return;
+          return r.json();
+        }).then(function(data) {
+          if (data) {
+            setState({ parentStats: { total: data.total || 0, thisWeek: data.thisWeek || 0, recentWords: data.recentWords || [] } });
+          }
+        }).catch(function() {});
+      }
     }, 1200);
   };
 

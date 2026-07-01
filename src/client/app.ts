@@ -1107,10 +1107,12 @@ export const clientApp = `
         pool.push(w);
       }
     }
-    for (var i = 0; i < s.cacheWords.length; i++) {
-      var cw = s.cacheWords[i];
-      if (s.zukanWords.indexOf(cw) === -1 && s.prepared.indexOf(cw) === -1 && pool.indexOf(cw) === -1) {
-        pool.push(cw);
+    if (s.authed) {
+      for (var i = 0; i < s.cacheWords.length; i++) {
+        var cw = s.cacheWords[i];
+        if (s.zukanWords.indexOf(cw) === -1 && s.prepared.indexOf(cw) === -1 && pool.indexOf(cw) === -1) {
+          pool.push(cw);
+        }
       }
     }
     for (var j = pool.length - 1; j > 0; j--) {
@@ -1418,7 +1420,7 @@ export const clientApp = `
       var pool = mitsukePool(state);
       if (pool.length > 0) {
         var pick = pool[Math.floor(Math.random() * pool.length)];
-        window.__goWriteWord(pick, false, 'mitsuke');
+        window.__goWriteWord(pick, true, 'mitsuke');
       } else if (state.zukanWords.length > 0) {
         var reviewPick = state.zukanWords[Math.floor(Math.random() * state.zukanWords.length)];
         window.__goWriteWord(reviewPick, false, 'review');
@@ -1862,9 +1864,6 @@ export const clientApp = `
       body: JSON.stringify({ word: word })
     })
     .then(function(res) {
-      if (res.status === 401) {
-        return { description: 'あたらしく はっけんした ことばだよ！', image_url: null, cached: false };
-      }
       if (res.status === 402) {
         clearTimeout(phaseTimer);
         setState({ screen: 'tankenlimit', limitWord: word });

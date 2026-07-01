@@ -40,3 +40,66 @@ test("ゲストが保護者メニューを押すとログイン誘導が表示�
 
   expect(errors).toEqual([]);
 });
+
+test("ゲスト + みつける → おためしことば → キャッシュヒット → イラスト付き表示 (ADR-0003)", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+
+  // generate API をモック: キャッシュヒット（ゲストでも200を返す）
+  await page.route("**/api/hakken/generate", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        description: "しっぽを ふって よろこぶよ。おさんぽが だいすきなんだ。",
+        image_url: "/api/images/hakken/cache/いぬ.webp",
+        cached: true,
+        rediscovery: false,
+      }),
+    });
+  });
+
+  // 画像リクエストもモック（R2 に実体がないため）
+  await page.route("**/api/images/**", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "image/webp",
+      body: Buffer.from("RIFF\x00\x00\x00\x00WEBP", "binary"),
+    });
+  });
+
+  await page.goto("/");
+
+  // ゲストがおためしことば「いぬ」をなぞり切るフローを注入
+  await page.evaluate(() => {
+    (window as any).__setState({
+      authed: false,
+      screen: "trace",
+      word: "いぬ",
+      charIndex: 0,
+      confirmed: [],
+      discovering: true,
+      revealKind: "mitsuke",
+      drew: false,
+    });
+  });
+
+  await expect(page.locator("canvas")).toBeVisible();
+
+  // 2文字分なぞり完了
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
+  await page.getByRole("button", { name: "なぞれたよ！" }).click();
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.evaluate(() => { (window as any).__setState({ drew: true }); });
+  await page.getByRole("button", { name: "できた！" }).click();
+
+  // はっけん演出 → reveal 画面でイラスト付き表示
+  await expect(page.getByText("みつけた！")).toBeVisible({ timeout: 10_000 });
+  // イラストが表示されている（img タグが存在する）
+  await expect(page.locator("img[src*='いぬ']")).toBeVisible();
+  // 説明文が表示されている（STARTER_WORDS の desc が優先表示される）
+  await expect(page.getByText("しっぽを ふって よろこぶよ")).toBeVisible();
+
+  expect(errors).toEqual([]);
+});

@@ -1939,10 +1939,12 @@ export const clientApp = `
       setState({ authed: true, userId: data.id, tickets: data.tickets || 0, imgStyle: data.image_style || 'ehon' });
       fetch('/api/hakken/entries').then(function(r) { return r.json(); }).then(function(entries) {
         if (!window.__hakkenCache) window.__hakkenCache = {};
+        var serverWords = [];
         entries.forEach(function(e) {
           window.__hakkenCache[e.word] = { desc: e.description, image_url: e.image_url };
+          serverWords.push(e.word);
         });
-        render(state);
+        setState({ zukanWords: serverWords });
       }).catch(function() {});
     }
   }).catch(function () {});

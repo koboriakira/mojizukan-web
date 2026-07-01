@@ -3,6 +3,7 @@ import type { AppEnv } from "../types";
 import type { CreateEntryRequest } from "../services/kotoba-atsume/types";
 import { AppError } from "../middleware/error-handler";
 import { findDictionaryWord } from "../services/kotoba-atsume/word-dictionary";
+import { requireAuth } from "../middleware/auth";
 
 export const entries = new Hono<AppEnv>();
 
@@ -59,6 +60,40 @@ entries.post("/", async (c) => {
     .run();
 
   return c.json({ id, word: body.word, is_discovered: isDiscovered, category }, 201);
+});
+
+entries.get("/stats", requireAuth, async (c) => {
+  const userId = c.var.userId!;
+
+  const now = new Date();
+  const day = now.getUTCDay(); // 0=Sunday
+  const daysToMonday = day === 0 ? 6 : day - 1;
+  const monday = new Date(now);
+  monday.setUTCDate(monday.getUTCDate() - daysToMonday);
+  monday.setUTCHours(0, 0, 0, 0);
+  const mondayStr = monday.toISOString().replace("T", " ").substring(0, 19);
+
+  const [totalRow, thisWeekRow, recentRow] = await Promise.all([
+    c.env.DB.prepare("SELECT COUNT(*) as count FROM hakken_entries WHERE user_id = ?")
+      .bind(userId)
+      .first<{ count: number }>(),
+    c.env.DB.prepare(
+      "SELECT COUNT(*) as count FROM hakken_entries WHERE user_id = ? AND created_at >= ?"
+    )
+      .bind(userId, mondayStr)
+      .first<{ count: number }>(),
+    c.env.DB.prepare(
+      "SELECT word FROM hakken_entries WHERE user_id = ? ORDER BY created_at DESC LIMIT 5"
+    )
+      .bind(userId)
+      .all<{ word: string }>(),
+  ]);
+
+  return c.json({
+    total: totalRow?.count ?? 0,
+    thisWeek: thisWeekRow?.count ?? 0,
+    recentWords: recentRow.results.map((r) => r.word),
+  });
 });
 
 entries.delete("/:id", async (c) => {

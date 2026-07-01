@@ -149,10 +149,26 @@ export const clientApp = `
     } catch(e) {}
   }
 
+  function fetchParentStats() {
+    if (!state.authed) return;
+    fetch('/api/entries/stats').then(function(r) {
+      if (!r.ok) return;
+      return r.json();
+    }).then(function(data) {
+      if (data) {
+        setState({ parentStats: { total: data.total || 0, thisWeek: data.thisWeek || 0, recentWords: data.recentWords || [] } });
+      }
+    }).catch(function() {});
+  }
+
   function setState(partial) {
+    var prevScreen = state.screen;
     Object.assign(state, partial);
     render(state);
     saveState();
+    if (state.screen === 'parent' && prevScreen !== 'parent') {
+      fetchParentStats();
+    }
   }
 
   function updateWriteUI() {
@@ -1604,16 +1620,6 @@ export const clientApp = `
       playSound('success');
       console.log('[parent-gate] passed');
       setState({ screen: 'parent', sheet: null });
-      if (state.authed) {
-        fetch('/api/entries/stats').then(function(r) {
-          if (!r.ok) return;
-          return r.json();
-        }).then(function(data) {
-          if (data) {
-            setState({ parentStats: { total: data.total || 0, thisWeek: data.thisWeek || 0, recentWords: data.recentWords || [] } });
-          }
-        }).catch(function() {});
-      }
     }, 1200);
   };
 
@@ -1778,16 +1784,6 @@ export const clientApp = `
   window.__goParent = function() {
     playSound('cancel');
     setState({ screen: 'parent', sheet: null });
-    if (state.authed) {
-      fetch('/api/entries/stats').then(function(r) {
-        if (!r.ok) return;
-        return r.json();
-      }).then(function(data) {
-        if (data) {
-          setState({ parentStats: { total: data.total || 0, thisWeek: data.thisWeek || 0, recentWords: data.recentWords || [] } });
-        }
-      }).catch(function() {});
-    }
   };
 
   window.__goPrep = function() {

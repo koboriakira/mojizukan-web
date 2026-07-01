@@ -15,6 +15,13 @@ export async function getCache(
   return result ?? null;
 }
 
+export async function listCacheWords(db: D1Database): Promise<string[]> {
+  const results = await db
+    .prepare("SELECT DISTINCT word FROM shared_cache ORDER BY word")
+    .all<{ word: string }>();
+  return results.results.map((r) => r.word);
+}
+
 export async function setCache(
   db: D1Database,
   word: string,

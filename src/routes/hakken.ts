@@ -6,6 +6,7 @@ import { requireAuth } from "../middleware/auth";
 import { classifyWord, getRandomWords } from "../services/kotoba-atsume/hakken-logic";
 import { executeHakkenGenerate } from "../services/kotoba-atsume/hakken-generate";
 import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
+import { listCacheWords } from "../services/ai-generation/shared-cache";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -24,7 +25,7 @@ hakken.post("/classify", async (c) => {
   }
   const result = classifyWord({
     word: body.word,
-    collected: body.collected ?? [],
+    zukanWords: body.zukanWords ?? [],
     prepared: body.prepared ?? [],
   });
   return c.json(result);
@@ -32,11 +33,11 @@ hakken.post("/classify", async (c) => {
 
 hakken.get("/random", async (c) => {
   const n = parseInt(c.req.query("n") ?? "3", 10);
-  const collectedParam = c.req.query("collected") ?? "";
+  const zukanParam = c.req.query("zukanWords") ?? "";
   const preparedParam = c.req.query("prepared") ?? "";
-  const collected = collectedParam ? collectedParam.split(",") : [];
+  const zukanWords = zukanParam ? zukanParam.split(",") : [];
   const prepared = preparedParam ? preparedParam.split(",") : [];
-  const result = getRandomWords({ n, collected, prepared });
+  const result = getRandomWords({ n, zukanWords, prepared });
   return c.json(result);
 });
 
@@ -56,6 +57,11 @@ hakken.post("/generate", requireAuth, async (c) => {
   return c.json(result);
 });
 
+hakken.get("/cache-words", async (c) => {
+  const words = await listCacheWords(c.env.DB);
+  return c.json({ words });
+});
+
 hakken.get("/prepared", requireAuth, async (c) => {
   const userId = c.var.userId!;
   const words = await listPreparedWords(c.env.DB, userId);
@@ -68,7 +74,7 @@ hakken.post("/prepared", requireAuth, async (c) => {
     throw new AppError(400, "word は必須です");
   }
   const userId = c.var.userId!;
-  const result = classifyWord({ word: body.word, collected: [], prepared: [] });
+  const result = classifyWord({ word: body.word, zukanWords: [], prepared: [] });
   if (result.status !== "ok") {
     throw new AppError(400, `この言葉は登録できません: ${result.message}`);
   }

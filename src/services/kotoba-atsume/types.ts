@@ -2,7 +2,7 @@ export interface ZukanEntry {
   id: string;
   word: string;
   category: string | null;
-  is_discovered: number;
+  is_hakken: number;
   image_url: string | null;
   description: string | null;
   created_at: string;
@@ -56,7 +56,7 @@ export type ClassifyStatus = 'ok' | 'rediscovery' | 'prepared' | 'ng';
 
 export interface ClassifyRequest {
   word: string;
-  collected: string[];
+  zukanWords: string[];
   prepared: string[];
 }
 

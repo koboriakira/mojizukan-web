@@ -108,9 +108,9 @@ wrangler environments で環境を分離する（構成A: 1アカウント方式
 
 | 環境 | Worker 名 | D1 | R2 | 用途 |
 |------|-----------|----|----|------|
-| root（将来の本番） | `mojizukan-web` | `mojizukan-db` | `mojizukan-images` | 本番用（当面未使用） |
-| staging | `mojizukan-web-staging` | `mojizukan-db-staging` | `mojizukan-images-staging` | 開発・検証用 |
-| preview | `mojizukan-pre-*` | エフェメラル | エフェメラル | PR ごとの使い捨て環境 |
+| root（将来の本番） | `mojizukan` | `mojizukan-db` | `mojizukan-images` | 本番用（未デプロイ） |
+| staging | `mojizukan-staging` | `mojizukan-db-staging` | `mojizukan-images-staging` | 開発・検証用 |
+| preview | `mojizukan-pre-*` | 使い捨て | 使い捨て | PR ごとの一時環境 |
 
 - bindings は環境間で継承されない。各環境で全 bindings を明示定義する
 - staging の secrets は `wrangler secret put <KEY> --env staging` で設定する

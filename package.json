@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "bash bin/dev.sh",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --env staging",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:staging": "playwright test --config playwright.staging.config.ts",

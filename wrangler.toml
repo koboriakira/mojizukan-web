@@ -1,4 +1,4 @@
-name = "mojizukan-web"
+name = "mojizukan"
 main = "src/index.ts"
 compatibility_date = "2026-06-27"
 compatibility_flags = ["nodejs_als"]

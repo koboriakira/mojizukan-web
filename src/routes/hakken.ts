@@ -41,9 +41,9 @@ hakken.get("/random", async (c) => {
   return c.json(result);
 });
 
-hakken.post("/generate", requireAuth, async (c) => {
+hakken.post("/generate", async (c) => {
   const body = await c.req.json<HakkenGenerateRequest>();
-  const userId = c.var.userId!;
+  const userId = c.var.userId ?? null;
   if (!body.word) {
     throw new AppError(400, "word は必須です");
   }

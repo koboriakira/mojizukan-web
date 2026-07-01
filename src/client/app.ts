@@ -466,6 +466,16 @@ export const clientApp = `
   function renderDetail(s) {
     var word = s.detailWord || '';
     var preset = STARTER_WORDS[word] || { desc: '' };
+    var desc = (window.__hakkenCache && window.__hakkenCache[word] && window.__hakkenCache[word].desc) || preset.desc;
+
+    var actionButtons = '';
+    if (s.authed) {
+      actionButtons =
+        '<div style="display:flex;flex-direction:column;gap:12px;margin-top:24px;width:100%;max-width:340px;">' +
+          '<button onclick="window.__showRediscoverySheet()" style="min-height:56px;border-radius:18px;background:var(--accent);font-size:17px;font-weight:700;box-shadow:0 4px 0 var(--accentd);color:#fff;">🎨 べつの えに する</button>' +
+          '<button onclick="window.__goStoryFromDetail()" style="min-height:56px;border-radius:18px;background:var(--accent3);font-size:17px;font-weight:700;box-shadow:0 4px 0 var(--accent3d);color:#fff;">📚 この ことばで おはなし</button>' +
+        '</div>';
+    }
 
     return '<div style="flex:1;display:flex;flex-direction:column;padding-top:18px;">' +
       '<div style="display:flex;align-items:center;margin-bottom:8px;">' +
@@ -477,7 +487,8 @@ export const clientApp = `
           '<div style="font-family:var(--fhead);font-weight:900;font-size:52px;">' + word + '</div>' +
           '<button onclick="window.__speakWord()" style="width:50px;height:50px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
         '</div>' +
-        '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:360px;font-weight:500;margin-top:16px;">' + preset.desc + '</div>' +
+        '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:360px;font-weight:500;margin-top:16px;">' + desc + '</div>' +
+        actionButtons +
       '</div>' +
     '</div>';
   }
@@ -957,11 +968,15 @@ export const clientApp = `
   }
 
   function renderHakkenGenError(s) {
+    var backBtn = s.revealKind === 'rediscovery'
+      ? '<button onclick="window.__backToDetailFromError()" style="min-height:48px;padding:0 24px;border-radius:14px;background:transparent;font-size:16px;color:var(--sub);margin-top:8px;">しょうさいに もどる</button>'
+      : '';
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
       '<div style="font-size:64px;margin-bottom:16px;">😢</div>' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--ink);margin-bottom:12px;">つくれなかったよ</div>' +
       '<div style="font-size:16px;color:var(--sub);margin-bottom:32px;">もう いちど ためしてね</div>' +
       '<button onclick="window.__startHakkenGen()" style="min-height:64px;padding:0 32px;border-radius:18px;background:var(--accent);font-size:20px;box-shadow:0 6px 0 var(--accentd);">もう いちど</button>' +
+      backBtn +
       '<button onclick="window.__goHome()" style="min-height:48px;padding:0 24px;border-radius:14px;background:transparent;font-size:16px;color:var(--sub);margin-top:16px;">ホームに もどる</button>' +
     '</div>';
   }
@@ -1062,6 +1077,19 @@ export const clientApp = `
           '<div style="display:flex;flex-direction:column;gap:10px;">' + styleCards + '</div>' +
           '<div style="text-align:center;font-size:11px;color:#b6ab9a;margin-top:14px;line-height:1.5;">すでに生成した画像には影響しません</div>' +
           '<button onclick="window.__closeSheet()" style="width:100%;min-height:52px;border-radius:18px;background:var(--locked);color:var(--sub);font-size:16px;font-weight:700;margin-top:14px;box-shadow:none;">とじる</button>' +
+        '</div>';
+    }
+    if (s.sheet === 'rediscovery') {
+      return '<div class="sheet-overlay" onclick="window.__closeSheet()"></div>' +
+        '<div class="sheet" onclick="event.stopPropagation()">' +
+          '<div style="width:44px;height:5px;border-radius:3px;background:#e6ddcf;margin:0 auto 18px;"></div>' +
+          '<div style="text-align:center;font-size:46px;">🎨</div>' +
+          '<div style="text-align:center;font-family:var(--fhead);font-weight:900;font-size:24px;margin-top:8px;">べつの えを つくるよ？</div>' +
+          '<div style="text-align:center;font-size:15px;color:var(--sub);margin-top:8px;line-height:1.7;">🎟️ チケットは つかわないよ</div>' +
+          '<div style="display:flex;gap:12px;margin-top:24px;">' +
+            '<button onclick="window.__startDetailRediscovery()" style="flex:1;min-height:64px;border-radius:18px;background:var(--accent);color:#fff;font-size:18px;font-weight:900;box-shadow:0 4px 0 var(--accentd);">つくる</button>' +
+            '<button onclick="window.__closeSheet()" style="flex:1;min-height:64px;border-radius:18px;background:var(--locked);color:var(--sub);font-size:18px;box-shadow:none;">やめる</button>' +
+          '</div>' +
         '</div>';
     }
     if (s.sheet === 'parentGate') {
@@ -1641,6 +1669,27 @@ export const clientApp = `
     setState({ screen: 'detail', detailWord: word });
   };
 
+  window.__showRediscoverySheet = function () {
+    playSound('tap');
+    setState({ sheet: 'rediscovery' });
+  };
+
+  window.__startDetailRediscovery = function () {
+    playSound('tap');
+    setState({ sheet: null, word: state.detailWord, discovering: true, revealKind: 'rediscovery', screen: 'hakkengen' });
+    window.__startHakkenGen();
+  };
+
+  window.__goStoryFromDetail = function () {
+    playSound('tap');
+    setState({ screen: 'storyPick', storySel: [state.detailWord] });
+  };
+
+  window.__backToDetailFromError = function () {
+    playSound('cancel');
+    setState({ screen: 'detail', detailWord: state.word });
+  };
+
   window.__setTheme = function (t) {
     var app = document.getElementById('app');
     if (app) app.dataset.theme = t;
@@ -1966,6 +2015,15 @@ export const clientApp = `
 
     if (!window.__hakkenCache) window.__hakkenCache = {};
     window.__hakkenCache[word] = { desc: desc, image_url: imageUrl || null };
+
+    if (state.revealKind === 'rediscovery') {
+      setState({
+        screen: 'detail',
+        detailWord: word,
+        discovering: false
+      });
+      return;
+    }
 
     setState({
       screen: 'reveal',

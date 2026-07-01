@@ -1,4 +1,4 @@
-name = "mojizukan-web"
+name = "mojizukan"
 main = "src/index.ts"
 compatibility_date = "2026-06-27"
 compatibility_flags = ["nodejs_als"]
@@ -22,3 +22,26 @@ binding = "AI"
 [[r2_buckets]]
 binding = "IMAGES"
 bucket_name = "mojizukan-images"
+
+# --- Staging 環境 ---
+# wrangler deploy --env staging でデプロイ
+# bindings は環境間で継承されないため全て明示定義
+
+[env.staging.vars]
+SENTRY_DSN = ""
+DEV_LOGIN = "true"
+
+[env.staging.assets]
+directory = "public"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mojizukan-db-staging"
+database_id = "8203e14f-e2f7-4288-b83c-da660ea70b4c"
+
+[env.staging.ai]
+binding = "AI"
+
+[[env.staging.r2_buckets]]
+binding = "IMAGES"
+bucket_name = "mojizukan-images-staging"

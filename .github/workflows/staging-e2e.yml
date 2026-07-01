@@ -5,7 +5,7 @@ on:
     inputs:
       staging_url:
         description: "ステージング URL"
-        default: "https://mojizukan-web.private-beats.workers.dev"
+        default: "https://mojizukan-staging.private-beats.workers.dev"
 
 jobs:
   staging-e2e:

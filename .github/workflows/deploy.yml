@@ -159,7 +159,7 @@ jobs:
               });
             }
 
-  deploy:
+  deploy-staging:
     needs: test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -173,15 +173,13 @@ jobs:
           node-version: "22"
           cache: "npm"
       - run: npm ci
-      - run: npx wrangler d1 migrations apply mojizukan-db --remote
-      - name: Seed shared cache (production)
+      - run: npx wrangler d1 migrations apply mojizukan-db-staging --env staging --remote
+      - name: Seed shared cache (staging)
         run: |
-          # R2 に画像をアップロード
           for img in cache-samples/images/*.webp; do
             FILENAME=$(basename "$img")
-            npx wrangler r2 object put "mojizukan-images/cache/$FILENAME" --file "$img" --content-type "image/webp" --remote 2>/dev/null || true
+            npx wrangler r2 object put "mojizukan-images-staging/cache/$FILENAME" --file "$img" --content-type "image/webp" --remote 2>/dev/null || true
           done
-          # D1 に shared_cache レコードを投入
           STYLES="ehon honwaka pop watercolor zukan"
           SQL=""
           for desc_file in cache-samples/descriptions/*.json; do
@@ -193,5 +191,5 @@ jobs:
               fi
             done
           done
-          npx wrangler d1 execute mojizukan-db --command "$SQL" --remote
-      - run: npx wrangler deploy
+          npx wrangler d1 execute mojizukan-db-staging --command "$SQL" --remote
+      - run: npx wrangler deploy --env staging

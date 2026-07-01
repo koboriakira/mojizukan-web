@@ -3,6 +3,13 @@ name: Reset Environment
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: "対象環境"
+        required: true
+        type: choice
+        options:
+          - staging
+        default: staging
       confirm:
         description: "Type 'reset' to confirm destructive operation"
         required: true
@@ -15,6 +22,9 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      DB_NAME: mojizukan-db-${{ github.event.inputs.environment }}
+      BUCKET_NAME: mojizukan-images-${{ github.event.inputs.environment }}
+      ENV_FLAG: --env ${{ github.event.inputs.environment }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -25,14 +35,13 @@ jobs:
 
       - name: Clear R2 bucket
         run: |
-          echo "=== R2 クリア ==="
-          KEYS=$(curl -s "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/r2/buckets/mojizukan-images/objects" \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | python3 -c "
-          import sys, json, urllib.request, urllib.parse
+          echo "=== R2 クリア ($BUCKET_NAME) ==="
+          python3 -c "
+          import json, urllib.request, urllib.parse
 
           account_id = '${{ secrets.CLOUDFLARE_ACCOUNT_ID }}'
           token = '${{ secrets.CLOUDFLARE_API_TOKEN }}'
-          bucket = 'mojizukan-images'
+          bucket = '${BUCKET_NAME}'
           all_keys = []
           cursor = None
 
@@ -62,12 +71,12 @@ jobs:
               except Exception as e:
                   print(f'  ERROR: {key}: {e}')
           print(f'Deleted {deleted}/{len(all_keys)} objects')
-          ")
+          "
 
       - name: Reset D1 database
         run: |
-          echo "=== D1 リセット ==="
-          TABLES=$(npx wrangler d1 execute mojizukan-db --remote \
+          echo "=== D1 リセット ($DB_NAME) ==="
+          TABLES=$(npx wrangler d1 execute "$DB_NAME" --remote \
             --command "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE '_cf_%' AND name != 'd1_migrations' AND name != 'sqlite_sequence';" \
             --json 2>/dev/null | python3 -c "
           import sys, json
@@ -83,7 +92,7 @@ jobs:
             for attempt in 1 2 3; do
               REMAINING=""
               for table in $TABLES; do
-                npx wrangler d1 execute mojizukan-db --remote \
+                npx wrangler d1 execute "$DB_NAME" --remote \
                   --command "DROP TABLE IF EXISTS \"$table\";" 2>/dev/null \
                   && echo "  ✓ $table" \
                   || REMAINING="${REMAINING} ${table}"
@@ -95,27 +104,25 @@ jobs:
           fi
 
           echo "Clearing migration history..."
-          npx wrangler d1 execute mojizukan-db --remote \
+          npx wrangler d1 execute "$DB_NAME" --remote \
             --command "DELETE FROM d1_migrations;"
 
           echo "Applying migrations..."
-          npx wrangler d1 migrations apply mojizukan-db --remote
+          npx wrangler d1 migrations apply "$DB_NAME" $ENV_FLAG --remote
 
       - name: Seed shared cache
         run: |
-          echo "=== シード投入 ==="
-          # R2 に画像をアップロード
+          echo "=== シード投入 ($DB_NAME / $BUCKET_NAME) ==="
           COUNT=0
           TOTAL=$(ls cache-samples/images/*.webp 2>/dev/null | wc -l | tr -d ' ')
           for img in cache-samples/images/*.webp; do
             COUNT=$((COUNT + 1))
             FILENAME=$(basename "$img")
             echo "[$COUNT/$TOTAL] $FILENAME"
-            npx wrangler r2 object put "mojizukan-images/cache/$FILENAME" \
+            npx wrangler r2 object put "$BUCKET_NAME/cache/$FILENAME" \
               --file "$img" --content-type "image/webp" --remote 2>/dev/null || true
           done
 
-          # D1 に shared_cache レコードを投入
           STYLES="ehon honwaka pop watercolor zukan"
           SQL=""
           for desc_file in cache-samples/descriptions/*.json; do
@@ -127,7 +134,7 @@ jobs:
               fi
             done
           done
-          npx wrangler d1 execute mojizukan-db --command "$SQL" --remote
+          npx wrangler d1 execute "$DB_NAME" --command "$SQL" --remote
 
           echo "=== 完了 ==="
           echo "画像: $TOTAL 件"

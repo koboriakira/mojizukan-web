@@ -7,18 +7,22 @@
 - **ランタイム**: Cloudflare Workers
 - **フレームワーク**: Hono
 - **DB**: D1 (SQLite)
-- **画像ストレージ**: R2（未実装）
+- **画像ストレージ**: R2
 - **決済**: Stripe チケット制（未実装）
 - **言語**: TypeScript
 
-## 開発コマンド
+## 開発コマンド（すべてローカル操作）
 
 ```bash
 npm run dev        # ローカル開発サーバー（ポートはブランチ名から自動決定）
 npm run typecheck  # 型チェック
 npm run test       # テスト実行
-npm run deploy     # 本番デプロイ
+npm run test:e2e   # E2E テスト（ローカル）
+npm run reset-db   # ローカル DB リセット
+npm run seed       # ローカルにシードデータ投入
 ```
+
+staging へのデプロイ・リセット・マイグレーションは CI 経由で行う（ローカルから wrangler でリモートを触らない）。
 
 ## worktree 並列開発
 
@@ -102,26 +106,35 @@ npm run dev
 
 `wrangler.toml` の `database_id` は本番 D1 の UUID だが、`--local` / `wrangler dev` ではローカル SQLite が使われるため影響しない。
 
+## 環境構成
+
+wrangler environments で環境を分離する（構成A: 1アカウント方式）。
+
+| 環境 | Worker 名 | D1 | R2 | 用途 |
+|------|-----------|----|----|------|
+| root（将来の本番） | `mojizukan` | `mojizukan-db` | `mojizukan-images` | 本番用（未デプロイ） |
+| staging | `mojizukan-staging` | `mojizukan-db-staging` | `mojizukan-images-staging` | 開発・検証用 |
+| preview | `mojizukan-pre-*` | 使い捨て | 使い捨て | PR ごとの一時環境 |
+
+- bindings は環境間で継承されない。各環境で全 bindings を明示定義する
+- staging の secrets は `wrangler secret put <KEY> --env staging` で設定する
+- main マージで staging に自動デプロイされる
+
 ## マイグレーション
 
 ```bash
-# ローカル適用
-npx wrangler d1 migrations apply mojizukan-db --local
-
-# リモート適用（本番）
-npx wrangler d1 migrations apply mojizukan-db --remote
+npx wrangler d1 migrations apply mojizukan-db --local  # ローカル適用
 ```
 
-新しいマイグレーションは `migrations/NNNN_名前.sql` として追加する。
+新しいマイグレーションは `migrations/NNNN_名前.sql` として追加する。staging への適用は CI（`migrate-staging.yml` または `deploy.yml`）で行う。
 
 ### DB リセット
 
 ```bash
-bash bin/reset-db.sh          # ローカル DB をリセット
-bash bin/reset-db.sh --remote # リモート（ステージング）DB をリセット
+npm run reset-db  # ローカル DB をリセット
 ```
 
-全テーブルを DROP してマイグレーションを再適用する。リモート実行時は確認プロンプトあり。
+全テーブルを DROP してマイグレーションを再適用する。staging のリセットは CI の `reset-environment.yml` で行う。
 
 ## デザイン連携（Claude Design ↔ Claude Code）
 
@@ -172,8 +185,8 @@ PR 作成前に `/dev-pipeline finish <Issue番号>` を実行してスコープ
 
 ## デプロイ
 
-main ブランチへのマージで GitHub Actions が自動デプロイする。
-手動デプロイは `npm run deploy`。
+main ブランチへのマージで GitHub Actions が staging に自動デプロイする。
+手動デプロイはしない（CI 経由のみ）。staging マイグレーション単独実行は `migrate-staging.yml` ワークフローで。
 
 ### 必要なシークレット
 

@@ -1,20 +1,7 @@
 #!/bin/bash
-# 共有キャッシュの初期データを D1 + R2 に投入するスクリプト
-# 使い方:
-#   bash bin/seed-cache.sh                     # ローカル
-#   bash bin/seed-cache.sh --remote             # リモート（ステージング/本番）
-#   bash bin/seed-cache.sh --remote --name XXX  # 指定 Worker の R2 に投入
+# ローカルの共有キャッシュに初期データを投入する
+# リモート（staging）のシードは CI の deploy / reset-environment ワークフローを使う
 set -euo pipefail
-
-REMOTE=""
-WORKER_NAME=""
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --remote) REMOTE="--remote"; shift ;;
-    --name) WORKER_NAME="$2"; shift 2 ;;
-    *) echo "Unknown option: $1"; exit 1 ;;
-  esac
-done
 
 CACHE_DIR="cache-samples"
 if [ ! -d "$CACHE_DIR/descriptions" ] || [ ! -d "$CACHE_DIR/images" ]; then
@@ -22,9 +9,7 @@ if [ ! -d "$CACHE_DIR/descriptions" ] || [ ! -d "$CACHE_DIR/images" ]; then
   exit 1
 fi
 
-echo "=== 共有キャッシュ シード ==="
-echo "モード: ${REMOTE:-local}"
-[ -n "$WORKER_NAME" ] && echo "Worker: $WORKER_NAME"
+echo "=== 共有キャッシュ シード（ローカル） ==="
 
 # --- R2 に画像をアップロード ---
 echo ""
@@ -38,7 +23,7 @@ for img in "$CACHE_DIR/images/"*.webp; do
   R2_KEY="cache/$FILENAME"
 
   echo "[$IMG_COUNT/$IMG_TOTAL] $FILENAME → $R2_KEY"
-  npx wrangler r2 object put "mojizukan-images/$R2_KEY" --file "$img" --content-type "image/webp" $REMOTE 2>/dev/null
+  npx wrangler r2 object put "mojizukan-images/$R2_KEY" --file "$img" --content-type "image/webp" 2>/dev/null
 done
 
 # --- D1 に shared_cache レコードを投入 ---
@@ -69,7 +54,7 @@ with open('$CACHE_DIR/descriptions/$word.json') as f:
   done
 done
 
-echo -e "$SQL_STATEMENTS" | npx wrangler d1 execute mojizukan-db --command "$(echo -e "$SQL_STATEMENTS")" $REMOTE
+echo -e "$SQL_STATEMENTS" | npx wrangler d1 execute mojizukan-db --command "$(echo -e "$SQL_STATEMENTS")"
 
 echo ""
 echo "=== 完了 ==="

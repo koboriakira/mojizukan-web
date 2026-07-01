@@ -343,9 +343,10 @@ export const clientApp = `
   function renderTankenlimit(s) {
     var lw = s.limitWord || '';
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
-      '<div style="font-size:80px;animation:bob 2s ease-in-out infinite;">🌙</div>' +
-      '<div style="font-family:var(--fhead);font-weight:900;font-size:28px;color:var(--ink);margin-top:20px;">きょうの たんけんは おしまい！</div>' +
-      (lw ? '<div style="font-size:18px;color:var(--sub);font-weight:700;margin-top:12px;">「' + lw + '」は あした はっけん できるよ</div>' : '') +
+      '<div style="font-size:80px;animation:bob 2s ease-in-out infinite;">🎟️</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:28px;color:var(--ink);margin-top:20px;">チケットが なくなったよ</div>' +
+      (lw ? '<div style="font-size:18px;color:var(--sub);font-weight:700;margin-top:12px;">「' + lw + '」は いまは はっけんできないよ</div>' : '') +
+      '<div style="font-size:15px;color:var(--sub);margin-top:12px;">もっと たんけんしたいときは<br>おうちの ひとに そうだんしてね</div>' +
       '<div style="display:flex;gap:14px;margin-top:36px;width:100%;max-width:400px;">' +
         '<button onclick="window.__goMitsukeru()" style="flex:1;min-height:72px;border-radius:20px;background:var(--accent2);font-size:20px;box-shadow:0 6px 0 var(--accent2d);">🔍 みつける へ</button>' +
         '<button onclick="window.__goHome()" style="flex:1;min-height:72px;border-radius:20px;background:var(--accent);font-size:20px;box-shadow:0 6px 0 var(--accentd);">🏠 ホーム</button>' +
@@ -1903,7 +1904,7 @@ export const clientApp = `
       return;
     }
     if (state.authed && (state.tickets || 0) <= 0) {
-      setState({ tankenMsg: { type: 'limit', text: 'チケットが たりないよ' } });
+      setState({ screen: 'tankenlimit', limitWord: word });
       return;
     }
     playSound('tap');
@@ -2021,10 +2022,16 @@ export const clientApp = `
       if (res.status === 401) {
         return { description: 'あたらしく はっけんした ことばだよ！', image_url: null, cached: false };
       }
+      if (res.status === 402) {
+        clearTimeout(phaseTimer);
+        setState({ screen: 'tankenlimit', limitWord: word });
+        return null;
+      }
       if (!res.ok) throw new Error('API error: ' + res.status);
       return res.json();
     })
     .then(function(data) {
+      if (!data) return;
       clearTimeout(phaseTimer);
       if (data.cached) {
         setState({ genCached: true });

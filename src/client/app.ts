@@ -113,6 +113,21 @@ export const clientApp = `
     return '';
   }
 
+  function renderWordWithHandwriting(word, handwriting) {
+    var hw = handwriting && handwriting[word];
+    if (hw && hw.length > 0) {
+      var imgs = '';
+      for (var i = 0; i < hw.length; i++) {
+        imgs += '<img src="' + hw[i] + '" alt="' + (word[i] || '') + '" style="width:72px;height:72px;object-fit:contain;">';
+      }
+      return '<div style="background:#fff;border:3px solid var(--accent2);border-radius:18px;padding:10px 18px;box-shadow:0 4px 12px rgba(0,0,0,.06);">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:11px;color:var(--accent2);text-align:center;margin-bottom:4px;">✏️ じぶんで かけたよ！</div>' +
+        '<div style="display:flex;align-items:center;justify-content:center;gap:2px;">' + imgs + '</div>' +
+      '</div>';
+    }
+    return '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>';
+  }
+
   function getHakkenImageUrl(word) {
     return (window.__hakkenCache && window.__hakkenCache[word] && window.__hakkenCache[word].image_url) || null;
   }
@@ -425,10 +440,10 @@ export const clientApp = `
     }
 
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
-      '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:var(--accent);">' + title + '</div>' +
+      '<div style="font-family:var(--fhead);font-weight:900;font-size:30px;color:#5a5145;">' + title + '</div>' +
       '<div style="margin:14px 0 4px;">' + renderEmojiOrImage(preset.image_url || getHakkenImageUrl(word), 130) + '</div>' +
       '<div style="display:flex;align-items:center;justify-content:center;gap:8px;">' +
-        '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>' +
+        renderWordWithHandwriting(word, s.handwriting) +
         '<button onclick="window.__speakWord()" style="width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:22px;padding:0;">🔊</button>' +
       '</div>' +
       '<div style="font-size:22px;line-height:1.8;color:#5a5145;white-space:pre-line;max-width:340px;font-weight:500;margin-top:16px;">' + preset.desc + '</div>' +

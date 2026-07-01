@@ -118,9 +118,12 @@ export const clientApp = `
     if (hw && hw.length > 0) {
       var imgs = '';
       for (var i = 0; i < hw.length; i++) {
-        imgs += '<img src="' + hw[i] + '" alt="' + (word[i] || '') + '" style="width:56px;height:56px;object-fit:contain;">';
+        imgs += '<img src="' + hw[i] + '" alt="' + (word[i] || '') + '" style="width:72px;height:72px;object-fit:contain;">';
       }
-      return '<div style="display:flex;align-items:center;gap:2px;">' + imgs + '</div>';
+      return '<div style="background:#fff;border:3px solid var(--accent2);border-radius:18px;padding:10px 18px;box-shadow:0 4px 12px rgba(0,0,0,.06);">' +
+        '<div style="font-family:var(--fhead);font-weight:900;font-size:11px;color:var(--accent2);text-align:center;margin-bottom:4px;">✏️ じぶんで かけたよ！</div>' +
+        '<div style="display:flex;align-items:center;justify-content:center;gap:2px;">' + imgs + '</div>' +
+      '</div>';
     }
     return '<div style="font-family:var(--fhead);font-weight:900;font-size:56px;color:var(--ink);">' + word + '</div>';
   }

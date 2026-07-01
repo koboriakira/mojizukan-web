@@ -1904,7 +1904,7 @@ export const clientApp = `
       return;
     }
     if (state.authed && (state.tickets || 0) <= 0) {
-      setState({ tankenMsg: { type: 'limit', text: 'チケットが たりないよ' } });
+      setState({ screen: 'tankenlimit', limitWord: word });
       return;
     }
     playSound('tap');

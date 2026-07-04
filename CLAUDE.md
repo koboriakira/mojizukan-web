@@ -18,6 +18,7 @@ npm run dev        # ローカル開発サーバー（ポートはブランチ�
 npm run typecheck  # 型チェック
 npm run test       # テスト実行
 npm run test:e2e   # E2E テスト（ローカル）
+npm run test:e2e:staging  # staging 環境に対する E2E テスト
 npm run reset-db   # ローカル DB リセット
 npm run seed       # ローカルにシードデータ投入
 ```
@@ -108,6 +109,15 @@ npm run dev
 
 ## 環境構成
 
+### 開発用ログイン（staging / preview のみ）
+
+`DEV_LOGIN=true` が設定された環境では、以下のルートが有効になる。
+
+- `GET /dev/auto-login?tickets=5` — テストユーザーを自動作成してログイン（チケット数は指定可）
+- `GET /dev/auto-logout` — ログアウト
+
+### 環境一覧
+
 wrangler environments で環境を分離する（構成A: 1アカウント方式）。
 
 | 環境 | Worker 名 | D1 | R2 | 用途 |
@@ -119,6 +129,7 @@ wrangler environments で環境を分離する（構成A: 1アカウント方式
 - bindings は環境間で継承されない。各環境で全 bindings を明示定義する
 - staging の secrets は `wrangler secret put <KEY> --env staging` で設定する
 - main マージで staging に自動デプロイされる
+- staging URL: `https://mojizukan-staging.private-beats.workers.dev`
 
 ## マイグレーション
 
@@ -187,6 +198,16 @@ PR 作成前に `/dev-pipeline finish <Issue番号>` を実行してスコープ
 
 main ブランチへのマージで GitHub Actions が staging に自動デプロイする。
 手動デプロイはしない（CI 経由のみ）。staging マイグレーション単独実行は `migrate-staging.yml` ワークフローで。
+
+### CI ワークフロー一覧
+
+| ファイル | トリガー | 内容 |
+|---------|---------|------|
+| `deploy.yml` | push to main / PR | テスト → staging デプロイ（main）/ preview デプロイ（PR） |
+| `migrate-staging.yml` | 手動 | staging D1 にマイグレーション単独適用 |
+| `reset-environment.yml` | 手動 | staging の DB・R2 をリセット |
+| `staging-e2e.yml` | 手動 | staging に対して E2E テストを実行 |
+| `preview-cleanup.yml` | PR close | PR 用 preview Worker を削除 |
 
 ### 必要なシークレット
 

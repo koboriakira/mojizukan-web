@@ -1,0 +1,128 @@
+name: Design Task
+description: Claude Design セッションから起票する実装タスク。dev-loop が拾って自律実装する前提。
+labels: ["enhancement", "from:design"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > このテンプレートは Claude Design が起票する用途を想定しています。
+        > 人間が `loop:ready` ラベルを付けると dev-loop が自律実装を開始します。
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要（1〜2文）
+      description: 何を作るか。子ども/保護者のどちらの体験か。
+      placeholder: 保護者がカスタムスタイルを作成・保存できるエディタ画面を実装する
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-flow
+    attributes:
+      label: ユーザーフロー
+      description: 番号付きリストで画面遷移を記述。分岐がある場合は条件を明示。
+      placeholder: |
+        1. 保護者ゲート（長押し）→ おうちの方メニュー
+        2. 「えの スタイル」カード → Style Picker シート
+        3. 「✨ カスタムスタイルを作成」→ エディタ画面
+        4. スタイル名・プロンプト入力 → 「サンプルを生成（🎟️1）」
+        5. 確認シート → 生成 → 60秒クールダウン
+        6. 「このスタイルを使う」→ 保存 → メニューへ戻る
+    validations:
+      required: true
+
+  - type: textarea
+    id: screen-states
+    attributes:
+      label: 画面×状態マトリクス
+      description: |
+        実装すべき画面とその状態を表形式で列挙。
+        列: 画面 / 初期 / ローディング / 結果 / エラー / 空
+      placeholder: |
+        | 画面 | 初期 | ローディング | 結果 | エラー | 空 |
+        |------|------|-------------|------|--------|-----|
+        | エディタ | 名前・プロンプト空 | 生成中（3点パルス） | サンプル表示+60秒CD | 残高0→Tickets | サンプル未生成 |
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 受入条件
+      description: 各条件が it("...") にそのまま変換可能な粒度で書く。dev-loop はこれをテストに変換する。
+      placeholder: |
+        - [ ] エディタ画面でスタイル名とプロンプトを入力できる
+        - [ ] 「サンプルを生成」で🎟️1枚消費し、固定語「ねこ」で画像を生成する
+        - [ ] 生成後60秒間はボタンが無効化され、カウントダウンが表示される
+        - [ ] 「このスタイルを使う」で imgStyle:'custom' が保存される
+        - [ ] 残高0で生成ボタンを押すと Tickets シートへ遷移する
+    validations:
+      required: true
+
+  - type: textarea
+    id: design-decisions
+    attributes:
+      label: 確定した設計判断
+      description: この実装で守るべき設計判断と、却下した代替案。dev-loop が迷ったときの判断基準になる。
+      placeholder: |
+        **確定:**
+        - 1生成=🎟️1消費（時間制セッションは不採用）
+        - サンプル固定語は「ねこ」
+        - 保護者メニュー内に配置（しょうさい画面には置かない）
+
+        **却下した案:**
+        - 15分間無制限セッション → 原価とズレる、見通しが悪い
+        - テンプレート選択制 → プリセットでカバー済み、自由テキストが価値
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-hints
+    attributes:
+      label: 技術的な手がかり
+      description: 実装時に参照すべきファイル・既存パターン・API制約など。なければ空欄可。
+      placeholder: |
+        - 既存の Style 切替: `src/services/ai-generation/image-style.ts`
+        - 保護者メニュー: `src/routes/parent-menu.ts`
+        - 画像生成API: `gpt-image-1-mini`, 1024x1024 のみ
+        - クールダウン: クライアントJS で setTimeout + ボタン disabled
+    validations:
+      required: false
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: スコープ外（今回やらないこと）
+      description: 関連するが今回の Issue には含めない事項。dev-loop が範囲を超えないためのガードレール。
+      placeholder: |
+        - 複数カスタムスタイルの保存（本 Issue は1つのみ）
+        - 不適切プロンプトのモデレーション（別 Issue）
+        - 生成失敗時のチケット返却（別 Issue）
+    validations:
+      required: false
+
+  - type: textarea
+    id: design-refs
+    attributes:
+      label: デザイン参照
+      description: 関連するプロトタイプ・decisions・ADRへのパス。
+      placeholder: |
+        - プロトタイプ: `design/Mojizukan-Hakken-Prototype.dc.html`
+        - decisions: `design/sessions/20260701_1500_decisions.md` §1〜§3
+        - ADR-0002: チケット制御
+    validations:
+      required: false
+
+  - type: dropdown
+    id: context
+    attributes:
+      label: 影響する境界コンテキスト
+      description: docs/strategic/context-map.md 参照
+      multiple: true
+      options:
+        - ことばあつめ
+        - おはなし
+        - AI生成
+        - アカウント・経済
+        - わからない

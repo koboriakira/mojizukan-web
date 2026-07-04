@@ -1,5 +1,16 @@
 export const NG_WORDS: string[] = [
-  // Basic inappropriate words for children's app (keep minimal, expand later)
+  "ばか",
+  "あほ",
+  "しね",
+  "ころす",
+  "きもい",
+  "うざい",
+  "くそ",
+  "ちんこ",
+  "まんこ",
+  "おっぱい",
+  "うんこ",
+  "せっくす",
 ];
 
 export function isNgWord(word: string): boolean {

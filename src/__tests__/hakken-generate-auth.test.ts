@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { app } from "../index";
 import type { Bindings } from "../types";
+import * as ngWordsModule from "../services/kotoba-atsume/ng-words";
 
 interface HakkenEntryRow {
   user_id: string;
@@ -161,5 +162,58 @@ describe("POST /api/hakken/generate 認証境界", () => {
       { user_id: "user-1", word: "ねこ", description: "ねこは にゃあと なくよ。", image_url: "/images/cache/ehon_ねこ.webp" },
     ]);
     expect(tickets).toHaveLength(0);
+  });
+});
+
+describe("POST /api/hakken/generate NGワードフィルタ", () => {
+  it("NGワードを含む語は 400 で拒否され、チケットを消費しない", async () => {
+    vi.spyOn(ngWordsModule, "isNgWord").mockReturnValue(true);
+
+    const { db, tickets } = createMockD1({
+      sessions: { "valid-token": "user-1" },
+    });
+
+    const res = await app.request(
+      "/api/hakken/generate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "session=valid-token" },
+        body: JSON.stringify({ word: "てすと" }),
+      },
+      buildEnv(db),
+    );
+
+    expect(res.status).toBe(400);
+    const json = await res.json() as { error: string };
+    expect(json.error).toContain("つかえないよ");
+    expect(tickets).toHaveLength(0);
+
+    vi.restoreAllMocks();
+  });
+
+  it("NGワードでない語は通常通り処理される", async () => {
+    vi.spyOn(ngWordsModule, "isNgWord").mockReturnValue(false);
+
+    const { db } = createMockD1({
+      sessions: { "valid-token": "user-1" },
+      sharedCache: {
+        "らいおん:ehon": { image_url: "/images/cache/ehon_らいおん.webp", description: "らいおんは つよいよ。" },
+      },
+      userSettings: { "user-1": "ehon" },
+    });
+
+    const res = await app.request(
+      "/api/hakken/generate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "session=valid-token" },
+        body: JSON.stringify({ word: "らいおん" }),
+      },
+      buildEnv(db),
+    );
+
+    expect(res.status).toBe(200);
+
+    vi.restoreAllMocks();
   });
 });

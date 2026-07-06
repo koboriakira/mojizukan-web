@@ -34,4 +34,9 @@ describe("buildShell", () => {
   it("lang=ja が設定されている", () => {
     expect(buildShell()).toContain('lang="ja"');
   });
+
+  it("ngWords 変数がクライアントスクリプトに含まれる", () => {
+    const html = buildShell();
+    expect(html).toContain("var ngWords =");
+  });
 });

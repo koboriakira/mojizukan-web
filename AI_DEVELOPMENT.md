@@ -117,6 +117,36 @@ decisions のユーザータイプ別フローが E2E テストの骨格にな�
 
 対話開発の途中でエージェントが人間の判断（承認 / 選択 / 修正指示）を必要とすると、`koboriakira/decisions` リポジトリに判断 issue が立ち、スマホに通知が来る。チェックボックスをタップするかコメントを書けば、元のセッションが約1分で自動再開する。dev-loop と同じ待機基盤で動いている。
 
+## 環境とデプロイ
+
+### staging 環境
+
+- URL: `https://mojizukan-staging.private-beats.workers.dev`
+- main マージで自動デプロイされる（手動デプロイ禁���）
+- 開発用ログイン（`DEV_LOGIN=true` のとき有効）:
+  - `/dev/auto-login?tickets=5` でテストユーザー作成＋ログイン
+  - `/dev/auto-logout` でログアウト
+
+### CI ワークフロー
+
+| ファイル | トリガー | 内容 |
+|---------|---------|------|
+| `deploy.yml` | push to main / PR | テスト → staging デプロイ（main）/ preview デプロイ（PR） |
+| `migrate-staging.yml` | 手動 | staging D1 にマイグレーション単独適用 |
+| `reset-environment.yml` | 手動 | staging の DB・R2 をリセット |
+| `staging-e2e.yml` | 手動 | staging に対して E2E テストを実行 |
+| `preview-cleanup.yml` | PR close | PR 用 preview Worker を削除 |
+
+### staging E2E テスト
+
+ローカル E2E（`npm run test:e2e`）に加えて、staging 環境に対する E2E を実行できる:
+
+```bash
+npm run test:e2e:staging   # staging 環境に対して Playwright を実行
+```
+
+CI からは `staging-e2e.yml` ワークフローを手動トリガーする。
+
 ## 半年後の復帰チェックリスト
 
 環境が生きているかを上から順に確認する。dev-loop の実行基盤は**このリポジトリではなく `~/.claude`**（ホームの Claude Code 設定）にあることに注意。

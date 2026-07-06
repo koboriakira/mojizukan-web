@@ -1,8 +1,11 @@
 import { clientDictionary } from "./dictionary";
+import { NG_WORDS } from "../services/kotoba-atsume/ng-words";
 
 export const clientApp = `
 (function () {
   ${clientDictionary}
+
+  var ngWords = ${JSON.stringify(NG_WORDS)};
 
   function storageAvailable() {
     try {
@@ -253,7 +256,6 @@ export const clientApp = `
   }
 
   function classify(word) {
-    var ngWords = [];
     for (var i = 0; i < ngWords.length; i++) {
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }
@@ -265,7 +267,6 @@ export const clientApp = `
 
   function classifyTanken(word) {
     if (!word || word.length === 0) return 'ng';
-    var ngWords = [];
     for (var i = 0; i < ngWords.length; i++) {
       if (word.indexOf(ngWords[i]) !== -1) return 'ng';
     }

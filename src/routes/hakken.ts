@@ -7,6 +7,7 @@ import { classifyWord, getRandomWords } from "../services/kotoba-atsume/hakken-l
 import { executeHakkenGenerate } from "../services/kotoba-atsume/hakken-generate";
 import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
 import { listCacheWords } from "../services/ai-generation/shared-cache";
+import { isNgWord } from "../services/kotoba-atsume/ng-words";
 
 export const hakken = new Hono<AppEnv>();
 
@@ -46,6 +47,9 @@ hakken.post("/generate", async (c) => {
   const userId = c.var.userId ?? null;
   if (!body.word) {
     throw new AppError(400, "word は必須です");
+  }
+  if (isNgWord(body.word)) {
+    throw new AppError(400, "この ことばは つかえないよ");
   }
 
   const result = await executeHakkenGenerate(

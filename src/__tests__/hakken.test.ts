@@ -1,10 +1,30 @@
 import { describe, it, expect } from "vitest";
 import { classifyWord, getRandomWords } from "../services/kotoba-atsume/hakken-logic";
-import { isNgWord } from "../services/kotoba-atsume/ng-words";
+import { isNgWord, NG_WORDS } from "../services/kotoba-atsume/ng-words";
 
 describe("isNgWord", () => {
   it("NGリストにない言葉は false を返す", () => {
     expect(isNgWord("らいおん")).toBe(false);
+  });
+
+  it("部分一致で判定する（語の中にNG語が含まれれば true）", () => {
+    // NG_WORDS が空でない前提のテスト用にカスタムリストを使う classifyWord でテスト
+    const result = classifyWord({ word: "あばか", zukanWords: [], prepared: [], ngList: ["ばか"] });
+    expect(result.status).toBe("ng");
+  });
+
+  it("完全一致でなくても部分一致で拒否する", () => {
+    const result = classifyWord({ word: "ばかもの", zukanWords: [], prepared: [], ngList: ["ばか"] });
+    expect(result.status).toBe("ng");
+  });
+
+  it("NG語を含まない語は通過する", () => {
+    const result = classifyWord({ word: "らいおん", zukanWords: [], prepared: [], ngList: ["ばか"] });
+    expect(result.status).toBe("ok");
+  });
+
+  it("NG_WORDS は配列としてエクスポートされている", () => {
+    expect(Array.isArray(NG_WORDS)).toBe(true);
   });
 });
 

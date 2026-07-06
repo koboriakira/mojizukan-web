@@ -60,7 +60,6 @@ export const clientApp = `
   var saved = loadState();
   var state = {
     screen: isOnboarded() ? 'home' : 'onboarding',
-    previewMode: false,
     word: '',
     charIndex: 0,
     confirmed: [],
@@ -250,7 +249,6 @@ export const clientApp = `
       case 'hakkengen': return renderHakkenGen(s);
       case 'hakkengenError': return renderHakkenGenError(s);
       case 'onboarding': return renderOnboarding(s);
-      case 'handoff':    return renderHandoff(s);
       default:          return '<p>不明な画面: ' + s.screen + '</p>';
     }
   }
@@ -328,28 +326,12 @@ export const clientApp = `
             'お気づきの点があればお知らせください。' +
           '</div>' +
         '</div>' +
+        '<div style="font-size:15px;color:#5a5145;text-align:center;margin-bottom:8px;line-height:1.7;">お子さまと いっしょに<br>ためして みてください</div>' +
         '<div style="width:100%;display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">' +
-          '<button onclick="window.__startPreview()" style="min-height:80px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:24px;font-weight:900;border-radius:22px;">✏️ まず おうちの方が ためす</button>' +
+          '<button onclick="window.__skipOnboarding()" style="min-height:80px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:24px;font-weight:900;border-radius:22px;">はじめる</button>' +
           '<button onclick="window.__skipOnboarding()" style="min-height:52px;background:transparent;color:var(--sub);font-weight:700;font-size:16px;box-shadow:none;">あとで →</button>' +
         '</div>' +
       '</div>' +
-    '</div>';
-  }
-
-  function renderHandoff(s) {
-    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
-      '<div style="font-size:80px;line-height:1;margin-bottom:20px;animation:bob 2s ease-in-out infinite;">🎉</div>' +
-      '<div style="font-family:var(--fhead);font-weight:900;font-size:28px;color:var(--ink);margin-bottom:12px;">たいけん かんりょう！</div>' +
-      '<div style="font-size:18px;color:#5a5145;line-height:1.8;max-width:340px;margin-bottom:8px;">' +
-        'おつかれさまでした。<br>' +
-        'お子さまに わたして<br>' +
-        'いっしょに たのしんでください。' +
-      '</div>' +
-      '<div style="font-size:14px;color:var(--sub);line-height:1.7;max-width:320px;margin-bottom:36px;">' +
-        'ホーム画面の「おうちの ひとは こちら」から<br>' +
-        '保護者メニューに入れます。' +
-      '</div>' +
-      '<button onclick="window.__handoff()" style="min-height:80px;width:100%;max-width:380px;background:var(--accent2);box-shadow:0 6px 0 var(--accent2d);font-size:26px;font-weight:900;border-radius:22px;">📱 お子さまに わたす</button>' +
     '</div>';
   }
 
@@ -505,9 +487,7 @@ export const clientApp = `
       title = 'ずかんに のったよ！🎉';
     }
     var nextAction;
-    if (s.previewMode) {
-      nextAction = '<button onclick="window.__goHandoff()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">✅ たいけん おわり</button>';
-    } else if (kind === 'tanken' || kind === 'tanken-rediscovery') {
+    if (kind === 'tanken' || kind === 'tanken-rediscovery') {
       nextAction = '<button onclick="window.__goTanken()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🧭 たんけんに もどる</button>';
     } else {
       nextAction = '<button onclick="window.__goMitsukeru()" style="flex:1;min-height:76px;border-radius:20px;background:var(--accent);font-size:21px;box-shadow:0 6px 0 var(--accentd);">🔍 つぎも みつける</button>';
@@ -1042,9 +1022,7 @@ export const clientApp = `
     var backBtn = s.revealKind === 'rediscovery'
       ? '<button onclick="window.__backToDetailFromError()" style="min-height:48px;padding:0 24px;border-radius:14px;background:transparent;font-size:16px;color:var(--sub);margin-top:8px;">しょうさいに もどる</button>'
       : '';
-    var homeBtn = s.previewMode
-      ? '<button onclick="window.__goHandoff()" style="min-height:48px;padding:0 24px;border-radius:14px;background:transparent;font-size:16px;color:var(--sub);margin-top:16px;">たいけんを おわる</button>'
-      : '<button onclick="window.__goHome()" style="min-height:48px;padding:0 24px;border-radius:14px;background:transparent;font-size:16px;color:var(--sub);margin-top:16px;">ホームに もどる</button>';
+    var homeBtn = '<button onclick="window.__goHome()" style="min-height:48px;padding:0 24px;border-radius:14px;background:transparent;font-size:16px;color:var(--sub);margin-top:16px;">ホームに もどる</button>';
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">' +
       '<div style="font-size:64px;margin-bottom:16px;">😢</div>' +
       '<div style="font-family:var(--fhead);font-weight:900;font-size:22px;color:var(--ink);margin-bottom:12px;">つくれなかったよ</div>' +
@@ -1493,27 +1471,10 @@ export const clientApp = `
     setState({ sheet: null });
   };
 
-  window.__startPreview = function () {
-    playSound('tap');
-    setState({ previewMode: true });
-    window.__goMitsukeru();
-  };
-
   window.__skipOnboarding = function () {
     playSound('tap');
     setOnboarded();
-    setState({ screen: 'home', previewMode: false });
-  };
-
-  window.__goHandoff = function () {
-    playSound('success');
-    setState({ screen: 'handoff', previewMode: false });
-  };
-
-  window.__handoff = function () {
-    playSound('tap');
-    setOnboarded();
-    setState({ screen: 'home', previewMode: false });
+    setState({ screen: 'home' });
   };
 
   window.__goHome = function () {

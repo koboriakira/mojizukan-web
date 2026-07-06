@@ -276,7 +276,7 @@ test("初回アクセス → オンボーディングLP → スキップ → ホ
   await expect(page.getByText("どんな アプリ？")).toBeVisible();
   await expect(page.getByText("まなびの ねらい")).toBeVisible();
   await expect(page.getByText("おうちの方へ")).toBeVisible();
-  await expect(page.getByRole("button", { name: "まず おうちの方が ためす" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "はじめる" })).toBeVisible();
   await expect(page.getByRole("button", { name: "あとで →" })).toBeVisible();
 
   // 「あとで」スキップ → ホーム画面に遷移 + onboarded フラグが保存される
@@ -292,50 +292,22 @@ test("初回アクセス → オンボーディングLP → スキップ → ホ
   expect(errors).toEqual([]);
 });
 
-test("オンボーディング → ためす → なぞり体験 → 受け渡し画面 → ホーム", async ({ page }) => {
+test("オンボーディング → はじめる → ホーム → 2回目は直接ホーム", async ({ page }) => {
   const errors = collectErrors(page);
 
+  // onboarded フラグなしで初回アクセス → オンボーディングLP
   await page.goto("/");
   await expect(page.getByText("3〜6さい向け もじあそびアプリ")).toBeVisible();
+  await expect(page.getByText("どんな アプリ？")).toBeVisible();
+  await expect(page.getByText("おうちの方へ")).toBeVisible();
+  await expect(page.getByText("お子さまと いっしょに")).toBeVisible();
 
-  // 「ためす」→ みつけるフローに入る（previewMode: true）
-  await page.getByRole("button", { name: "まず おうちの方が ためす" }).click();
-
-  // trace 画面が表示される（みつけるフローで STARTER_WORDS から出題）
-  await expect(page.locator("canvas")).toBeVisible();
-
-  // 決定論的テストのため1文字語に切り替え + previewMode 維持
-  await page.evaluate(() => {
-    (window as any).__setState({
-      screen: "trace",
-      word: "て",
-      charIndex: 0,
-      confirmed: [],
-      discovering: false,
-      revealKind: "mitsuke",
-      drew: true,
-      previewMode: true,
-    });
-  });
-
-  await expect(page.locator("canvas")).toBeVisible();
-  await page.getByRole("button", { name: "できた！" }).click();
-
-  // reveal 画面で previewMode の「たいけん おわり」ボタンが表示
-  await expect(page.getByText("ずかんに のったよ！")).toBeVisible();
-  await expect(page.getByRole("button", { name: "たいけん おわり" })).toBeVisible();
-
-  // 「たいけん おわり」→ 受け渡し画面
-  await page.getByRole("button", { name: "たいけん おわり" }).click();
-  await expect(page.getByText("たいけん かんりょう！")).toBeVisible();
-  await expect(page.getByRole("button", { name: "お子さまに わたす" })).toBeVisible();
-
-  // 「お子さまに わたす」→ ホームに遷移 + onboarded フラグ保存
-  await page.getByRole("button", { name: "お子さまに わたす" }).click();
+  // 「はじめる」→ ホーム画面に遷移 + onboarded フラグが保存される
+  await page.getByRole("button", { name: "はじめる" }).click();
   await expect(page.getByText("もじずかん")).toBeVisible();
   await expect(page.getByRole("button", { name: "みつける" })).toBeVisible();
 
-  // リロード → 直接ホーム（LP スキップ）
+  // 2回目のアクセス → LP をスキップして直接ホーム
   await page.reload();
   await expect(page.getByText("もじずかん")).toBeVisible();
   await expect(page.getByRole("button", { name: "みつける" })).toBeVisible();

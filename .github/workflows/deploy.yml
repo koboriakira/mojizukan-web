@@ -57,7 +57,7 @@ jobs:
           if echo "$OUTPUT" | grep -q "already exists"; then
             DB_ID=$(npx wrangler d1 list --json 2>/dev/null | python3 -c "import sys,json; dbs=json.load(sys.stdin); print(next(d['uuid'] for d in dbs if d['name']=='${DB_NAME}'))")
           else
-            DB_ID=$(echo "$OUTPUT" | grep -oP 'database_id\s*=\s*"\K[^"]+')
+            DB_ID=$(echo "$OUTPUT" | sed -n 's/.*database_id *= *"\([^"]*\)".*/\1/p' | head -1)
           fi
           echo "id=${DB_ID}" >> "$GITHUB_OUTPUT"
           echo "db_name=${DB_NAME}" >> "$GITHUB_OUTPUT"
@@ -104,7 +104,10 @@ jobs:
         id: preview
         run: |
           npx wrangler deploy --config wrangler-preview.toml 2>&1 | tee /tmp/deploy.log
-          URL=$(grep -oP 'https://[^ ]+\.workers\.dev' /tmp/deploy.log | head -1)
+          URL=$(grep -oE 'https://[^ ]+\.workers\.dev' /tmp/deploy.log | head -1)
+          if [ -z "$URL" ]; then
+            URL="https://${{ steps.slug.outputs.name }}.private-beats.workers.dev"
+          fi
           echo "url=${URL}" >> "$GITHUB_OUTPUT"
 
       - name: Configure secrets

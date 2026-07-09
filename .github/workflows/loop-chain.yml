@@ -1,0 +1,33 @@
+name: dev-loop chain
+
+# Phase 1.5: PR マージ時に `next: #N` で指定された Issue に loop:ready を自動付与
+# PR 本文に `next: #37` と書いておけば、マージ時に #37 が loop:ready になる
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+
+jobs:
+  chain:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract next issue and add loop:ready
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # PR 本文から next: #N を抽出（複数対応）
+          NEXT_ISSUES=$(echo "$BODY" | grep -oP 'next:\s*#\K\d+' || true)
+          if [ -z "$NEXT_ISSUES" ]; then
+            echo "No next: directive found, skipping"
+            exit 0
+          fi
+          for NUM in $NEXT_ISSUES; do
+            echo "Adding loop:ready to #${NUM}"
+            gh issue edit "$NUM" --repo "$REPO" --add-label "loop:ready"
+          done

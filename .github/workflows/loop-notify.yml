@@ -33,7 +33,6 @@ jobs:
           gh issue comment "$NUMBER" --repo "$REPO" --body "@koboriakira ${MSG} [${LABEL}]"
 
       - name: Discord notification
-        if: secrets.DISCORD_LOOP_WEBHOOK != ''
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_LOOP_WEBHOOK }}
           NUMBER: ${{ github.event.issue.number }}

@@ -31,3 +31,22 @@ jobs:
             *)                   MSG="状態が変わりました" ;;
           esac
           gh issue comment "$NUMBER" --repo "$REPO" --body "@koboriakira ${MSG} [${LABEL}]"
+
+      - name: Discord notification
+        if: secrets.DISCORD_LOOP_WEBHOOK != ''
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_LOOP_WEBHOOK }}
+          NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          LABEL: ${{ github.event.label.name }}
+          TITLE: ${{ github.event.issue.title }}
+        run: |
+          case "$LABEL" in
+            "loop:needs-answer") EMOJI="❓" ;;
+            "loop:in-review")    EMOJI="👀" ;;
+            "loop:needs-human")  EMOJI="🚨" ;;
+            *)                   EMOJI="🔔" ;;
+          esac
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"content\": \"${EMOJI} **[${REPO}#${NUMBER}]** ${TITLE} → \`${LABEL}\`\nhttps://github.com/${REPO}/issues/${NUMBER}\"}" \
+            "$WEBHOOK_URL"

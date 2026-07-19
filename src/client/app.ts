@@ -36,6 +36,9 @@ export const clientApp = `
 
   function saveState() {
     if (!_hasStorage) return;
+    // localStorage はゲスト専用ストレージ（spec: guest-account-data-lifecycle）。
+    // 認証中に書き込むと、ログアウト後も前ユーザーの収集物が共有デバイスに残ってしまう。
+    if (state.authed) return;
     try {
       localStorage.setItem('mojizukan_entries', JSON.stringify(state.zukanWords));
       localStorage.setItem('mojizukan_hakken', JSON.stringify(state.hakkenWords));
@@ -55,6 +58,47 @@ export const clientApp = `
     } catch(e) {
       return {};
     }
+  }
+
+  function clearGuestStorage() {
+    // サインイン後にゲスト収集物をサーバーへマージし終えたら localStorage を空にする
+    // （spec: guest-account-data-lifecycle の「クリア」ステップ）。onboarded フラグは
+    // UI 表示の好みであり収集物ではないため対象外。
+    if (!_hasStorage) return;
+    try {
+      localStorage.removeItem('mojizukan_entries');
+      localStorage.removeItem('mojizukan_hakken');
+      localStorage.removeItem('mojizukan_discovered');
+      localStorage.removeItem('mojizukan_handwriting');
+      localStorage.removeItem('mojizukan_prepared');
+    } catch(e) {}
+  }
+
+  // 認証確認 → マージ → クリア → サーバーから取得 → 上書き の直列処理
+  // (spec: guest-account-data-lifecycle)。ページ読み込み時のセッション確認と
+  // サインアップ/ログイン成功直後の両方から呼ばれる。
+  function mergeAndSyncEntries() {
+    var guestWords = (state.zukanWords || []).slice();
+    var mergeCall = guestWords.length
+      ? fetch('/api/hakken/merge-guest-entries', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ words: guestWords })
+        }).catch(function () {})
+      : Promise.resolve();
+
+    return mergeCall.then(function () {
+      clearGuestStorage();
+      return fetch('/api/hakken/entries').then(function (r) { return r.json(); }).then(function (entries) {
+        if (!window.__hakkenCache) window.__hakkenCache = {};
+        var serverWords = [];
+        entries.forEach(function (e) {
+          window.__hakkenCache[e.word] = { desc: e.description, image_url: e.image_url };
+          serverWords.push(e.word);
+        });
+        setState({ zukanWords: serverWords });
+      });
+    }).catch(function () {});
   }
 
   var saved = loadState();
@@ -1624,6 +1668,8 @@ export const clientApp = `
         if (afterScreen) newState.screen = afterScreen;
         if (state.authReason === 'parent') newState.sheet = 'parentGate';
         setState(newState);
+        // ゲスト時代の収集語をサーバーへ永続化する（spec: guest-account-data-lifecycle AC-001）
+        mergeAndSyncEntries();
         if (afterScreen === 'storyhome') { fetchStories(); }
       });
     }).catch(function () {
@@ -1636,8 +1682,13 @@ export const clientApp = `
   };
 
   window.__logout = function () {
+    // ハードリダイレクトで全クライアントステート（メモリ上の zukanWords 等）を破棄する
+    // (spec: guest-account-data-lifecycle AC-002)。setState でのゲスト復帰は
+    // JS ステートが残るだけの見せかけになるため使わない。
     fetch('/api/auth/logout', { method: 'POST' }).then(function () {
-      setState({ authed: false, userId: null, tickets: 0, screen: 'home', sheet: null });
+      location.href = '/';
+    }).catch(function () {
+      location.href = '/';
     });
   };
 
@@ -2023,20 +2074,13 @@ export const clientApp = `
     setState({ cacheWords: data.words || [] });
   }).catch(function() {});
 
+  // 認証確認 → マージ → クリア → サーバーから取得 → 上書き（spec: guest-account-data-lifecycle）
   fetch('/api/auth/me').then(function (res) {
     return res.json();
   }).then(function (data) {
     if (data.authed) {
       setState({ authed: true, userId: data.id, tickets: data.tickets || 0, imgStyle: data.image_style || 'ehon' });
-      fetch('/api/hakken/entries').then(function(r) { return r.json(); }).then(function(entries) {
-        if (!window.__hakkenCache) window.__hakkenCache = {};
-        var serverWords = [];
-        entries.forEach(function(e) {
-          window.__hakkenCache[e.word] = { desc: e.description, image_url: e.image_url };
-          serverWords.push(e.word);
-        });
-        setState({ zukanWords: serverWords });
-      }).catch(function() {});
+      mergeAndSyncEntries();
     }
   }).catch(function () {});
 

@@ -1,4 +1,4 @@
-import type { HakkenGenerateResponse } from "./types";
+import { STARTER_WORDS, type HakkenGenerateResponse } from "./types";
 import type { ImageStyle } from "../ai-generation/types";
 import { AppError } from "../../middleware/error-handler";
 import { spendTicket, getTicketBalance, canSpendTicket } from "../account/tickets";
@@ -110,4 +110,34 @@ export async function executeHakkenGenerate(
     cached: !!cached,
     rediscovery: isRediscovery,
   };
+}
+
+// ゲストの localStorage 収集物をサインイン後にサーバーへ永続化する
+// (spec: guest-account-data-lifecycle AC-001, AC-003)。
+// おためしことば以外は許可リスト照合で黙って棄却し、キャッシュ済みの内容
+// （ゲストが実際に見た説明文・イラスト）だけをそのまま複製する。
+// クライアントは word のみ送るため、中身は共有キャッシュ（正典）から組み立てる。
+export async function executeMergeGuestEntries(
+  db: D1Database,
+  userId: string,
+  words: string[],
+): Promise<string[]> {
+  const candidates = [...new Set(words)].filter((word) => STARTER_WORDS.includes(word));
+
+  const merged: string[] = [];
+  for (const word of candidates) {
+    // ゲストの「みつける」は常に ehon スタイルでキャッシュを引く（hakken-generate.ts 未認証分岐と同じ参照元）
+    const cached = await getCache(db, word, "ehon");
+    if (!cached) continue; // 許可リストにあってもキャッシュ未投入なら中身を組み立てられないためスキップ
+
+    await db
+      .prepare(
+        "INSERT OR IGNORE INTO hakken_entries (user_id, word, description, image_url) VALUES (?, ?, ?, ?)"
+      )
+      .bind(userId, word, cached.description, cached.image_url)
+      .run();
+    merged.push(word);
+  }
+
+  return merged;
 }

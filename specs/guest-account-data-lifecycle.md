@@ -1,6 +1,6 @@
 ---
 title: "ずかんエントリのゲスト/アカウント間データライフサイクルポリシー"
-status: draft  # draft / approved / superseded
+status: approved  # draft / approved / superseded
 issue: 225    # GitHub Issue 番号
 superseded_by: null
 created: 2026-07-19

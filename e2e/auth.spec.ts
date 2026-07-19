@@ -13,6 +13,7 @@ function collectErrors(page: Page): string[] {
 test("ゲストがたんけんボタンを押すとログイン誘導が表示される", async ({ page }) => {
   const errors = collectErrors(page);
 
+  await page.addInitScript(() => { localStorage.setItem('mojizukan_onboarded', '1'); });
   await page.goto("/");
   await expect(page.getByText("もじずかん")).toBeVisible();
 
@@ -29,6 +30,7 @@ test("ゲストがたんけんボタンを押すとログイン誘導が表示�
 test("ゲストが保護者メニューを押すとログイン誘導が表示される", async ({ page }) => {
   const errors = collectErrors(page);
 
+  await page.addInitScript(() => { localStorage.setItem('mojizukan_onboarded', '1'); });
   await page.goto("/");
 
   await page.getByRole("button", { name: "おうちの ひとは こちら" }).click();
@@ -69,6 +71,7 @@ test("ゲスト + みつける → おためしことば → キャッシュヒ�
     });
   });
 
+  await page.addInitScript(() => { localStorage.setItem('mojizukan_onboarded', '1'); });
   await page.goto("/");
 
   // ゲストがおためしことば「いぬ」をなぞり切るフローを注入

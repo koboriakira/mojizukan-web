@@ -2,6 +2,30 @@
 
 もじずかん Web 版。Cloudflare Workers + Hono + D1 で構成。
 
+## 中核テーゼ
+
+> 正本の形式度が検証の自動化範囲を決める。
+
+検証できないものを「検証している」と書かない。検証が弱いなら弱いと書く。
+
+## 正本の対応表
+
+| 関心事 | 正本 | 検証者 | 検証されること | 検証されないこと |
+|--------|------|--------|---------------|----------------|
+| 変更契約 | `specs/*.md` | CODEOWNERS + `judges/path-scope.sh` | spec と実装の PR 分離 | spec の意味的正しさ |
+| インフラ構成 | `wrangler.toml` | Cloudflare runtime | バインディング名・型の存在 | wrangler.toml と types の一致 |
+| データスキーマ | `migrations/*.sql` | D1 engine + `judges/migration-integrity.sh` | SQL構文・連番整合・既存ファイル不変 | migrations と types の型一致 |
+| API 構造 | `src/routes/*.ts` | TypeScript compiler | ルーティング・型一致 | API の意味的正しさ |
+| ドメインモデル | `src/services/*/types.ts` + `docs/contexts/` | TypeScript compiler + 人間レビュー | 型使用の内部整合 | 型と DB スキーマの意味的対応 |
+| コード構造規約 | `.claude/rules/*.md` | `judges/*.sh` (CI で実行) | 各ルールの不変条件 | ルールの網羅性 |
+| 設計意図 | `docs/adr/` | 人間レビュー | — | — |
+| 用語定義 | `docs/glossary.md` | 人間レビュー | — | — |
+
+### 縫い目（正本間の整合 — 現時点で未検証）
+
+- `wrangler.toml` ⇔ `src/types/env.ts`（バインディング名の一致）
+- `migrations/*.sql` ⇔ `src/services/*/types.ts`（カラム名と型の対応）
+
 ## 技術スタック
 
 - **ランタイム**: Cloudflare Workers
@@ -218,3 +242,25 @@ main ブランチへのマージで GitHub Actions が staging に自動デプ�
 
 Workers AI を使用（`wrangler.toml` の `[ai]` セクションで設定済み）。
 プレビュー・本番デプロイとも API キー不要で動作する。
+
+## judges の実行
+
+| タイミング | 方法 |
+|-----------|------|
+| CI（push/PR） | `npm run judges` |
+| dev-loop フロー | PR 作成前に自動実行 |
+| 手動 | `bash judges/<name>.sh` |
+
+## 新機能追加時のチェックリスト
+
+1. **docs を確認・更新する** — glossary・ADR・Canvas に影響があるか判定し、先に更新する
+2. **spec が必要か判断する** — 新規ルート追加 / migration 追加なら必須（spec 駆動開発フロー参照）
+3. **マイグレーションを追加する**（スキーマ変更時）— `migrations/` に新しい連番ファイル
+4. **テストを書く** — E2E で重要フローをカバー。ユニットテストは純粋ロジックのみ
+5. **judges が通ることを確認する** — `npm run judges`
+
+## コーディング規約
+
+- **TypeScript strict モード** — `any` を安易に使わない
+- **型はコンテキストごとに集約する** — `src/services/<ctx>/types.ts` に定義。ハンドラごとに型を再定義しない
+- コメントは WHY のみ

@@ -1,0 +1,63 @@
+name: Implement Spec
+description: status:approved 済みの spec を対象に実装する（dev-loop が拾って自律実装する前提）
+labels: ["type:impl", "loop:ready"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > spec 駆動開発フローの Issue B（Implementation）です。対象の spec は `status: approved` になっている必要があります。
+        > 実装中に spec の記述に誤り・漏れ・矛盾を見つけた場合、実装側で spec を書き換えずに spec 修正用の新しい Issue（Issue A'）を起票し、本 Issue を `blocked` にしてください（`specs/README.md` の逆流経路を参照）。
+
+  - type: input
+    id: spec-path
+    attributes:
+      label: 対象 spec
+      description: 実装対象の specs/*.md へのパス
+      placeholder: specs/share-link.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 受入条件
+      description: spec の受け入れシナリオ（AC-XXX）をそのまま転記する。テストはこの ID をテスト名に含めること。
+      placeholder: |
+        - [ ] AC-001: 有効な共有リンクで閲覧できる
+        - [ ] AC-002: 無効なトークンでは404を返す
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-hints
+    attributes:
+      label: 技術的な手がかり
+      description: 実装時に参照すべきファイル・既存パターン・API制約など。なければ空欄可。
+      placeholder: |
+        - 既存の類似ルート: src/routes/...
+        - マイグレーションが必要なら migrations/NNNN_名前.sql を追加
+    validations:
+      required: false
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: スコープ外（今回やらないこと）
+      description: spec のスコープ外セクションと一致させる。
+      placeholder: |
+        - 図鑑全体の共有（別Issue）
+    validations:
+      required: false
+
+  - type: dropdown
+    id: context
+    attributes:
+      label: 影響する境界コンテキスト
+      description: docs/strategic/context-map.md 参照
+      multiple: true
+      options:
+        - ことばあつめ
+        - おはなし
+        - AI生成
+        - アカウント・経済
+        - わからない

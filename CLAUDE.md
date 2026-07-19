@@ -207,6 +207,48 @@ decisions のユーザータイプ別フローが E2E テストの骨格にな�
 
 `docs/` 以下のナレッジの更新・最新化を最重要視すること。コードより先にドメインモデルを正しくする。
 
+## spec 駆動開発フロー
+
+### 2-Issue 分離
+
+新規ルート追加・DB スキーマ変更など、契約を先に固定すべき変更は Issue を2つに分ける。
+
+- **Issue A（Spec）** — `.github/ISSUE_TEMPLATE/spec-request.yml` で起票する（`type:spec` ラベル）。「何が欲しいか」を自然言語で記述し、`specs/_template.md` から `specs/<name>.md` を作成する。`status: draft` から人間レビュー（CODEOWNERS）を経て `status: approved` にする
+- **Issue B（Implementation）** — `.github/ISSUE_TEMPLATE/implement-spec.yml` で起票する（`type:impl` + `loop:ready` ラベル）。approved 済みの spec を対象に実装する。spec の受け入れシナリオ（`AC-XXX`）をテスト名に含める
+
+### 追加原理
+
+> 契約は検証対象と同じバージョン管理下にスナップショットされて初めて正本たりうる。
+
+spec が Issue の本文やチャットのやりとりに留まっている間は、検証対象（コード）と同じコミット履歴を共有しない。`specs/*.md` としてリポジトリにコミットすることで、はじめて `judges/path-scope.sh` や `judges/spec-traceability.sh` による機械検証の対象になる。
+
+### 逆流経路（A → B → A'）
+
+実装（Issue B）を進める中で spec（Issue A）の記述に誤り・漏れ・矛盾が見つかった場合、実装側で spec を書き換えて押し通さない。
+
+1. spec 修正用の新しい Issue A' を起票する
+2. Issue B を `blocked` にする
+3. Issue A' が人間レビューを経て spec を修正・承認したら、Issue B の blocked を解除する
+
+詳細は `specs/README.md` を参照。
+
+### spec なし Issue との共存
+
+すべての変更に spec を要求すると開発フローが重くなり過ぎる。以下の基準で spec の要否を判断する。
+
+| 変更の種類 | spec | Issue 構成 |
+|-----------|------|-----------|
+| バグ修正 | 不要 | Issue B 単独（`bug.yml`） |
+| リファクタリング | 不要 | Issue B 単独（`feature.yml`） |
+| 新規ルート追加 / migration 追加 | 必須 | Issue A → Issue B |
+
+### ファイルスコープ
+
+- **Spec PR** — `specs/` 配下のみを変更する
+- **Impl PR** — `specs/` 以外（`src/`, `migrations/` 等）を変更する。spec とコードを同一 PR に混在させない
+
+`judges/path-scope.sh`（`npm run judges` から実行）がこのスコープ分離を機械検証する。
+
 ## Issue 実装フロー
 
 GitHub Issue の機能実装を開始するときは `/dev-pipeline start <Issue番号>` を実行する。

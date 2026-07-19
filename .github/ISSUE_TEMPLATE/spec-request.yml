@@ -1,0 +1,77 @@
+name: Spec Request
+description: 契約を先に固定すべき変更（新規ルート追加・DB スキーマ変更等）の Spec を起票する
+labels: ["type:spec"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > spec 駆動開発フローの Issue A（Spec）です。「何が欲しいか」を自然言語で記述し、`specs/_template.md` から `specs/<name>.md` を作成してください。
+        > `status: draft` から人間レビュー（CODEOWNERS）を経て `status: approved` になったら、Issue B（Implement Spec）を起票して実装に進めます。
+
+  - type: textarea
+    id: purpose
+    attributes:
+      label: 目的
+      description: 1-2文で何を作るか。specs/<name>.md の「目的」セクションの下書き。
+      placeholder: 単語帳エントリの共有リンクを発行できるようにする
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: スコープ
+      description: 含むもの / 含まないもの（非スコープ）を明示する。
+      placeholder: |
+        含むもの:
+        - 単語帳エントリ単位の共有リンク発行
+        含まないもの:
+        - 図鑑全体の共有（別Issue）
+    validations:
+      required: true
+
+  - type: textarea
+    id: invariants
+    attributes:
+      label: 不変条件
+      description: この変更が守るべき制約。
+      placeholder: |
+        - 共有リンクは本人以外がアクセスしても書き込みできない（読み取り専用）
+    validations:
+      required: true
+
+  - type: textarea
+    id: api-contract
+    attributes:
+      label: API 契約（該当する場合）
+      description: エンドポイント・メソッド・リクエスト/レスポンス形状。なければ空欄可。
+      placeholder: |
+        GET /api/share/:token → { word, imageUrl, description }
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 受け入れシナリオ
+      description: AC-001 のように一意の ID を付けた Given/When/Then。テストはこの ID をテスト名に含める。
+      placeholder: |
+        ### AC-001: 有効な共有リンクで閲覧できる
+        - Given: 発行済みの共有トークンがある
+        - When: GET /api/share/:token にアクセスする
+        - Then: 200 とエントリ情報が返る
+    validations:
+      required: true
+
+  - type: dropdown
+    id: context
+    attributes:
+      label: 影響する境界コンテキスト
+      description: docs/strategic/context-map.md 参照
+      multiple: true
+      options:
+        - ことばあつめ
+        - おはなし
+        - AI生成
+        - アカウント・経済
+        - わからない

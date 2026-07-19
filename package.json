@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "reset-db": "bash bin/reset-db.sh",
-    "seed": "bash bin/seed-cache.sh"
+    "seed": "bash bin/seed-cache.sh",
+    "judges": "bash judges/run-all.sh"
   },
   "dependencies": {
     "@sentry/cloudflare": "^10.62.0",

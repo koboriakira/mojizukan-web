@@ -73,3 +73,20 @@ export interface HakkenGenerateRequest {
 export interface HakkenGenerateResponse {
   description: string;
 }
+
+// おためしことば（ADR-0003）の許可リスト。ゲストの出題プールおよび
+// guest-account-data-lifecycle spec のマージAPI許可リストの両方から参照する正典。
+// src/client/dictionary.ts の STARTER_WORDS、bin/seed-starter-words.sh の WORDS と
+// 同期させること（値を変更したら3箇所とも揃える）。
+export const STARTER_WORDS: readonly string[] = [
+  "いぬ", "うま", "くま", "さかな", "すいか",
+  "つき", "とり", "ねこ", "はな", "やま",
+];
+
+export interface MergeGuestEntriesRequest {
+  words: string[];
+}
+
+export interface MergeGuestEntriesResponse {
+  merged: string[];
+}

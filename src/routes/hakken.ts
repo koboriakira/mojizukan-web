@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
-import type { ClassifyRequest, HakkenGenerateRequest } from "../services/kotoba-atsume/types";
+import type { ClassifyRequest, HakkenGenerateRequest, MergeGuestEntriesRequest, MergeGuestEntriesResponse } from "../services/kotoba-atsume/types";
 import { AppError } from "../middleware/error-handler";
 import { requireAuth } from "../middleware/auth";
 import { classifyWord, getRandomWords } from "../services/kotoba-atsume/hakken-logic";
-import { executeHakkenGenerate } from "../services/kotoba-atsume/hakken-generate";
+import { executeHakkenGenerate, executeMergeGuestEntries } from "../services/kotoba-atsume/hakken-generate";
 import { addPreparedWord, listPreparedWords, removePreparedWord } from "../services/kotoba-atsume/prepared-words";
 import { listCacheWords } from "../services/ai-generation/shared-cache";
 import { isNgWord } from "../services/kotoba-atsume/ng-words";
@@ -59,6 +59,14 @@ hakken.post("/generate", async (c) => {
   );
 
   return c.json(result);
+});
+
+hakken.post("/merge-guest-entries", requireAuth, async (c) => {
+  const userId = c.var.userId!;
+  const body = await c.req.json<MergeGuestEntriesRequest>();
+  const merged = await executeMergeGuestEntries(c.env.DB, userId, body.words ?? []);
+  const response: MergeGuestEntriesResponse = { merged };
+  return c.json(response);
 });
 
 hakken.get("/cache-words", async (c) => {

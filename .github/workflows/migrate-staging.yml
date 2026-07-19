@@ -16,5 +16,9 @@ jobs:
           node-version: "22"
           cache: "npm"
       - run: npm ci
+      - name: One-off - reconcile 0012->0013 rename in d1_migrations tracking
+        run: |
+          npx wrangler d1 execute mojizukan-db-staging --env staging --remote --command \
+            "UPDATE d1_migrations SET name='0013_rename_is_discovered_to_is_hakken.sql' WHERE name='0012_rename_is_discovered_to_is_hakken.sql'"
       - name: Apply migrations
         run: npx wrangler d1 migrations apply mojizukan-db-staging --env staging --remote

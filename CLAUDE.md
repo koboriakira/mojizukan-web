@@ -175,6 +175,8 @@ npm run reset-db  # ローカル DB をリセット
 
 画面のデザイン・要件定義は Claude Design で行い、`design/` ディレクトリで Claude Code と接続する。詳細は `design/README.md` を参照。
 
+Claude Design の成果物 zip は `~/Downloads/` に届く（ファイル名はプロジェクト名。例: `もじずかん.zip`）。
+
 ### Claude Code の責務
 
 - **brief の生成・zip 化**: Claude Design セッションの前に `design/sessions/YYYYMMDD_HHmm_brief.md` を作成し、参照ファイル（前回 decisions、dc.html、glossary、ADR）と合わせて zip にまとめる。テンプレートは `design/_templates/brief.md`
@@ -306,3 +308,5 @@ Workers AI を使用（`wrangler.toml` の `[ai]` セクションで設定済み
 - **TypeScript strict モード** — `any` を安易に使わない
 - **型はコンテキストごとに集約する** — `src/services/<ctx>/types.ts` に定義。ハンドラごとに型を再定義しない
 - コメントは WHY のみ
+- **エラー時にダミーを表示しない** — `.catch` で emoji やダミー値を返さず、エラー画面へ遷移させる。実装後に、エラーを意図的に発生させてエラー画面が出ることを確かめる
+- **UI の要件には正常系に加えてエラー時・ローディング中・空状態を含める** — 欠けていれば実装前に確認する
